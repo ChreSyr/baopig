@@ -1,7 +1,0 @@
-
----------File log level:DEBUG--------
-
-2019-05-09 16:05:54,164 :: MainThread :: BiblioLogging :: __init__ :
-    INFO :: File and Console logging successfully initialised
-2019-05-09 16:05:54,164 :: MainThread :: BiblioObjectUtilities :: insert :
-    WARNING :: insertion of 5 object failed : deque already at its maximum size
