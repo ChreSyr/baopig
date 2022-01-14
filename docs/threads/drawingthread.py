@@ -5,10 +5,10 @@ import os
 import time
 import threading
 import pygame
-from baopig.pybao.objectutilities import PrefilledFunction, History, TypedList, Object
-from baopig._debug import infinite_fps, debug_global_fps
-from baopig.time.timer import RepeatingTimer
-from baopig._lib import paint_lock
+from docs.pybao.objectutilities import PrefilledFunction, History, TypedList, Object
+from docs._debug import infinite_fps, debug_global_fps
+from docs.time.timer import RepeatingTimer
+from docs._lib import paint_lock
 from .thread import ExtraThread, LOGGER
 
 

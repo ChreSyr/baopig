@@ -22,5 +22,5 @@ class PyappVersion(tuple):
 version = PyappVersion(0, 11, 0, "tec21w16a")
 
 if __name__ == "__main__":
-    # TODO : try to access baopig.version without creating application, threads...
+    # TODO : try to access docs.version without creating application, threads...
     print("Hello, this is baopig version", version)

@@ -1,6 +1,6 @@
 
 
-from baopig import *
+from docs import *
 
 
 class UT_Scrollable(Zone):
@@ -31,7 +31,7 @@ ut_scenes = [
 
 
 if __name__ == "__main__":
-    from baopig.unit_tests.TesterScene import TesterScene
+    from docs.unit_tests.TesterScene import TesterScene
     app = Application()
     for scene in ut_scenes:
         TesterScene(app, scene)

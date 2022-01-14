@@ -1,7 +1,7 @@
 
 
-from baopig._lib import Scene
-from baopig.widgets.InputBox import InputBox
+from docs._lib import Scene
+from docs.widgets.InputBox import InputBox
 
 
 class UT_InputText_Scene(Scene):

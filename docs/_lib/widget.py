@@ -4,11 +4,11 @@
 
 import inspect
 import pygame
-from baopig.pybao.issomething import *
-from baopig.pybao.objectutilities import EditableTuple, Object, PackedFunctions, TypedSet
-from baopig._debug import *
-from baopig.io import LOGGER, mouse
-from baopig.communicative import Communicative
+from docs.pybao.issomething import *
+from docs.pybao.objectutilities import EditableTuple, Object, PackedFunctions, TypedSet
+from docs._debug import *
+from docs.io import LOGGER, mouse
+from docs.communicative import Communicative
 from .utilities import paint_lock, functools
 from .style import HasStyle, StyleClass, Theme
 

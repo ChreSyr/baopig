@@ -2,7 +2,7 @@
 
 import time
 from pygame import Rect
-from baopig.io import mouse
+from docs.io import mouse
 from .hoverable import Hoverable
 from .container import Container
 

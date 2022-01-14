@@ -1,11 +1,11 @@
 
 import pygame
-from baopig.pybao.issomething import *
-from baopig.ressources import *
-from baopig.font import Font
-from baopig.io import keyboard
-from baopig._lib import ApplicationExit, Clickable, Layer
-from baopig._lib import Widget, Container, Sail, Image, Box, Hoverable
+from docs.pybao.issomething import *
+from docs.ressources import *
+from docs.font import Font
+from docs.io import keyboard
+from docs._lib import ApplicationExit, Clickable, Layer
+from docs._lib import Widget, Container, Sail, Image, Box, Hoverable
 from .label import Label
 from .text import TextLabel, Text
 

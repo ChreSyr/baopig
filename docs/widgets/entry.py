@@ -1,6 +1,6 @@
 
 
-from baopig._lib import Validable, LOGGER
+from docs._lib import Validable, LOGGER
 from .lineedit import LineEdit, keyboard
 
 

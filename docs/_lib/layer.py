@@ -1,5 +1,5 @@
 
-from baopig.pybao.objectutilities import WeakTypedList
+from docs.pybao.objectutilities import WeakTypedList
 from .widget import Widget, Communicative
 
 

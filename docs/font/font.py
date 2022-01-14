@@ -182,11 +182,11 @@ Here is a few fonts availible on my computer
 
 import glob
 import pygame
-from pybao.IsSomething import is_color
+from docs.pybao.issomething import is_color
 from pygame.locals import *
-from baopig.ressources import *
-from baopig.io import LOGGER
-from baopig.ressources import ressources
+from docs.ressources import *
+from docs.io import LOGGER
+from docs.ressources import ressources
 
 
 class Font:

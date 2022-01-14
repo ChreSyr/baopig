@@ -1,9 +1,9 @@
 
 
 import pygame
-from baopig._debug import debug_screen_updates, debug_with_assert
-from baopig.io.logging import LOGGER
-from baopig._lib import Box, Layer, paint_lock, Widget, Size
+from docs._debug import debug_screen_updates, debug_with_assert
+from docs.io.logging import LOGGER
+from docs._lib import Box, Layer, paint_lock, Widget, Size
 
 
 class Zone(Box):  # TODO : BoxModel

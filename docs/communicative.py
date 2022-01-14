@@ -1,8 +1,8 @@
 
 
 import inspect
-from pybao.ObjectUtilities import PackedFunctions, Object, TypedSet
-from baopig.io.logging import LOGGER
+from docs.pybao.objectutilities import PackedFunctions, Object, TypedSet
+from docs.io.logging import LOGGER
 
 
 class ApplicationExit(Exception):

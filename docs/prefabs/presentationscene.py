@@ -1,7 +1,7 @@
 
-from baopig.pybao.objectutilities import PrefilledFunction
-from baopig import *
-from baopig.unit_tests.testerscene import TesterScene
+from docs.pybao.objectutilities import PrefilledFunction
+from docs import *
+from docs.unit_tests.testerscene import TesterScene
 
 
 
@@ -54,7 +54,7 @@ class UTMenu_Scene(Scene):
             print(filename)
             if filename in ("testerscene", "ut_baopig"):
                 continue
-            ut_file = importlib.import_module("baopig.unit_tests." + filename)
+            ut_file = importlib.import_module("docs.unit_tests." + filename)
             # exec("from {} import get_ut_scenes".format(path))
             # from path import get_ut_scenes
             for zone in ut_file.ut_scenes:  # TODO : replace ut_scenes by ut_zones

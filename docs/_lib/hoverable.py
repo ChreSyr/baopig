@@ -43,5 +43,5 @@ class Hoverable:
         :param get_text:
         :param indicator:
         """
-        # NOTE : set_indicator function is added in baopig.widgets.Text
+        # NOTE : set_indicator function is added in docs.widgets.Text
 

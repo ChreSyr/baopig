@@ -1,7 +1,7 @@
 
 
 import functools
-from baopig.communicative import ApplicationExit, Communicative
+from docs.communicative import ApplicationExit, Communicative
 from .widget import Widget
 
 

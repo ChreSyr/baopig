@@ -1,8 +1,8 @@
 
 
 import pygame
-from baopig._lib import Clickable, Hoverable
-from baopig._lib import Rectangle
+from docs._lib import Clickable, Hoverable
+from docs._lib import Rectangle
 from .button import Button, ButtonText
 
 

@@ -2,7 +2,7 @@
 
 import threading
 import pygame
-from baopig.pybao.objectutilities import TypedList
+from docs.pybao.objectutilities import TypedList
 from .widget import debug_with_assert
 from .layer import Layer
 

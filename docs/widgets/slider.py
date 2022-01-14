@@ -1,7 +1,7 @@
 
 
 import pygame
-from baopig._lib import *
+from docs._lib import *
 from .text import Text, DynamicText
 
 

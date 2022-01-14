@@ -1,6 +1,6 @@
 
 import threading
-from baopig.io import LOGGER
+from docs.io import LOGGER
 
 
 class ExtraThread(threading.Thread):

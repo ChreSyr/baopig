@@ -1,12 +1,12 @@
 
 import pygame
 from math import inf as math_inf
-from baopig.pybao.issomething import *
-from baopig.pybao.objectutilities import Object, TypedList
-from baopig.ressources import *
-from baopig.font.font import Font
-from baopig.io import mouse
-from baopig._lib import *
+from docs.pybao.issomething import *
+from docs.pybao.objectutilities import Object, TypedList
+from docs.ressources import *
+from docs.font.font import Font
+from docs.io import mouse
+from docs._lib import *
 
 
 def set_indicator(self, text=None, get_text=None, indicator=None):

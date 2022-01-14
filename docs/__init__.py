@@ -9,19 +9,18 @@ BAOPIG : Boite A Outils Pour Interfaces Graphiques
 """
 
 # TODO : compliation executable
-from baopig.version import *
+from docs.version import *
 print("Hello, this is baopig version", version)
-import time
 from pygame import *
-from baopig.pybao.issomething import *
-from baopig.pybao.objectutilities import Object, PrefilledFunction, PackedFunctions, \
+from .pybao.issomething import *
+from .pybao.objectutilities import Object, PrefilledFunction, PackedFunctions, \
                                          TypedDict, TypedList, TypedDeque, TypedSet
 
-from baopig.ressources import *
-from baopig.io import *
-from baopig.time import *
-from baopig._lib import *
-from baopig.widgets import *
+from .ressources import *
+from .io import *
+from .time import *
+from ._lib import *
+from .widgets import *
 
 display = None  # protection for pygame.display
 

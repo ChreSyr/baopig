@@ -2,11 +2,11 @@
 
 import pygame
 from string import printable as string_printable
-from baopig.pybao.issomething import *
-from baopig.pybao.objectutilities import TypedDeque, PrefilledFunction
-from baopig.ressources import *
-from baopig.io import LOGGER, mouse
-from baopig._lib import Closable, Focusable, Container, Selector, Rectangle
+from docs.pybao.issomething import *
+from docs.pybao.objectutilities import TypedDeque, PrefilledFunction
+from docs.ressources import *
+from docs.io import LOGGER, mouse
+from docs._lib import Closable, Focusable, Container, Selector, Rectangle
 from .text import Text
 from .label import DynamicLabel
 

@@ -1,6 +1,6 @@
 
 from .utilities import Closable
-from baopig.time.timer import RepeatingTimer
+from docs.time.timer import RepeatingTimer
 
 
 class RepetivelyAnimated(Closable):

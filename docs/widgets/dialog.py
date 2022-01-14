@@ -1,7 +1,7 @@
 
 
 import time
-from baopig._lib import *
+from docs._lib import *
 from .text import Text
 from .button import Button
 

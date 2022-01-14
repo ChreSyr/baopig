@@ -2,12 +2,12 @@
 
 import functools
 import pygame
-from baopig.pybao.issomething import is_point
-from baopig.pybao.objectutilities import PackedFunctions, PrefilledFunction, TypedDict, WeakTypedSet, Object
-from baopig._debug import debug_with_assert
-from baopig.ressources import *
-from baopig.communicative import ApplicationExit
-from baopig.io import LOGGER, mouse, keyboard
+from docs.pybao.issomething import is_point
+from docs.pybao.objectutilities import PackedFunctions, PrefilledFunction, TypedDict, WeakTypedSet, Object
+from docs._debug import debug_with_assert
+from docs.ressources import *
+from docs.communicative import ApplicationExit
+from docs.io import LOGGER, mouse, keyboard
 
 """
 

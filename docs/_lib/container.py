@@ -2,10 +2,10 @@
 
 import threading
 import pygame
-from baopig.pybao.issomething import *
-from baopig.pybao.objectutilities import *
-from baopig._debug import debug_screen_updates
-from baopig.io import LOGGER, mouse, keyboard
+from docs.pybao.issomething import *
+from docs.pybao.objectutilities import *
+from docs._debug import debug_screen_updates
+from docs.io import LOGGER, mouse, keyboard
 from .utilities import *
 from .widget import Widget
 from .resizable import ResizableWidget

@@ -1,5 +1,5 @@
 
-from baopig.pybao.objectutilities import TypedList
+from docs.pybao.objectutilities import TypedList
 from .layer import Widget, Layer, TemporaryLayer
 from .gridlayer import GridLayer
 

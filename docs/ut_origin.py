@@ -1,6 +1,6 @@
 
 
-from baopig import *
+from docs import *
 
 
 class UT_Origin_Scene(Scene):

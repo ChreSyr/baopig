@@ -1,7 +1,7 @@
 
 import time
-from baopig.pybao.objectutilities import TypedList
-from baopig.communicative import Communicative
+from docs.pybao.objectutilities import TypedList
+from docs.communicative import Communicative
 from .utilities import present_time
 
 

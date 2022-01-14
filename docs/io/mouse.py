@@ -2,8 +2,8 @@
 
 import time
 import pygame
-from baopig.pybao.objectutilities import Object, History, debug
-from baopig.communicative import Communicative
+from docs.pybao.objectutilities import Object, History, debug
+from docs.communicative import Communicative
 from .logging import LOGGER
 
 

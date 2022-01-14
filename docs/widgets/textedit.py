@@ -1,7 +1,7 @@
 
 
-from baopig.pybao.objectutilities import PrefilledFunction, Object, TypedDeque
-from baopig._lib import *
+from docs.pybao.objectutilities import PrefilledFunction, Object, TypedDeque
+from docs._lib import *
 from .text import Text, _LineSelection
 
 

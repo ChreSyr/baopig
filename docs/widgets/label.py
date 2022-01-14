@@ -1,11 +1,11 @@
 
 
 import pygame
-from baopig.pybao.issomething import *
-from baopig.ressources import ressources
-from baopig.font.font import _all, Font
-from baopig.io import mouse
-from baopig._lib import Runable, Widget, Zone, paint_lock
+from docs.pybao.issomething import *
+from docs.ressources import ressources
+from docs.font.font import _all, Font
+from docs.io import mouse
+from docs._lib import Runable, Widget, Zone, paint_lock
 from .text import Text
 
 fonts = _all[ressources.font.file]

@@ -1,8 +1,8 @@
 
 
 import time
-from baopig.time.stopwatch import _running_stopwatches
-from baopig.time.timer import _running_timers, timer_lock, RepeatingTimer
+from docs.time.stopwatch import _running_stopwatches
+from docs.time.timer import _running_timers, timer_lock, RepeatingTimer
 
 
 class _TimeManager:

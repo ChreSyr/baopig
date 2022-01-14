@@ -1,7 +1,7 @@
 
 
 import pygame
-from baopig._lib import Rectangle, Color
+from docs._lib import Rectangle, Color
 from .slider import Slider, SliderBar, SliderBloc
 from .text import Text
 from .numentry import NumEntry

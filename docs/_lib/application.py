@@ -5,15 +5,15 @@
 # TODO : remove all assertion with debug_with_assert
 
 import pygame
-from baopig.pybao import WeakTypedList
-from baopig._debug import debug_global_fps
-from baopig.io import LOGGER, mouse, keyboard
+from docs.pybao import WeakTypedList
+from docs._debug import debug_global_fps
+from docs.io import LOGGER, mouse, keyboard
 from .style import HasStyle, Theme, StyleClass
 from .widget import Widget, paint_lock
 from .runable import _runables_manager
 from .utilities import *
 from .scene import Scene
-from baopig.io import clipboard
+from docs.io import clipboard
 
 
 class Application(HasStyle):
@@ -334,9 +334,9 @@ class Application(HasStyle):
 
         LOGGER.info("launch {}".format(self.__class__.__name__))
 
-        from baopig.time.timemanager import time_manager
+        from docs.time.timemanager import time_manager
         self._time_manager = time_manager
-        from baopig.threads import DrawingThread
+        from docs.threads import DrawingThread
         self._painter = DrawingThread(self)
         self.painter.set_fps(self._fps)
         
@@ -351,7 +351,7 @@ class Application(HasStyle):
                 mouse_is_hovering_application = False
 
         if len(self.scenes) is 0:
-            from baopig.prefabs.presentationscene import PresentationScene
+            from docs.prefabs.presentationscene import PresentationScene
             PresentationScene(self)
 
         assert self.focused_scene is not None

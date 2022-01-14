@@ -1,9 +1,9 @@
 
 
 import pygame
-from baopig.pybao.objectutilities import WeakTypedSet, PackedFunctions, PrefilledFunction
-from baopig.pybao.issomething import is_point
-from baopig.io import mouse, keyboard, clipboard
+from docs.pybao.objectutilities import WeakTypedSet, PackedFunctions, PrefilledFunction
+from docs.pybao.issomething import is_point
+from docs.io import mouse, keyboard, clipboard
 from .utilities import Linkable, Focusable, paint_lock
 from .layer import Layer
 from .shapes import Rectangle

@@ -1,8 +1,8 @@
 
 
 import pygame
-from baopig.pybao.issomething import *
-from baopig.io import mouse
+from docs.pybao.issomething import *
+from docs.io import mouse
 from .utilities import Color, paint_lock, Size
 from .widget import Widget
 from .resizable import ResizableWidget

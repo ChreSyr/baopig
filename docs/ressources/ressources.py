@@ -1,7 +1,7 @@
 
 
-from pybao.ObjectUtilities import Object
-from pybao.IsSomething import *
+from docs.pybao.objectutilities import Object
+from docs.pybao.issomething import *
 
 
 class RessourcePack:

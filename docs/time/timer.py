@@ -2,9 +2,9 @@
 
 import time
 import threading
-from baopig.pybao.objectutilities import PackedFunctions, TypedSet, PrefilledFunction
-from baopig._debug import debug_with_assert
-from baopig.communicative import Communicative
+from docs.pybao.objectutilities import PackedFunctions, TypedSet, PrefilledFunction
+from docs._debug import debug_with_assert
+from docs.communicative import Communicative
 from .utilities import *
 
 

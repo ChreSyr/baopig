@@ -1,7 +1,7 @@
 
 import pygame
-from baopig.pybao.objectutilities import Object
-from baopig.time.timer import RepeatingTimer
+from docs.pybao.objectutilities import Object
+from docs.time.timer import RepeatingTimer
 from .logging import LOGGER
 from .clipboard import clipboard
 

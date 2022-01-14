@@ -1,6 +1,6 @@
 
 import pygame
-from baopig._lib import Rectangle, Runable
+from docs._lib import Rectangle, Runable
 
 
 class ProgressBar(Rectangle, Runable):

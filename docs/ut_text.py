@@ -1,6 +1,6 @@
 
 
-from baopig import *
+from docs import *
 import pygame
 
 
