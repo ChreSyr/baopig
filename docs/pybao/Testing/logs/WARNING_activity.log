@@ -1,0 +1,5 @@
+
+---------File log level:WARNING--------
+
+2019-05-09 16:05:54,164 :: MainThread :: BiblioObjectUtilities :: insert :
+    WARNING :: insertion of 5 object failed : deque already at its maximum size
