@@ -4,6 +4,7 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
+import glob
 
 # The directory containing this file
 HERE = path.abspath(path.dirname(__file__))
@@ -15,7 +16,7 @@ with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
 # This call to setup() does all the work
 setup(
     name="baopig",
-    version="0.11.1",
+    version="0.11.2",
     description="pygame gui",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -35,6 +36,7 @@ setup(
         "Operating System :: OS Independent"
     ],
     packages=["baopig"],
+    package_data={'baopig': ['*','*/*','*/*/*','*/*/*/*','*/*/*/*/*','*/*/*/*/*/*'],},
     include_package_data=True,
     install_requires=["pygame"]
 )

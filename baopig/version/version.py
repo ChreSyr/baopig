@@ -19,7 +19,7 @@ class BaopigVersion(tuple):
     minor = property(lambda self: self[1])
     patch = property(lambda self: self[2])
 
-version = BaopigVersion(0, 11, 1)
+version = BaopigVersion(0, 11, 2)
 
 if __name__ == "__main__":
     # TODO : try to access baopig.version without creating application, threads...

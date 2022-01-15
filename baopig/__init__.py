@@ -1,5 +1,3 @@
-#! /Library/Frameworks/Python.framework/Versions/3.6/bin/python3.6
-
 
 """
 Welcome to BaoPig
@@ -8,8 +6,8 @@ BAOPIG : Boite A Outils Pour Interfaces Graphiques
 
 """
 
-# TODO : compliation executable
-from baopig.version import *
+# TODO : compilation executable
+from .version import version
 print("Hello, this is baopig version", version)
 from pygame import *
 from .pybao.issomething import *
