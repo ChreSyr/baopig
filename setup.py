@@ -34,7 +34,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Operating System :: OS Independent"
     ],
-    packages=["docs"],
+    packages=["baopig"],
     include_package_data=True,
     install_requires=["pygame"]
 )
