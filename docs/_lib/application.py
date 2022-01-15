@@ -19,7 +19,7 @@ from docs.io import clipboard
 class Application(HasStyle):
     """
     This is the main class in baopig
-    It needs to be instancied before everything else
+    It needs to be instanced before everything else
     """
     STYLE = StyleClass()
 
@@ -28,8 +28,6 @@ class Application(HasStyle):
         if theme is None: theme = Theme()
         HasStyle.__init__(self, theme)
 
-        # assert application_keeper[0] is None, "You can't create 2 applications in one program"  # TODO : delete application_keeper ?
-        # application_keeper[0] = self
         pygame.init()
         info = pygame.display.Info()
 
