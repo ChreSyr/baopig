@@ -1,6 +1,6 @@
 
 
-class PyappVersion(tuple):
+class BaopigVersion(tuple):
     """Code from pygame.version.PygameVersion"""
     __slots__ = ()
     fields = 'major', 'minor', 'patch', 'backup'
@@ -19,7 +19,7 @@ class PyappVersion(tuple):
     minor = property(lambda self: self[1])
     patch = property(lambda self: self[2])
 
-version = PyappVersion(0, 11, 0, "tec21w16a")
+version = BaopigVersion(0, 11, 0)
 
 if __name__ == "__main__":
     # TODO : try to access docs.version without creating application, threads...
