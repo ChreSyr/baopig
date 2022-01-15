@@ -1,6 +1,8 @@
 
 
 from docs import *
+
+
 class TesterScene(Scene):
 
     def __init__(self, app, ContentZoneClass):
@@ -13,7 +15,6 @@ class TesterScene(Scene):
         # TODO : automatically pack zones with margin
 
         # Menu
-        # TODO : self.ressources.default(button_height=25)
         self.menu_zone = Zone(self, size=(self.w-20, 25), pos=(10, 10), name="menu")
         GridLayer(self.menu_zone, nbrows=1)  # TODO : margin
         Button(self.menu_zone, "< BACK", col=0, command=PrefilledFunction(app.open, "UTMenu_Scene"))
@@ -47,10 +48,11 @@ class TesterScene(Scene):
 from docs import *
 
 app = Application()
+scene = Scene(app)
 
 def click():
     print("Hello world")
-b = Button(app.display, "Hello world", command=click)
+b = Button(scene, "Hello world", command=click)
 
 app.launch()"""
 

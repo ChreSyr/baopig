@@ -1,16 +1,13 @@
-
-
 from docs._lib import Scrollable, ScrollableByMouse, Size, MarginType
 from docs._lib import Zone, Rectangle, LayersManager
 from .slider import Slider, SliderBar, SliderBloc
 
 
 class ScrollSlider(Slider):
-
     STYLE = Slider.STYLE.substyle()
     STYLE.modify(
-        width = 10,
-        height = 0,
+        width=10,
+        height=0,
     )
 
     def __init__(self, scroller, axis, style):
@@ -25,7 +22,7 @@ class ScrollSlider(Slider):
         scroller_size = scroller.window[2:]
         width = self.style["width"]
         self._parent = scroller  # needed in get_length()
-        self._axis = axis        # needed in get_length()
+        self._axis = axis  # needed in get_length()
         length = self.get_length()
         if axis == "x":
             bloc_style = {"width": length, "height": width}
@@ -36,7 +33,7 @@ class ScrollSlider(Slider):
             bloc_style = {"width": width, "height": length}
             pos = (border.right, 0)
             sticky = "right"
-            size = (width,  scroller_size[1] + border.top + border.bottom)
+            size = (width, scroller_size[1] + border.top + border.bottom)
         bloc_style["border_width"] = 0
         self.set_style_for(SliderBloc, **bloc_style)
 
@@ -55,10 +52,9 @@ class ScrollSlider(Slider):
 
 
 class ScrollableZone(Zone, ScrollableByMouse):
-
     STYLE = Zone.STYLE.substyle()
     STYLE.create(
-        scrollslider_class = ScrollSlider
+        scrollslider_class=ScrollSlider
     )
     STYLE.set_constraint("scrollslider_class", lambda val: issubclass(val, ScrollSlider))
 

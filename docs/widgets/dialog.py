@@ -1,5 +1,3 @@
-
-
 import time
 from docs._lib import *
 from .text import Text
@@ -15,6 +13,7 @@ class DialogAnswerButton(Button):
                 raise TypeError("A DialogAnswerButton must be inside a Dialog")
             dialog = dialog.parent
         return dialog
+
     dialog = property(get_dialog)
 
     def validate(self):
@@ -23,13 +22,12 @@ class DialogAnswerButton(Button):
 
 
 class DialogButtonsZone(Zone):
-
     STYLE = Zone.STYLE.substyle()
     STYLE.modify(
-        pos = (0, -30),
-        pos_location = "bottom",
-        pos_ref_location = "bottom",
-        background_color = (0, 0, 0, 60),
+        pos=(0, -30),
+        pos_location="bottom",
+        pos_ref_location="bottom",
+        background_color=(0, 0, 0, 60),
     )
 
     def __init__(self, dialog_frame):
@@ -39,10 +37,10 @@ class DialogButtonsZone(Zone):
         choices = dialog_frame.parent.choices
         Zone.__init__(
             self, dialog_frame,
-            size=(dialog_frame.w-60, 46 * ((len(choices)-1)//3+1)),
+            size=(dialog_frame.w - 60, 46 * ((len(choices) - 1) / 3 + 1)),
         )
-        GridLayer(self, nbrows=(len(choices)-1)//3+1, nbcols=min(len(choices), 3),
-                         row_height=46, col_width=int(self.w / min(len(choices), 3)))
+        GridLayer(self, nbrows=(len(choices) - 1) / 3 + 1, nbcols=min(len(choices), 3),
+                  row_height=46, col_width=int(self.w / min(len(choices), 3)))
         for i, choice in enumerate(choices):
             assert isinstance(choice, str), "Other types are not implemented"
             self.dialog.style["answerbutton_class"](self, choice, col=i % 3, row=i // 3, sticky="center")
@@ -54,22 +52,21 @@ class DialogButtonsZone(Zone):
                 raise TypeError("A DialogAnswerButton must be inside a Dialog")
             dialog = dialog.parent
         return dialog
+
     dialog = property(get_dialog)
 
 
 class DialogFrame(Zone):
-
     STYLE = Zone.STYLE.substyle()
     STYLE.modify(
-        pos = ("50%", "50%"),
-        pos_location = "center",
-        width = 450,
-        height = 300,
-        background_color = "theme-color-dialog_background",
+        pos=("50%", "50%"),
+        pos_location="center",
+        width=450,
+        height=300,
+        background_color="theme-color-dialog_background",
     )
 
     def __init__(self, dialog, style):
-
         assert isinstance(dialog, Dialog)
 
         self.inherit_style(dialog, style)
@@ -86,7 +83,7 @@ class DialogFrame(Zone):
         if dialog.description is not None:
             self.description_label = Text(
                 self, dialog.description,
-                font_height=27, max_width=self.w-60,
+                font_height=27, max_width=self.w - 60,
                 pos=(30, self.title_label.bottom + 15),
             )
             bottom = self.description_label.bottom
@@ -101,16 +98,16 @@ class Dialog(Scene):
 
     STYLE = Scene.STYLE.substyle()
     STYLE.create(
-        title = "Dialog",
-        description = None,
-        choices = ("Cancel", "Continue"),
-        index_default_choice = 0,  # focuses the first answer button
-        dialogframe_class = DialogFrame,
-        buttonszone_class = DialogButtonsZone,
-        answerbutton_class = DialogAnswerButton,
+        title="Dialog",
+        description=None,
+        choices=("Cancel", "Continue"),
+        default_choice_index=0,  # focuses the first answer button
+        dialogframe_class=DialogFrame,
+        buttonszone_class=DialogButtonsZone,
+        answerbutton_class=DialogAnswerButton,
     )
     STYLE.set_type("title", str)
-    STYLE.set_type("index_default_choice", int)
+    STYLE.set_type("default_choice_index", int)
     STYLE.set_constraint("dialogframe_class", lambda val: issubclass(val, DialogFrame),
                          "must be a subclass of DialogFrame")
     STYLE.set_constraint("buttonszone_class", lambda val: issubclass(val, DialogButtonsZone),
@@ -118,13 +115,13 @@ class Dialog(Scene):
     STYLE.set_constraint("answerbutton_class", lambda val: issubclass(val, DialogAnswerButton),
                          "must be a subclass of DialogAnswerButton")
 
-    def __init__(self, app, title=None, choices=None, description=None, index_default_choice=0,
+    def __init__(self, app, title=None, choices=None, description=None, default_choice_index=0,
                  frame_style=None, one_shot=False, background_image=None):
 
         self.inherit_style(
             app,
             title=title, choices=choices, description=description,
-            index_default_choice=index_default_choice,
+            default_choice_index=default_choice_index,
         )
 
         Scene.__init__(self, app)
@@ -132,8 +129,8 @@ class Dialog(Scene):
         self.title = self.style["title"]
         self.choices = self.style["choices"]
         self.description = self.style["description"]
-        self.index_default_choice = self.style["index_default_choice"]
-        assert self.index_default_choice in range(len(self.choices))
+        self.default_choice_index = self.style["default_choice_index"]
+        assert self.default_choice_index in range(len(self.choices))
         if background_image:
             self.set_style_for(
                 self.style["dialogframe_class"],
@@ -156,7 +153,7 @@ class Dialog(Scene):
         self.set_background_image(background)
 
     def open(self):
-        self._focus(self.frame.buttons_zone.default_layer[self.index_default_choice])
+        self._focus(self.frame.buttons_zone.default_layer[self.default_choice_index])
 
     def _answer(self, ans):
         """Only called by DialogAnswerButton"""

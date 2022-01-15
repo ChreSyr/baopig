@@ -291,7 +291,7 @@ class Application(HasStyle):
             # self._is_launched = False
             # self._current_size = self._current_mode = None
             # NOTE : after some tests, a pygame error makes it impossible to restart a closed application
-            # If you make it work, be sure to remove the folowing line
+            # If you make it work, be sure to remove the following line
             # application_keeper[0] = None
 
             raise ApplicationExit(reason)
@@ -322,7 +322,8 @@ class Application(HasStyle):
     def iconify(self):
 
         with paint_lock:
-            self.exit_fullscreen()
+            # if self.is_fullscreen:
+            #     self.exit_fullscreen()  # TODO : test it
             pygame.display.iconify()
 
     def launch(self):
