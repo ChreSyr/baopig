@@ -172,8 +172,6 @@ class Scene(Zone, Selector, Openable, Closable):
             if debug_with_assert: assert pygame.display.get_surface() is self.surface
             pygame.display.update(rect)
 
-        # pygame.image.save(self.surface, "ralentisseur.png")
-
         if self.painter.is_recording and self.painter.is_recording.only_at_change:
             pygame.image.save(self.surface,
                               self.painter.record_directory + "record_{:0>3}.png".format(
@@ -200,7 +198,7 @@ class Scene(Zone, Selector, Openable, Closable):
             self.application._update_display()
 
     def run(self):
-        """Stuff to repeat endlessly"""
+        """Stuff to repeat endlessly while this scene is focused"""
 
     def set_mode_TO_REMOVE(self, mode):
 

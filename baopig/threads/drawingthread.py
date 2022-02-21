@@ -138,6 +138,14 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
             # Drawings
             # TODO : render the display only if at least one run in Application is done
             self._paint()
+
+            # launch time
+            if self.app.launch_time is not None:
+                import time
+                LOGGER.info("{} launched in {} seconds".format(self.app.name, time.time() - self.app.launch_time))
+                self.app.launch_time = None
+
+            # record
             if self.is_recording:
                 if not self.is_recording.only_at_change:
                     pygame.image.save(self.app.display, self.out_directory + "record_{:0>3}.png".format(self.record_index))

@@ -4,7 +4,7 @@
 ## BiblioButton is expressively dedicated to BiblioApplication
 # TODO : remove all assertion with debug_with_assert
 
-import pygame
+import time
 from baopig.pybao import WeakTypedList
 from baopig._debug import debug_global_fps
 from baopig.io import LOGGER, mouse, keyboard
@@ -25,13 +25,14 @@ class Application(HasStyle):
 
     def __init__(self, name=None, theme=None, size=None, mode=pygame.RESIZABLE):
 
+        if name is None: name = self.__class__.__name__
         if theme is None: theme = Theme()
         HasStyle.__init__(self, theme)
 
         pygame.init()
         info = pygame.display.Info()
 
-        self._name = None
+        self._name = name
         self._is_launched = False
         self._is_running = False
         self._fps = 50
@@ -48,11 +49,12 @@ class Application(HasStyle):
         self._time_manager = None  # To be set in self.launch()
         self._runables_manager = _runables_manager
 
+        self.launch_time = time.time()
+
         mouse._application = self
         keyboard._application = self
 
-        if name is not None:
-            pygame.display.set_caption(name)
+        pygame.display.set_caption(self.name)
 
     default_mode = property(lambda self: self._default_mode)
     default_size = property(lambda self: self._default_size)
@@ -276,7 +278,7 @@ class Application(HasStyle):
             if debug_with_assert: assert pygame.display.get_surface() is self.focused_scene.surface
 
             if size != self._current_size:
-                LOGGER.info(f"Display size set to {size}")
+                LOGGER.fine(f"Display size set to {size}")
 
             self._current_mode = mode
             self._current_size = size
@@ -330,8 +332,6 @@ class Application(HasStyle):
 
         assert not self.is_launched, "An application can only be initialized once"
         self._is_launched = True
-
-        LOGGER.info("launch {}".format(self.__class__.__name__))
 
         from baopig.time.timemanager import time_manager
         self._time_manager = time_manager
