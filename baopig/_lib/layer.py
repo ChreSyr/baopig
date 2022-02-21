@@ -144,7 +144,6 @@ class Layer(Communicative):
         assert comp1 in self._comps, "{} not in {}".format(comp1, self)
         assert comp2 in self._comps, "{} not in {}".format(comp2, self)
         self.overlay(self.index(comp2), comp1)
-        # print("moved {} behind {}".format(comp1, comp2))
 
     def move_comp1_in_front_of_comp2(self, comp1, comp2):
         assert comp1 in self, "{} not in {}".format(comp1, self)

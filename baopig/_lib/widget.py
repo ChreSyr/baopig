@@ -695,7 +695,7 @@ class HasProtectedSurface:
 
     def set_surface(self, surface):
 
-        assert isinstance(surface, pygame.Surface)
+        assert isinstance(surface, pygame.Surface), surface
 
         if self.has_locked.height and self.rect.height != surface.get_height():
             raise PermissionError("Wrong surface : {} (this component's surface height is locked at {})".format(surface, self.h))

@@ -356,9 +356,6 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
             if debug_screen_updates:
                 LOGGER.info("update in {} :  {}".format(self, rect))
 
-            # if self.background_color.a and self.background_color.has_transparency():
-            #     print()
-
             self._warn_parent(rect)
 
     def _warn_change(self, rect):
@@ -413,8 +410,6 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         child.hide()
         child._is_sleeping = True
         child.signal.ASLEEP.emit()
-
-        # print("ASLEEP :", child)
 
     def container_close(self):
 
@@ -492,8 +487,6 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
             super().set_surface(pygame.Surface((w, h), need_alpha))
             self._flip_without_update()
 
-        # print("RESIZED", self, "at", size)
-
     def send_request(self, request, owner=None):
 
         assert callable(request)
@@ -539,6 +532,4 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         child._memory.need_start_animation = None
 
         child.signal.WAKE.emit()
-
-        # print("WAKE :", child)
 

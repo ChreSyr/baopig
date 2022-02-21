@@ -48,11 +48,7 @@ class LayersManager:
                 self.default_layer.kill()
                 self._default_layer = layer
 
-        if isinstance(self.default_layer, GridLayer) and self.default_layer != layer:
-            print("")
         self._layers.append(layer)
-        if isinstance(self.default_layer, GridLayer) and self.default_layer != layer:
-            print("")
         self.sort_layers()
         self._touchable_layers = list(layer for layer in self._layers if layer.touchable)  # this preserv the overlay
 

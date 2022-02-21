@@ -69,7 +69,6 @@ class TextEdit(Text, Selector):
     def del_selected_data(self):
 
         if not self.is_selecting: return
-        # print(self.line_selections[0].index_start, self.line_selections[0].index_end)
         cursor_index = self.find_index(char_index=self.line_selections[0].index_start,
                                        line_index=self.line_selections[0].line.line_index)
         assert self.is_selecting
@@ -176,7 +175,6 @@ class HaveHistory:
             selection_end=self.parent.selection_rect.end if self.parent.selection_rect else None
         )
         self.history.append(current)
-        # print("SAVE :", current)
         self.back_history.clear()
 
     def undo(self):

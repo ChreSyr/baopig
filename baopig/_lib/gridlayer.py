@@ -461,7 +461,6 @@ class GridLayer(Layer):
                 raise PermissionError("Cannot insert {} at positon : row={}, col={}, because {} is already there"
                                       "".format(comp, comp.row, comp.col, self._data[comp.row][comp.col]))
 
-            # print("Place for {} : {}".format(comp, self.grid._find_place_for(comp)))
             if debug_with_assert: assert not comp.has_locked.origin, "This should be checked in Widget.__init__()"
             # comp.move_at(key="topleft", value=self._find_place_for(comp))
             if comp.sticky is not None:

@@ -5,6 +5,8 @@
 # TODO : remove all assertion with debug_with_assert
 
 import time
+
+import pygame
 from baopig.pybao import WeakTypedList
 from baopig._debug import debug_global_fps
 from baopig.io import LOGGER, mouse, keyboard
@@ -82,9 +84,7 @@ class Application(HasStyle):
         # Events listening
         # Only apply on keyboard, mouse and application's operations
         events = pygame.event.get()
-        # if events: print(events)
         for event in events:
-            # if event.type != pygame.MOUSEMOTION: print(event)
             if event.type == pygame.KEYDOWN and event.key == pygame.K_F6:
                     self.exit("pressed F6")
             elif event.type == pygame.QUIT:
@@ -124,7 +124,6 @@ class Application(HasStyle):
                     if event.key == pygame.K_e:  # pour debugger dans l'application
                         if keyboard.mod.maj:
                             c = self.focused_scene.children
-                            print(self)
                             raise AssertionError("Made for debugging")
                         self.toggle_debugging()
                     # Cmd + f -> toggle debug fps
@@ -310,7 +309,6 @@ class Application(HasStyle):
 
         assert callable(until)
 
-        # print("FREEZE")
         with paint_lock:
             self.painter._can_draw.clear()
             self._time_manager.pause()
@@ -330,7 +328,8 @@ class Application(HasStyle):
 
     def launch(self):
 
-        assert not self.is_launched, "An application can only be initialized once"
+        assert not self.is_launched and pygame.get_init(), \
+            "An application can only be launched once, due to pygame restrictions"
         self._is_launched = True
 
         from baopig.time.timemanager import time_manager
@@ -338,14 +337,12 @@ class Application(HasStyle):
         from baopig.threads import DrawingThread
         self._painter = DrawingThread(self)
         self.painter.set_fps(self._fps)
-        
-        pygame.init()
+
         events = pygame.event.get()
         mouse._pos = pygame.mouse.get_pos()
         mouse_is_hovering_application = True
         for event in events:
         # On ne prends pas compte des evenements qui ont eu lieu pendant le chargement de l'application
-            # print("SKIPPED EVENT :", event)
             if event.type == pygame.ACTIVEEVENT and event.gain == 0:
                 mouse_is_hovering_application = False
 
@@ -385,7 +382,6 @@ class Application(HasStyle):
         if only_containers is False, send an paintrequest to every focused_scene's components
         """
         self.focused_scene.paint(recursive=True, only_containers=False)
-        # print("REFRESH")
 
     def set_caption(self, title, icontitle=""):
 
@@ -420,7 +416,6 @@ class Application(HasStyle):
           #   self._mode_before_fullscreen = self.focused_scene.mode
             # self._size_before_fullscreen = self.asked_size
 
-            # print("Asked for fullscreen")
             # mode = 0
 
         self._default_mode = mode

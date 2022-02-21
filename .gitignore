@@ -131,5 +131,5 @@ dmypy.json
 # test files
 test.py
 
-# ?
+# pycharm project setup
 .idea

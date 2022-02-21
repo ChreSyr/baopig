@@ -39,7 +39,7 @@ class DialogButtonsZone(Zone):
             self, dialog_frame,
             size=(dialog_frame.w - 60, 46 * ((len(choices) - 1) / 3 + 1)),
         )
-        GridLayer(self, nbrows=(len(choices) - 1) / 3 + 1, nbcols=min(len(choices), 3),
+        GridLayer(self, nbrows=int((len(choices) - 1) / 3) + 1, nbcols=min(len(choices), 3),
                   row_height=46, col_width=int(self.w / min(len(choices), 3)))
         for i, choice in enumerate(choices):
             assert isinstance(choice, str), "Other types are not implemented"
