@@ -44,7 +44,7 @@ class LayersManager:
         if layer.touchable:
             if self._default_layer is None:
                 self._default_layer = layer
-            elif isinstance(self.default_layer, TemporaryLayer) and len(self.default_layer) is 0:
+            elif isinstance(self.default_layer, TemporaryLayer) and len(self.default_layer) == 0:
                 self.default_layer.kill()
                 self._default_layer = layer
 
@@ -62,7 +62,7 @@ class LayersManager:
         This method should only be called by Layer.kill
         """
 
-        assert len(layer) is 0
+        assert len(layer) == 0
         self._layers.remove(layer)
         if layer.touchable: self._touchable_layers.remove(layer)
         if layer == self.default_layer: self._default_layer = None
