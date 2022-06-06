@@ -53,7 +53,6 @@ class _Origin:
 
     A Origin coordinate can be given in different ways:
         - x = 4         sets x to 4 pixels
-        - x = '4'       sets x to 4 pixels
         - x = '10%'     sets x to self.parent.width * 10 / 100 (automatically updated)
 
     WARNING : A component with a dynamic origin (pourcentage position) cannot be manually
@@ -69,13 +68,19 @@ class _Origin:
         self._asked_pos = owner.style["pos"]
         self._from_hitbox = owner.style["pos_from_ref_hitbox"]
         self._location = owner.style["pos_location"]
+        try:
+            self._has_adaptable_size = isinstance(self.owner.style["width"], str) or isinstance(self.owner.style["height"], str)
+        except KeyError:
+            self._has_adaptable_size = False
         # We need to initialize reference before config
         reference = owner.style["pos_ref"]
         if reference is None: reference = owner.parent
         self._reference_ref = reference.get_weakref()
-        self.reference.signal.RESIZE.connect(self._weak_update_owner_pos, owner=owner)
+        self.reference.signal.RESIZE.connect(self._weak_update_owner_pos, owner=self.owner)
+        if self._has_adaptable_size:
+            self.reference.signal.RESIZE.connect(self.owner._update_size, owner=self.owner)
         if self.reference != owner.parent:
-            self.reference.signal.MOTION.connect(self._weak_update_owner_pos, owner=owner)
+            self.reference.signal.MOTION.connect(self._weak_update_owner_pos, owner=self.owner)
         self._reference_location = owner.style["pos_ref_location"]
         try:
             assert self._reference_location != "top"
@@ -128,13 +133,14 @@ class _Origin:
     def accept(coord):
 
         if isinstance(coord, str):
-            if coord.endswith('%'):
-                try:
-                    int(coord[:-1])
-                    return True
-                    return 0 <= int(coord[:-1]) <= 100
-                except ValueError:
-                    return False
+            if not coord.endswith('%'):
+                return False
+            try:
+                int(coord[:-1])
+                return True
+                return 0 <= int(coord[:-1]) <= 100
+            except ValueError:
+                return False
 
         elif hasattr(coord, "__iter__"):
             if len(coord) != 2: return False
@@ -166,10 +172,14 @@ class _Origin:
             assert isinstance(reference_comp, Widget)
             self.reference.signal.MOTION.rem_command(self._weak_update_owner_pos)
             self.reference.signal.RESIZE.rem_command(self._weak_update_owner_pos)
+            if self._has_adaptable_size:
+                self.reference.signal.RESIZE.rem_command(self.owner._update_size)
             self._reference_ref = reference_comp.get_weakref()
             self.reference.signal.RESIZE.connect(self._weak_update_owner_pos, owner=self.owner)
             if self.reference != self.owner.parent:
                 self.reference.signal.MOTION.connect(self._weak_update_owner_pos, owner=self.owner)
+            if self._has_adaptable_size:
+                self.reference.signal.RESIZE.connect(self.owner._update_size)
 
         if reference_location is not None:
             self._reference_location = WidgetLocation(reference_location)
@@ -178,7 +188,7 @@ class _Origin:
             self._from_hitbox = bool(from_hitbox)
 
         if pos is not None:
-            assert _Origin.accept(pos), "Wrong position value : {} (see documentation above)".format(pos)
+            assert _Origin.accept(pos), f"Wrong position value : {pos} (see documentation above)"
             self._asked_pos = pos
 
         self.owner.move_at(self.pos, self.location)
@@ -198,7 +208,7 @@ class _Origin:
                 if isinstance(c, str):
                     if debug_with_assert:
                         if not c.endswith('%'):
-                            raise ValueError("Uncorrect coordinate : {}".format(c))
+                            raise ValueError(f"Uncorrect coordinate : {c}")
                     c = self.reference.hitbox.size[i] * int(c[:-1]) / 100
 
                 pos.append(int(c))
@@ -223,7 +233,7 @@ class _Origin:
                 if isinstance(c, str):
                     if debug_with_assert:
                         if not c.endswith('%'):
-                            raise ValueError("Uncorrect coordinate : {}".format(c))
+                            raise ValueError(f"Uncorrect coordinate : {c}")
                     c = self.reference.rect.size[i] * int(c[:-1]) / 100
 
                 pos.append(int(c))
@@ -791,7 +801,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         self._weakref = WeakRef(self)
 
         """
-        A visible component will be applicationed on screen
+        A visible component will be rendered on screen
         An invisible component will not be rendered
         
         At appearing, self.signal.SHOW is emitted
@@ -897,6 +907,8 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
             self.style.modify(pos_ref = options.pop("pos_ref"))
         if "pos_ref_location" in options:
             self.style.modify(pos_ref_location = options.pop("pos_ref_location"))
+
+        # TODO : center=(34, 45) instead of pos=(34, 45), pos_location="center"
 
         """
         A component is stored inside its parent, at one layer. A layer is identified
@@ -1086,9 +1098,20 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         if debug_with_assert: assert comp is not self
         self.layer.move_comp1_in_front_of_comp2(comp1=self, comp2=comp)
 
+    def paint(self):
+        """
+        This method is made for being overriden
+
+        In your implementation, you can update the component's surface.
+        If you use send_paint_request(), this method will be called when the next frame is rendered
+        In fact, you can use paint() at any moment, but it is more efficient
+        to update it through send_paint_request() if it is changing very often
+        """
+        pass
+
     def send_paint_request(self):
 
-        if self._dirty is 0:
+        if self._dirty == 0:
             self.parent._dirty_child(self, 1)
 
     def set_nontouchable(self):
@@ -1158,17 +1181,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
             self.hide()
         else:
             self.show()
-
-    def paint(self):
-        """
-        This method is made for being overriden
-
-        In your implementation, you can update the component's surface.
-        If you use send_paint_request(), this method will be called when the next frame is rendered
-        In fact, you can use paint() at any moment, but it is more efficient
-        to update it through send_paint_request() if it is changing very often
-        """
-        pass
 
     @staticmethod
     def ivisibles_from(list):

@@ -220,7 +220,7 @@ class Scene(Zone, Selector, Openable, Closable):
 
         if not hasattr(self, "debug_layer"):
             self.debug_layer = Layer(self, name="debug_layer", level=self.layers_manager.FOREGROUND)
-            from baopig.prefabs.DebugZone import DebugZone
+            from baopig.prefabs.debugzone import DebugZone
             self.debug_zone = DebugZone(self)
         else:
             self.debug_zone.toggle_debugging()

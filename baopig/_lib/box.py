@@ -47,7 +47,7 @@ class Box(Container):
 
     def __init__(self, parent, **options):
 
-        self.inherit_style(parent, options)
+        self.inherit_style(parent, options)  # TODO : **options ?
 
         Container.__init__(self, parent, **options)
 

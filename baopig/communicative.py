@@ -33,6 +33,8 @@ class Signal:
         if option 'need_arguments' is False, the emitted argumaents will be ignored
         :param command: a method of owner
         :param owner: an Communicative object
+        NOTE : The "owner" parameter is very important when it comes to deletion
+               When the owner is deleted, this connection is automatically killed
         """
         if not callable(command):
             raise TypeError("'{}' object is not callable".format(command))

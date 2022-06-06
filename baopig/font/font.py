@@ -456,6 +456,24 @@ filepaths = {}
 
 
 if __name__ == "__main__":
+    import os
+    exec_dir = os.getcwd()
+    for path in glob.iglob(__file__[:-7] + "lib/*.ttf"):
+        print(path)
+    for path in glob.iglob(__file__[:-7] + "lib/*/*.ttf"):
+        print(path)
+    for path in glob.iglob(__file__[:-7] + "lib/*/*/*.ttf"):
+        print(path)
+    for path in glob.iglob("/System/Library/Fonts/*.ttf"):
+        print(path)
+    for path in glob.iglob("/System/Library/Fonts/*.ttf"):
+        print(path)
+    for path in glob.iglob("/Library/Fonts/Microsoft/*.ttf"):
+        print(path)
+    for path in glob.iglob("/Library/Fonts Disabled/*.ttf"):
+        print(path)
+    for path in glob.iglob("/Library/Fonts/*.ttf"):
+        print(path)
 
     h = 100
     font = Font('monospace', height=h)

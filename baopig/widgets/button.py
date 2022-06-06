@@ -170,27 +170,33 @@ class AbstractButton2(Label, Clickable, Hoverable):
 
 class ButtonText(Text):  # TODO : das is das ?
 
-    def __init__(self, button, text, style=None):
+    STYLE = Text.STYLE.substyle()
+    STYLE.modify(
+        align_mode = "left",
+    )
+
+    def __init__(self, button, text, **options):
 
         assert isinstance(button, AbstractButton)
         assert '\n' not in text
-        self.inherit_style(button, style)
-        rect = button.content_rect
+        self.inherit_style(button, **options)
+        content_rect = button.content_rect
 
-        if rect.height < self.style["font_height"]:
-            self.style.modify(font_height=rect.height)
+        if content_rect.height < self.style["font_height"]:
+            self.style.modify(font_height=content_rect.height)
             # raise ValueError("This text has a too high font for the text area : "
-            #                  f"{self.style['font_height']} (maximum={rect.height})")
+            #                  f"{self.style['font_height']} (maximum={content_rect.height})")
         Text.__init__(
-            self, button, style=style,
+            self, button,
             text=text,
             sticky="center",
             selectable=False,
+            **options
         )
-        while self.width > rect.width:
+        while self.width > content_rect.width:
             if self.font.height == 2:
-                raise ValueError(f"This text is too long for the text area : {text} (area={rect})")
-            self.font.config(height=self.font.height - 1)
+                raise ValueError(f"This text is too long for the text area : {text} (area={content_rect}), {self.align_mode}, {self.width}")
+            self.font.config(height=self.font.height - 1)  # changing the font will automatically update the text
 
 
 class AbstractButton(Box, Clickable, Hoverable):
@@ -234,7 +240,7 @@ class AbstractButton(Box, Clickable, Hoverable):
         Clickable.__init__(self, catching_errors=self.style["catching_errors"])
 
         self.connect("press", self.signal.LINK)
-        self.connect("unpress", self.signal.UNLINK)
+        self.connect("unpress", self.signal.UNLINK)  # TODO : only self.signal.THING.connect(function)
 
         self.command = command  # non protected field
 
@@ -318,7 +324,14 @@ class AbstractButton(Box, Clickable, Hoverable):
         self.disable_sail.swap_layer(self.above_lines)
 
         if isinstance(hover, int) and hover != -1:
-            self.paint()
+            hidden = self.is_hidden
+            if hidden:
+                if self.has_locked.visibility:
+                    raise NotImplementedError
+                self.show()
+            self.paint()  # cannot paint if not visible
+            if hidden:
+                self.hide()
             self.hover_sail.surface.blit(self.surface, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
 
     disable_sail = property(lambda self: self._disable_sail_ref())
@@ -379,7 +392,7 @@ class Button(AbstractButton):
     STYLE = AbstractButton.STYLE.substyle()
     STYLE.create(
         text_class = ButtonText,
-        text_style = None,
+        text_style = {},
     )
     STYLE.set_constraint("text_class", lambda val: issubclass(val, ButtonText))
 
@@ -395,7 +408,7 @@ class Button(AbstractButton):
         )
         if text is not None:
             assert isinstance(text, str)
-            self.text_widget = self.style["text_class"](self, text=text, style=self.style["text_style"])
+            self.text_widget = self.style["text_class"](self, text=text, **self.style["text_style"])
             if self.name == "NoName": self._name = text
 
     def copy(self):

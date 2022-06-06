@@ -88,7 +88,8 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
 
         os.makedirs(self.out_directory, exist_ok=True)
         screenshot = self.app.display.copy()
-        name = time.strftime("%Y.%m.%d-%H:%M'%S''", time.localtime()) + ".png"
+        name = time.strftime("%Y.%m.%d-%Hh%M-%S.png", time.localtime())
+        print(self.out_directory + name)
         pygame.image.save(screenshot, self.out_directory + name)
 
     def send_request(self, request):

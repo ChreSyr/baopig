@@ -47,7 +47,7 @@ class Timer(Communicative):
 
         return present_time(self.get_time_left() if self.is_running else self.interval)
 
-    def cancel(self, execute=False):
+    def cancel(self):
         """
         Cancel the timer
         
@@ -140,7 +140,8 @@ class RepeatingTimer(Timer):
     def _repeat(self):
         """Should only be called by the manager"""
 
-        assert self.get_time_left() is 0
+        left = self.get_time_left()
+        assert left == 0, left
         assert self._start_time is not None
 
         with timer_lock:

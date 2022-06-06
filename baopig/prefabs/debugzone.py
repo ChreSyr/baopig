@@ -16,6 +16,8 @@ class DebugZone(Zone, Closable):
             layer=scene.debug_layer
         )
 
+        self.set_style_for(Text, color="black")
+
         self._pointed = None
         self.highlighter = None
 

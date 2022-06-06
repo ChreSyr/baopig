@@ -95,6 +95,7 @@ class Application(HasStyle):
             elif event.type in (pygame.KEYDOWN, pygame.KEYUP):
                 keyboard.receive(event)
             elif event.type == pygame.ACTIVEEVENT:
+                continue
                 """
                 state : 1 -> focused
                         2 -> just clicked on application icon while iconified, focused, gain = 1
@@ -119,7 +120,7 @@ class Application(HasStyle):
 
             # DEFAULT SHORTKEYS
             if event.type == pygame.KEYDOWN:
-                if keyboard.mod.cmd:
+                if keyboard.mod.ctrl:
                     # Cmd + e -> toggle debugging
                     if event.key == pygame.K_e:  # pour debugger dans l'application
                         if keyboard.mod.maj:
@@ -346,7 +347,7 @@ class Application(HasStyle):
             if event.type == pygame.ACTIVEEVENT and event.gain == 0:
                 mouse_is_hovering_application = False
 
-        if len(self.scenes) is 0:
+        if len(self.scenes) == 0:
             from baopig.prefabs.presentationscene import PresentationScene
             PresentationScene(self)
 

@@ -202,6 +202,9 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
 
         ResizableWidget.__init__(self, parent, surface=surf, **options)
 
+        if self.is_hidden:
+            self.set_dirty(1)
+
     all_children = property(lambda self: list(self._children) + list(self._children.sleeping),
                             doc="Awake and sleeping children")
     background_color = property(lambda self: self._background_color)
@@ -268,7 +271,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
 
         with paint_lock:
             super()._move(dx, dy)
-            for child in self.children:
+            for child in tuple(self.children):
                 child._update_from_parent_movement()
 
     def _remove_child(self, child):
@@ -378,7 +381,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
 
     def adapt(self, children, padding=0, vertically=True, horizontally=True):
         """
-        Resize in order to caontain every widget in children
+        Resize in order to contain every widget in children
         Only use padding.right and padding.bottom, because it is not supposed to move children
         """
 
@@ -439,7 +442,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                         self._children_to_paint.remove(child)
                     # LOGGER.debug("Painting {} from container {}".format(child, self))
 
-        if self.dirty is 0:  # else, paint() is called by parent
+        if self.dirty == 0:  # else, paint() is called by parent
             self._update_rect()
 
     def container_exec_requests(self):
@@ -482,7 +485,6 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         if (w, h) == self.size: return
 
         need_alpha = pygame.SRCALPHA if self.background_color.has_transparency() else 0
-        # need_alpha = pygame.SRCALPHA if len(self.background_color) == 4 else 0
         with paint_lock:
             super().set_surface(pygame.Surface((w, h), need_alpha))
             self._flip_without_update()

@@ -242,7 +242,7 @@ class _Mouse(Communicative):
         This method unlink a Linkable component from the mouse
 
         It can exceptionnaly be called when a clicked component disappears
-        Then the component calls itself this function, trought Linkable.unlink()
+        Then the component calls itself this function, trougth Linkable.unlink()
         """
 
         try:

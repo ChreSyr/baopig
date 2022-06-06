@@ -75,7 +75,7 @@ class Rectangle(ResizableWidget):
         size = w, h
         surface = pygame.Surface(size, pygame.SRCALPHA)
         self.set_surface(surface)
-        self.paint()
+        self.send_paint_request()
 
     def set_color(self, color=None):
 
@@ -217,6 +217,9 @@ class Highlighter(Widget):
 
         with paint_lock:
 
+            if type(target) is tuple:  # old_size from RESIZE signal
+                target = None
+
             if target is not None:
                 self.disconnect(emitter=self.target)
                 self._target_ref = target.get_weakref()
@@ -240,6 +243,11 @@ class Highlighter(Widget):
 
 
 class Sail(Rectangle):
+
+    STYLE = Rectangle.STYLE.substyle()
+    STYLE.modify(
+        border_width=0,
+    )
 
     def __init__(self, *args, **kwargs):
 
@@ -333,13 +341,32 @@ class Line(Widget):
 
 class Circle(Widget):
 
-    def __init__(self, parent, color, center, radius, width=0, **kwargs):
+    def __init__(self, parent, color, center, radius, border_width=0, **kwargs):
 
         if isinstance(radius, float): radius = int(radius)
         assert "pos" not in kwargs, "Use center instead"
         assert isinstance(radius, int)
-        if width > 1: raise PermissionError("Not implemented yet")
+        if border_width > 1: raise NotImplemented
         surf = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
-        pygame.draw.circle(surf, color, (radius, radius), radius, width)
-        Widget.__init__(self, parent, surface=surf, pos=(center[0]-radius, center[1]-radius), **kwargs)
+        pygame.draw.circle(surf, color, (radius, radius), radius, border_width)
+        Widget.__init__(self, parent, surface=surf, pos=center, pos_location="center", **kwargs)
+
+        self._color = color
+        self._radius = radius
+        self._border_width = border_width
+
+    color = property(lambda self: self._color)
+    radius = property(lambda self: self._radius)
+    border_width = property(lambda self: self._border_width)
+
+    def set_radius(self, radius):
+
+        if isinstance(radius, float): radius = int(radius)
+        assert isinstance(radius, int)
+        assert radius >= 0
+
+        self._radius = radius
+        surf = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+        pygame.draw.circle(surf, self.color, (radius, radius), radius, self.border_width)
+        self.set_surface(surf)
 

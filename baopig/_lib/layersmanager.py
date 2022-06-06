@@ -185,3 +185,4 @@ class LayersManager:
             child.layer.remove(child)
             layer.add(child)
         child._layer = layer
+        child.send_paint_request()

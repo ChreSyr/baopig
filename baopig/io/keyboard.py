@@ -249,7 +249,7 @@ class _Keyboard:
                 repeat.start()
                 self._keys_time[event.key] = repeat
         elif event.type == pygame.KEYUP:
-            if self._keys[event.key] is 0:
+            if self._keys[event.key] == 0:
                 return  # The KEYDOWN have been skipped, so we skip the KEYUP
             self._keys[event.key] = 0
             if self._is_repeating:
@@ -264,35 +264,27 @@ class _Keyboard:
         if event.key == pygame.K_RALT:
             self.mod.r_alt = event.type == pygame.KEYDOWN
             self.mod.alt = self.mod.l_alt or self.mod.r_alt
-            return
-        if event.key == pygame.K_LALT:
+        elif event.key == pygame.K_LALT:
             self.mod.l_alt = event.type == pygame.KEYDOWN
             self.mod.alt = self.mod.l_alt or self.mod.r_alt
-            return
-        if event.key == pygame.K_RMETA:
+        elif event.key == pygame.K_RMETA:
             self.mod.r_cmd = event.type == pygame.KEYDOWN
             self.mod.cmd = self.mod.l_cmd or self.mod.r_cmd
-            return
-        if event.key == pygame.K_LMETA:
+        elif event.key == pygame.K_LMETA:
             self.mod.l_cmd = event.type == pygame.KEYDOWN
             self.mod.cmd = self.mod.l_cmd or self.mod.r_cmd
-            return
-        if event.key == pygame.K_RCTRL:
+        elif event.key == pygame.K_RCTRL:
             self.mod.r_ctrl = event.type == pygame.KEYDOWN
             self.mod.ctrl = self.mod.l_ctrl or self.mod.r_ctrl
-            return
-        if event.key == pygame.K_LCTRL:
+        elif event.key == pygame.K_LCTRL:
             self.mod.l_ctrl = event.type == pygame.KEYDOWN
             self.mod.ctrl = self.mod.l_ctrl or self.mod.r_ctrl
-            return
-        if event.key == pygame.K_RSHIFT:
+        elif event.key == pygame.K_RSHIFT:
             self.mod.r_maj = event.type == pygame.KEYDOWN
             self.mod.maj = self.mod.l_maj or self.mod.r_maj
-            return
-        if event.key == pygame.K_LSHIFT:
-            self.mod.l_maj = (event.type == pygame.KEYDOWN)
+        elif event.key == pygame.K_LSHIFT:
+            self.mod.l_maj = event.type == pygame.KEYDOWN
             self.mod.maj = self.mod.l_maj or self.mod.r_maj
-            return
 
     def set_repeat(self, first_delay, delay):
         """Control how held keys are repeated, with delays in milliseconds"""

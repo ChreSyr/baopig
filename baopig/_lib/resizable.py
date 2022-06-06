@@ -16,6 +16,10 @@ class ResizableWidget(Widget):
         height = None,  # must be filled
     )
 
+    def _update_size(self):
+
+        self.resize(*self.get_asked_size())
+
     def get_asked_size(self):
 
         size = (self.style["width"], self.style["height"])
@@ -34,6 +38,9 @@ class ResizableWidget(Widget):
             for i, coord in enumerate(size):
                 if isinstance(coord, str):
                     size[i] = self.parent.size[i] * int(coord[:-1]) / 100
+
+                    # self.origin.reference.signal.RESIZE.connect(hardcoder)
+                    # TODO WARNING : if the origin's reference gets changed, this is not updated
 
         return size
 
@@ -58,12 +65,14 @@ class ResizableWidget(Widget):
 
         if h < 0: h = 0
         if h == self.h: return
+        self.style.modify(height=h)
         self.resize(self.w, h)
 
     def resize_width(self, w):
 
         if w < 0: w = 0
         if w == self.w: return
+        self.style.modify(width=w)
         self.resize(w, self.h)
 
     h =                 property(lambda self: self._rect.h, resize_height)

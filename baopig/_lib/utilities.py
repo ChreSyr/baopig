@@ -26,7 +26,7 @@ paint_lock = threading.RLock()
 class Size(tuple):
 
     def __init__(self, size):
-        assert len(self) is 2, f"Wrong length : {self} (a size only have 2 elements)"
+        assert len(self) == 2, f"Wrong length : {self} (a size only have 2 elements)"
         for coord in self:
             assert isinstance(coord, (int, float)), f"Wrong value in size : {coord} (must be a number)"
             assert coord >= 0, f"Wrong value in size : {coord} (must be positive)"
@@ -117,12 +117,12 @@ class MarginType:
             margin = margin.left, margin.top, margin.right, margin.bottom
         else:
             l = len(margin)
-            if l is 2:
+            if l == 2:
                 margin = tuple(margin) + tuple(margin)
-            elif l is 3:
+            elif l == 3:
                 margin = tuple(margin) + tuple([margin[1]])
             else:
-                assert l is 4, f"Wrong value for margin type : {margin}"
+                assert l == 4, f"Wrong value for margin type : {margin}"
 
         self.left = margin[0]
         self.top = margin[1]
@@ -227,7 +227,7 @@ class Validable:
             # Enter or validation key
             self.validate()
 
-    def validate(self):
+    def validate(self):  # TODO : handle_validate
         """Stuff to do when validate is called (decorated method)"""
 
 

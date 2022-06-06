@@ -35,6 +35,9 @@ class Image(ResizableWidget):
             **kwargs
         )
 
+    def collidemouse_alpha(self):  # TODO
+        pass
+
     def resize(self, w, h, tiled=False):
 
         if tiled:

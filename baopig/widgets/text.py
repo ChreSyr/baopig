@@ -108,7 +108,7 @@ class _Line(ResizableWidget):
     def _set_end(self, end):
         self.__end = end
         self._text_with_end = self.text + end
-        self._real_text = self.text + ('' if end is '\v' else end)
+        self._real_text = self.text + ('' if end == '\v' else end)
     _end = property(lambda self: self.__end, _set_end)
     end = property(lambda self: self.__end)
     font = property(lambda self: self._parent._font)
@@ -117,7 +117,7 @@ class _Line(ResizableWidget):
     def _set_text(self, text):
         self.__text = text
         self._text_with_end = text + self.end
-        self._real_text = text + ('' if self.end is '\v' else self.end)
+        self._real_text = text + ('' if self.end == '\v' else self.end)
     _text = property(lambda self: self.__text, _set_text)
     text = property(lambda self: self.__text)
     text_with_end = property(lambda self: self._text_with_end)
@@ -184,13 +184,13 @@ class _Line(ResizableWidget):
         if self.line_index == 0:
             return self
         i = self.line_index
-        while self.parent.lines[i-1].end is not '\n':
+        while self.parent.lines[i-1].end != '\n':
             i -= 1
         return self.parent.lines[i]
 
     def get_last_line_of_paragraph(self):
         i = self.line_index
-        while self.parent.lines[i].end is not '\n':
+        while self.parent.lines[i].end != '\n':
             i += 1
         return self.parent.lines[i]
 
@@ -276,31 +276,42 @@ class _Line(ResizableWidget):
                 max_width = self.parent.max_width
                 assert self.find_pixel(1) <= max_width, "The max_width is too little : " + str(max_width)
 
-                index_end = index_newline_start = self.find_index(
-                    max_width, only_left=True, end_of_word=True)
-                if index_end == 0:
-                    sep = '\v'
-                    index_newline_start = index_end = self.find_index(
-                        max_width, only_left=True, end_of_word=False)
-                else:
-                    end = self.text[index_end]
-                    sep = ' ' if end == ' ' else '\v'  # else, the word is of type 'smth-'
-                    if end == ' ': index_newline_start += 1
-                LineClass = _SelectableLine if isinstance(self, Selectable) else _Line
-                self.__class__(
-                    parent=self.parent,
-                    text=self.text[index_newline_start:],
-                    line_index=self.line_index + .5,  # the line will correct itself
-                )
-                self._end = sep
-                self._text = self.text[0:index_end]
-                self.update_char_pos()
+                if True:
+                    index_end = index_newline_start = self.find_index(
+                        max_width, only_left=True, end_of_word=True)
+                    if index_end == 0:
+                        sep = '\v'
+                        index_newline_start = index_end = self.find_index(
+                            max_width, only_left=True, end_of_word=False)
+                    else:
+                        end = self.text[index_end]
+                        sep = ' ' if end == ' ' else '\v'  # else, the word is of type 'smth-'
+                        if end == ' ': index_newline_start += 1
+                    LineClass = _SelectableLine if isinstance(self, Selectable) else _Line
+                    self.__class__(
+                        parent=self.parent,
+                        text=self.text[index_newline_start:],
+                        line_index=self.line_index + .5,  # the line will correct itself
+                    )
+                    self._end = sep
+                    self._text = self.text[0:index_end]
+                    self.update_char_pos()
 
             font_render = self.font.render(self.text)
             surf_w = font_render.get_width()
-            if self.parent.max_width is not None: surf_w = max(self.parent.w, surf_w)
+            # if self.parent.max_width is not None: surf_w = max(self.parent.w, surf_w)
             surface = pygame.Surface((surf_w, self.font.height), pygame.SRCALPHA)
             surface.blit(font_render, (0, 0))
+            """if self.parent.max_width is None:
+                surface.blit(font_render, (0, 0))
+            elif self.parent.align_mode == "left":
+                surface.blit(font_render, (0, 0))
+            elif self.parent.align_mode == "center":
+                surface.blit(font_render, (int((surf_w - font_render.get_width()) / 2), 0))
+            elif self.parent.align_mode == "right":
+                surface.blit(font_render, (surf_w - font_render.get_width(), 0))
+            else:
+                raise ValueError"""
             self.set_surface(surface)
             self.parent._pack()
 
@@ -443,7 +454,8 @@ class _LineSelection(Rectangle):
 
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
-        color = "theme-color-selection"
+        color = "theme-color-selection",
+        border_width = 0
     )
 
     def __init__(self, line):
@@ -484,7 +496,7 @@ class _LineSelection(Rectangle):
 
     def get_data(self):
         end = self.line.end if self._is_selecting_line_end else ''
-        if end is '\v': end = ''
+        if end == '\v': end = ''
         return self.line.text[self.index_start:self.index_end] + end
 
     def set_end(self, index, selecting_line_end):
@@ -532,6 +544,7 @@ class Text(Zone):
         italic = False,
         underline = False,
         align_mode = "left",
+        max_width=None,
     )
     STYLE.set_type("font_height", int)
     STYLE.set_type("color", Color)
@@ -568,6 +581,7 @@ class Text(Zone):
         # if mode is None: mode = Text.LEFT_MODE
 
         if max_width is not None:
+            options["max_width"] = max_width
             assert isinstance(max_width, int)
             assert max_width > 0
         assert isinstance(selectable, bool)
@@ -595,19 +609,21 @@ class Text(Zone):
                 text_owner=self,
             )
         else:
-            assert isinstance(font, Font)
+            assert isinstance(font, Font), str(font)
             font = font.copy(text_owner=self)
 
-        if max_width is not None:
-            self.lock_width(True)
-            self.resize_width(max_width)
         self._font = font
-        self._max_width = max_width
+        self._max_width = self.style["max_width"]
+        self._min_width = self.font.get_width("m")
         self._is_selectable = selectable
         self._lines_pos = []
         self._align_mode = self.style["align_mode"]
         self._padding = self.style["padding"]
         self.has_locked.text = False
+
+        if self.max_width is not None:
+            self.resize_width(self.max_width)
+            self.lock_width(True)
 
         self.line_selections = Layer(self, _LineSelection, name="line_selections", touchable=False, sort_by_pos=True)
         # self.lines = GridLayer(self, "lines", _Line)
@@ -625,6 +641,11 @@ class Text(Zone):
 
     def _pack(self):
 
+        if self.align_mode == "center":  # only usefull for the widget creation
+            if self.max_width is None:
+                centerx = int(max(l.w for l in self.lines) / 2)
+            else:
+                centerx = int(self.max_width / 2)
 
         self.lines.sort()
         h = self.padding.top
@@ -632,16 +653,15 @@ class Text(Zone):
             line.topleft = (self.padding.left, h)
             line._line_index = i
             h = line.bottom
-        self.adapt(self.lines, padding=self.padding)
 
-        if self.align_mode == "left":
-            pass
-        elif self.align_mode == "center":
-            for i, line in enumerate(self.lines):
-                line.centerx = self.auto.centerx
-        elif self.align_mode == "right":
-            for i, line in enumerate(self.lines):
+            if self.align_mode == "left":
+                line.left = self.padding.left
+            elif self.align_mode == "center":
+                line.centerx = centerx
+            elif self.align_mode == "right":
                 line.right = self.width - self.padding.right
+
+        self.adapt(self.lines, padding=self.padding, horizontally=self.max_width is None)
 
         self._lines_pos = []
         for line in self.lines:
@@ -804,6 +824,18 @@ class Text(Zone):
     def lock_text(self, locked=True):
 
         self.has_locked.text = locked
+
+    def set_max_width(self, max_width):
+
+        assert isinstance(max_width, int)
+        assert max_width > 0
+        if self._min_width > max_width:
+            raise PermissionError(f"The max_width is too little : {max_width}")
+        self._max_width = max_width
+        self.lock_width(False)
+        self.resize_width(self.max_width)
+        self.lock_width(True)
+        self.set_text(self.get_text())
 
     def set_text(self, text):
 

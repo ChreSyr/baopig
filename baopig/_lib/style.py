@@ -24,10 +24,10 @@ class MemoryDict(dict):
         return set(self.keys())
 
     def subdict(self):
-        return SubDict(self)
+        return SubMemoryDict(self)
 
 
-class SubDict(MemoryDict):
+class SubMemoryDict(MemoryDict):
 
     def __init__(self, superdict):
 
@@ -62,6 +62,8 @@ class StyleClass:
         self._constraints = MemoryDict()
         self._constraint_error_messages = MemoryDict()
         self._theme = None
+        self._priority = 0
+        self._priority_dict = MemoryDict()
 
     def __contains__(self, key):
         return key in self._dict
@@ -77,17 +79,27 @@ class StyleClass:
 
     def _setitem(self, key, value):
         self._dict[key] = value
+        self._priority_dict[key] = self._priority
         self.check_type(key)
         self.check_constraint(key)
 
     def _apply_on_instanciatedstyle(self, style):
 
+        # SuperButton -> Button -> Container
+        #      |            |
+        #     red         blue            <- default style
+        #                   |
+        #                yellow           <- style for a whole application
+        #
+        # A SuperButton has to be red, there is a priority
+
         assert isinstance(style, InstanciatedStyle)
         for attr in "_dict", "_types", "_constraints", "_constraint_error_messages":
-            defined_keys = getattr(style, attr).keys()
+            defined_keys = getattr(style, attr).all_keys()
             for key, value in getattr(self, attr).items():
                 if key in defined_keys:  # this attribute is already defined by a substyle
-                    continue
+                    if style.get_priority(key) >= self.get_priority(key):
+                        continue
                 getattr(style, attr)[key] = value
 
     def check_constraint(self, key):
@@ -156,6 +168,10 @@ class StyleClass:
         try:                return self._constraint_error_messages[key]
         except KeyError:    return None
 
+    def get_priority(self, key):
+
+        return self._priority_dict[key]
+
     def get_type(self, key):
 
         try:                return self._types[key]
@@ -178,7 +194,7 @@ class StyleClass:
                 self._constraints_error_messages.pop(key)
             return
         assert callable(constraint)
-        assert len(inspect.signature(constraint).parameters) is 1, \
+        assert len(inspect.signature(constraint).parameters) == 1, \
             "A constraint must only accept one parameter, the checked value"
         self._constraints[key] = constraint
         if error_message is not None:
@@ -212,6 +228,8 @@ class SubStyleClass(StyleClass):
         self._constraints = superstyle._constraints.subdict()
         self._constraint_error_messages = superstyle._constraint_error_messages.subdict()
         self._theme = None
+        self._priority = superstyle._priority + 1
+        self._priority_dict = superstyle._priority_dict.subdict()
 
 
 class InstanciatedStyle(SubStyleClass):
@@ -225,6 +243,7 @@ class InstanciatedStyle(SubStyleClass):
         theme = owner.theme
         self._theme = theme
 
+        # classes : all the super classes of the owner for wich a special style is defined in theme
         classes = (super_class for super_class in theme.get_set_classes()
                    if issubclass(owner.__class__, super_class))
         classes = sorted(classes, key=lambda cls: -len(cls.mro()))
@@ -262,6 +281,7 @@ class InstanciatedStyle(SubStyleClass):
             if not isinstance(value, type):
                 value = type(value)
         self._dict[key] = value
+        self._priority_dict[key] = self._priority
         self.check_constraint(key)
 
     def set_theme(self, theme):
@@ -500,7 +520,7 @@ class HasStyle:
         """
         if hasattr(theme, "_parent"):
             self._parent = theme
-        if options and "theme" in options:
+        if options and "theme" in options:  # here, theme is the parent widget
             assert not isinstance(theme, Theme)
             supertheme = theme.theme
             theme = options.pop("theme")
@@ -509,7 +529,7 @@ class HasStyle:
                 raise PermissionError("Must be an parent sub-theme")
         elif isinstance(theme, str):
             theme = all_themes[theme]
-        elif not isinstance(theme, Theme):  # theme can be the widget parent
+        elif not isinstance(theme, Theme):  # theme can be the parent widget
             theme = theme.theme.subtheme()
         HasStyle.__init__(self, theme)
 
