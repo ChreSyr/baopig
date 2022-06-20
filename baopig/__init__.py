@@ -9,7 +9,7 @@ BAOPIG : Boite A Outils Pour Interfaces Graphiques
 print("baopig from WIP")
 
 # TODO : compilation executable
-from .version import version
+from .version.version import version
 print(f"baopig {version} - ", end="")
 from pygame import *
 from .pybao.issomething import *

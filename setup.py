@@ -1,10 +1,14 @@
 # Always prefer setuptools over distutils
-from setuptools import setup, find_packages
+from setuptools import setup
 
 # To use a consistent encoding
 from codecs import open
 from os import path
-import glob
+
+# Get the version number without importing baopig
+import sys
+sys.path.append(".\\baopig\\version")
+from version import version
 
 # The directory containing this file
 HERE = path.abspath(path.dirname(__file__))
@@ -16,13 +20,13 @@ with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
 # This call to setup() does all the work
 setup(
     name="baopig",
-    version="0.11.4",
+    version=str(version),
     description="pygame gui",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://baopig.readthedocs.io/",
     author="Symeon Rougevin-Baville",
-    author_email="symeon.rougevin@gmail.com",
+    author_email="symeon.rougevin@gmail.com",  # TODO : dev mail
     license="MIT",
     classifiers=[
         "Intended Audience :: Developers",
