@@ -26,7 +26,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://baopig.readthedocs.io/",
     author="Symeon Rougevin-Baville",
-    author_email="symeon.rougevin@gmail.com",  # TODO : dev mail
+    author_email="dev.chresyr@gmail.com",
     license="MIT",
     classifiers=[
         "Intended Audience :: Developers",
