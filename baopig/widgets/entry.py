@@ -14,7 +14,7 @@ class Entry(LineEdit, Validable):
         """
 
         :param parent:
-        :param entry_type:
+        :param entry_type: str, int, float...
         :param command: function executed on validation, with self.text as parameter
         :param args:
         :param validate_on_defocus:

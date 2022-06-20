@@ -18,7 +18,7 @@ from .scene import Scene
 from baopig.io import clipboard
 
 
-class Application(HasStyle):
+class Application(HasStyle, Closable):
     """
     This is the main class in baopig
     It needs to be instanced before everything else
@@ -30,6 +30,7 @@ class Application(HasStyle):
         if name is None: name = self.__class__.__name__
         if theme is None: theme = Theme()
         HasStyle.__init__(self, theme)
+        Closable.__init__(self)
 
         pygame.init()
         info = pygame.display.Info()
@@ -37,7 +38,7 @@ class Application(HasStyle):
         self._name = name
         self._is_launched = False
         self._is_running = False
-        self._fps = 50
+        self._fps = None
         self._debug_fps = False
         self._default_mode = mode
         self._default_size = pygame.display.list_modes()[-1] if size is None else size
@@ -51,12 +52,12 @@ class Application(HasStyle):
         self._time_manager = None  # To be set in self.launch()
         self._runables_manager = _runables_manager
 
-        self.launch_time = time.time()
-
         mouse._application = self
         keyboard._application = self
 
         pygame.display.set_caption(self.name)
+
+        self.launch_time = time.time()
 
     default_mode = property(lambda self: self._default_mode)
     default_size = property(lambda self: self._default_size)
@@ -86,17 +87,21 @@ class Application(HasStyle):
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_F6:
-                    self.exit("pressed F6")
+                    self.exit("FORCED EXIT (F6)")
             elif event.type == pygame.QUIT:
-                self.exit("pygame.QUIT")
+                self.exit()
 
             elif event.type in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP):
                 mouse.receive(event)
             elif event.type in (pygame.KEYDOWN, pygame.KEYUP):
                 keyboard.receive(event)
             elif event.type == pygame.ACTIVEEVENT:
-                continue
+                if not hasattr(event, "gain"):  # Empty ACTIVEEVENT
+                    continue
+
+                # TODO: UPDATE
                 """
+                OLD, NOT TRUE ANYMORE
                 state : 1 -> focused
                         2 -> just clicked on application icon while iconified, focused, gain = 1
                         3 -> other application is focsed
@@ -233,9 +238,7 @@ class Application(HasStyle):
 
         except Exception as e:
             if isinstance(e, ApplicationExit):
-                if str(e) == 'None':
-                    LOGGER.info(f"{self.__class__.__name__} exit")
-                else:
+                if str(e) != 'None':
                     LOGGER.info("{} exit : '{}'".format(self.__class__.__name__, e))
             else:
                 raise e
@@ -288,6 +291,7 @@ class Application(HasStyle):
         self._is_running = False
         with paint_lock:
             self.painter.stop()
+            self.close()
 
             # If the program launch the app again
             # self._is_launched = False
@@ -344,8 +348,10 @@ class Application(HasStyle):
         mouse_is_hovering_application = True
         for event in events:
         # On ne prends pas compte des evenements qui ont eu lieu pendant le chargement de l'application
-            if event.type == pygame.ACTIVEEVENT and event.gain == 0:
-                mouse_is_hovering_application = False
+            if event.type == pygame.ACTIVEEVENT:
+                continue  # TODO : what has changed ? AttributeError: 'Event' object has no attribute 'gain'
+                if event.gain == 0:
+                    mouse_is_hovering_application = False
 
         if len(self.scenes) == 0:
             from baopig.prefabs.presentationscene import PresentationScene
@@ -361,6 +367,8 @@ class Application(HasStyle):
         if mouse_is_hovering_application:
             mouse._hover_display()
         # TODO : solve proper hovering display (is it a pygame error ?)
+
+        pygame.scrap.init()
 
         self._run()
 

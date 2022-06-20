@@ -44,22 +44,24 @@ class InputBox(DynamicLabel, Selector):
                  entry_type=None,
                  char_filter=None,
                  maxlen=None,
-                 name=None):
+                 name=None,
+                 **kwargs
+            ):
 
         if size is None:
             h = ressources.font.height
             size = (h * 5, h + int(h / 6) * 2)
         if command is None: command = lambda: None
         if presentation_text is None: presentation_text = "Enter your text here"
-        if font_color is None: font_color = TEXTBOXES_FONT_COLOR
-        if background_color is None: background_color = TEXTBOXES_BG_COLOR
+        if font_color is None: font_color = (0, 0, 0)
+        if background_color is None: background_color = (255, 255, 255)
         if default_text is None: default_text = "Unset"  # If we don't precise something, it will be "Unset"
         if entry_type is None: entry_type = str
 
         # TODO : Faire un background uni et ajouter deux Rectangles pour le contour (un pour la ligne noire, l'autre pour marquer le margin)
         background = pygame.Surface(size, pygame.SRCALPHA)
         background.fill(background_color)
-        pygame.draw.rect(background, TEXTBOXES_OUTLINE_COLOR, (0, 0) + size, 3)  # Contour
+        pygame.draw.rect(background, (0, 0, 0), (0, 0) + size, 3)  # Contour
 
         assert isinstance(default_text, str)
         assert entry_type in (str, float, int), \
@@ -83,9 +85,10 @@ class InputBox(DynamicLabel, Selector):
             font_color=font_color,
             background_color=background_color,
             # TODO : un mode qui permet d'avoir une hitbox fixe et un font_size fixe tout en permettant les changements sur text
-            modification_mode=FIXED_HITBOX,
+            modification_mode=0,
             text_location="midleft",
-            name=name
+            name=name,
+            **kwargs
         )
         Selector.__init__(self)
         # INFO : InputBox is has stopped running because of static text

@@ -55,6 +55,9 @@ class Timer(Communicative):
                You can do it yourself if you know what you are doing.
         """
 
+        if self._start_time is None:
+            return
+
         with timer_lock:
             if self.is_running:
                 _running_timers.remove(self)
@@ -102,7 +105,6 @@ class Timer(Communicative):
         if _running_timers.manager is None:
             raise PermissionError("Must launch an Application before starting a Timer")
 
-        if debug_with_assert: assert not self in _running_timers
         with timer_lock:
             self._start_time = time.time()
             self._pause_time = None

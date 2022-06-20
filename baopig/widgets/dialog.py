@@ -93,7 +93,13 @@ class DialogFrame(Zone):
 
 class Dialog(Scene):
     """
-    If one_shot is True, this dialog widget will kill itself after the first answer
+    Example :
+        dialog = bp.Dialog(app, "Votre adversaire a quitté la partie en cours", choices=("OK",))
+        def click_end_dialog(choice):
+            app.open("menu")
+        dialog.signal.ANSWERED.connect(click_end_dialog)
+
+    If one_shot is True, this dialog will kill itself after the first answer
     """
 
     STYLE = Scene.STYLE.substyle()
@@ -116,15 +122,15 @@ class Dialog(Scene):
                          "must be a subclass of DialogAnswerButton")
 
     def __init__(self, app, title=None, choices=None, description=None, default_choice_index=0,
-                 frame_style=None, one_shot=False, background_image=None):
+                 frame_style=None, one_shot=False, background_image=None, **kwargs):
 
         self.inherit_style(
             app,
             title=title, choices=choices, description=description,
-            default_choice_index=default_choice_index,
+            default_choice_index=default_choice_index
         )
 
-        Scene.__init__(self, app)
+        Scene.__init__(self, app, **kwargs)
 
         self.title = self.style["title"]
         self.choices = self.style["choices"]
@@ -136,7 +142,7 @@ class Dialog(Scene):
                 self.style["dialogframe_class"],
                 background_image=background_image,
             )
-        self.frame = self.style["dialogframe_class"](self, frame_style)
+        self.frame = self.style["dialogframe_class"](self, frame_style)  #  TODO : a class style cannot be a parameter
 
         self.answer = None
         self.create_signal("ANSWERED")
@@ -152,7 +158,7 @@ class Dialog(Scene):
         background.blit(sail, (0, 0))
         self.set_background_image(background)
 
-    def open(self):
+    def open(self):  # TODO : handle_open for Scene
         self._focus(self.frame.buttons_zone.default_layer[self.default_choice_index])
 
     def _answer(self, ans):

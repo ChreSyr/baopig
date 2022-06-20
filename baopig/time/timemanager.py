@@ -3,6 +3,7 @@
 import time
 from baopig.time.stopwatch import _running_stopwatches
 from baopig.time.timer import _running_timers, timer_lock, RepeatingTimer
+from baopig.io.logging import LOGGER
 
 
 class _TimeManager:
@@ -43,6 +44,10 @@ class _TimeManager:
 
         with timer_lock:
             for timer in tuple(_running_timers):
+
+                if timer._end_time is None:  # happens when timer.TIMEOUT provokes another_timer.cancel()
+                    continue
+
                 if timer._end_time <= current_time:
                     if isinstance(timer, RepeatingTimer):
                         timer._repeat()

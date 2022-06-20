@@ -27,7 +27,7 @@ class ResizableWidget(Widget):
         for coord in size:
             if isinstance(coord, str):
                 # hard stuff
-                assert coord[-1] == '%'
+                assert coord[-1] == '%', size
                 with_percentage = True
             else:
                 assert isinstance(coord, (int, float)), f"Wrong value in size : {coord} (must be a number)"

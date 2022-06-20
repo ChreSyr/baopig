@@ -210,7 +210,7 @@ class _Keyboard:
         self.last_event = None
 
         # repeat
-        self._keys_time = [None] * 323  # the time where the key have been pressed
+        self._pressedkeys_timers = {}  # the time when the key have been pressed
         self._is_repeating = False
         self._repeat_first_delay = None
         self._repeat_delay = None
@@ -243,19 +243,21 @@ class _Keyboard:
         # ACTUALIZING KEYBOARD STATES
         if event.type == pygame.KEYDOWN:
             self._keys[event.key] = 1
-            if self._is_repeating and self._keys_time[event.key] is None:
+            if event.key not in self._pressedkeys_timers:
+                self._pressedkeys_timers[event.key] = None
+            if self._is_repeating and self._pressedkeys_timers[event.key] is None:
                 repeat = RepeatingTimer((self._repeat_first_delay / 1000, self._repeat_delay / 1000),
                                         pygame.event.post, event)
                 repeat.start()
-                self._keys_time[event.key] = repeat
+                self._pressedkeys_timers[event.key] = repeat
         elif event.type == pygame.KEYUP:
             if self._keys[event.key] == 0:
                 return  # The KEYDOWN have been skipped, so we skip the KEYUP
             self._keys[event.key] = 0
             if self._is_repeating:
-                assert self._keys_time[event.key] is not None
-                self._keys_time[event.key].cancel()
-                self._keys_time[event.key] = None
+                assert self._pressedkeys_timers[event.key] is not None
+                self._pressedkeys_timers[event.key].cancel()
+                self._pressedkeys_timers[event.key] = None
         else:
             LOGGER.warning("Unexpected event : {}".format(event))
             return

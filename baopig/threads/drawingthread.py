@@ -105,7 +105,7 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
 
     def set_fps(self, fps):
 
-        assert isinstance(fps, int) and fps > 0
+        assert isinstance(fps, int) and fps > 0 or fps is None
         self._required_fps = fps
 
     def stop(self):
@@ -156,10 +156,8 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
             if debug_global_fps:
                 self.scenes_rendered_during_current_second += 1
             # NOTE : Pour mieux tester les FPS, on ne fait pas ticker l'horloge
-            if infinite_fps is False:
+            if infinite_fps is False and self.required_fps is not None:
                 self.clock.tick(self.required_fps)  # keep the game running slower than the given FPS
-            else:
-                self.clock.tick(0)
             if self.app._debug_fps:
                 pygame.display.set_caption(f"fps : {int(self.clock.get_fps()*100)/100}")
             self._can_draw.clear()

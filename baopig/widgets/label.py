@@ -91,7 +91,7 @@ class AbstractLabel(Zone):
 
         if font is None: font = Font()
         font._height = font_size
-        font._color = self.theme.get_value("theme-color-font")  # TODO : remove this temporary fix with better font system
+        font._color = (0, 0, 0)  # TODO : remove this temporary fix with better font system
 
         if text_location is None: text_location = "center"
         assert isinstance(selectable, bool)
@@ -240,6 +240,7 @@ class DynamicLabel(AbstractLabel, Runable):
                  text_location=None,
                  origin_location=None,
                  name=None,
+                 **kwargs
     ):
 
         assert len([arg for arg in (text, get_text, observed_object) if arg is not None]) <= 1, \
@@ -281,6 +282,7 @@ class DynamicLabel(AbstractLabel, Runable):
             text_location=text_location,
             origin_location=origin_location,
             name=name,
+            **kwargs
         )
         Runable.__init__(self)
 

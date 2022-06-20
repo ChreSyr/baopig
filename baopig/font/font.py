@@ -201,7 +201,7 @@ class Font:
         text_owner=None
     ):
 
-        if file is None: file = ressources.font.file
+        if file is None: file = ressources.font.file  # TODO : remove ressources
         if height is None: height = ressources.font.height
         if color is None: color = ressources.font.color
 

@@ -1,5 +1,6 @@
 
 
+from pygame import scrap, SCRAP_TEXT
 from baopig.pybao.objectutilities import PrefilledFunction, Object, TypedDeque
 from baopig._lib import *
 from .text import Text, _LineSelection
@@ -47,12 +48,8 @@ class TextEdit(Text, Selector):
         )
         Selector.__init__(self)
         self.enable_selecting(True)
-
         self._cursor_ref = lambda: None
-
-        self.set_background_color((255, 255, 255))
         self.cursors_layer = Layer(self, Cursor, name="cursors_layer", touchable=False)
-        # self.layers.add_layer("cursors", CompsClass=Cursor, touchable=False)
         self.set_selectionrect_visibility(False)
 
     cursor = property(lambda self: self._cursor_ref())
@@ -202,6 +199,10 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
     """
     By default, at creation, a cursor is set at mouse position
     """
+    STYLE = Rectangle.STYLE.substyle()
+    STYLE.modify(
+        color="theme-color-font"
+    )
 
     def __init__(self, parent, line_index, char_index):
 
@@ -215,7 +216,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
             parent=parent,
             pos=(parent.lines[line_index].find_pixel(char_index), parent.lines[line_index].top),
             size=(int(h / 10), h),
-            color=ressources.font.color,
+            # color=ressources.font.color,
             name=parent.name + " -> cursor"
         )
         HaveHistory.__init__(self)
@@ -309,7 +310,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         self.start_animation()
         self.show()
 
-        if selecting is "done":
+        if selecting == "done":
             pass
         elif selecting is True:
             if self.parent.selection_rect.end is None or old_pos != self.pos:
@@ -331,14 +332,18 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         """
 
         # Cmd + ...
-        if keyboard.mod.cmd:
+        if keyboard.mod.ctrl:  # TODO : cmd or ctrl, depending on the OS
             # Maj + Cmd + ...
             if keyboard.mod.maj:
                 if key == keyboard.z:
                     self.redo()
                 return
-            elif keyboard.mod.ctrl or keyboard.mod.alt:
+            elif keyboard.mod.cmd or keyboard.mod.alt:
                 return
+            elif key == keyboard.c:
+                selected_data = self.parent.get_selected_data()
+                if selected_data:
+                    scrap.put(SCRAP_TEXT, str.encode(selected_data))
             elif key == keyboard.d:
             # Duplicate
                 selected_data = self.parent.get_selected_data()
@@ -355,6 +360,18 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
                     exec(self.parent.text)
                 except Exception as e:
                     LOGGER.warning("CommandError: "+str(e))
+            elif key == keyboard.v:
+                bytes = scrap.get(SCRAP_TEXT)
+                if bytes is not None:
+                    text = bytes.decode()
+                    if text[-1] == "\0":  # removes a null character
+                        text = text[:-1]
+                    self.write(text)
+            elif key == keyboard.x:
+                selected_data = self.parent.get_selected_data()
+                if selected_data:
+                    scrap.put(SCRAP_TEXT, str.encode(selected_data))
+                    self.parent.del_selected_data()
             elif key == keyboard.z:
                 self.undo()
             elif key in (keyboard.LEFT, keyboard.HOME):
@@ -374,7 +391,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
             return
 
         # Cursor movement
-        if 272 < key < 282 and key != 277:
+        if 272 < key < 282 and key != 277:  # TODO : update (doesn't work with pygame v2)
 
             if key in (keyboard.LEFT, keyboard.RIGHT):
 
