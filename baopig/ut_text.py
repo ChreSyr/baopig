@@ -50,7 +50,7 @@ class UT_Text_Scene(Scene):
         )
         text.font.config(height=25)
         text.set_background_color((255, 255, 255, 128))
-        edit = TextEdit(self, pos=text.bottomleft, font=text.font, width=text.max_width, text="Green")
+        edit = TextEdit(self, text="Green", width=text.max_width, pos=text.bottomleft)
         text.font.config(color=(10, 50, 30))
 
         ressources.font.config(height=20)
@@ -98,7 +98,7 @@ class UT_TextEdit_Scene(Scene):
         self.zone1.mirrored = TextEdit(self.zone1, text="0123456789012345", width=40, pos=(10, 10))
         self.zone1.d = DynamicText(self.zone1, self.zone1.mirrored.get_text, pos=self.zone1.mirrored.topright)
 
-        text = TextEdit(self.zone2, pos=(10, 10), width=self.zone2.w - 20)
+        text = TextEdit(self.zone2, width=self.zone2.w - 20, pos=(10, 10))
 
         self.b = Button(self.zone2, text="RUN", pos=text.topright, command=lambda: exec(text.text))
         self.b.origin.config(location="topright")

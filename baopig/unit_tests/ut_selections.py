@@ -85,7 +85,7 @@ class UT_Selections_Frame(UT_Selector):
         UT_Selectable(z, (50, 10))
         UT_Selectable(z, (90, 10))
         Text(z, "I am selectable", pos=(10, 50))
-        TextEdit(z, pos=(10, 75), width=z.w-20)  # TODO : Scrollable
+        TextEdit(z, width=z.w - 20, pos=(10, 75))  # TODO : Scrollable
 
         z2 = UT_Selector(z, size=(z.w-20, (z.h-40)/3), background_color=(128, 128, 128),
                          pos=(10, "50%"), pos_location="midleft")
@@ -94,7 +94,7 @@ class UT_Selections_Frame(UT_Selector):
         UT_Selectable(z2, (50, 10))
         UT_Selectable(z2, (90, 10))
         Text(z2, "I am not selectable", pos=(10, 50))
-        TextEdit(z2, pos=(10, 75), width=z2.w-20)
+        TextEdit(z2, width=z2.w - 20, pos=(10, 75))
 
         z3 = UT_Selector(z, size=(z.w-20, (z.h-40)/3), background_color=(128, 128, 128, 200),
                          pos=(10, -10), pos_location="bottom", pos_ref_location="bottom")
@@ -103,19 +103,19 @@ class UT_Selections_Frame(UT_Selector):
         UT_Selectable(z3, (50, 10))
         UT_Selectable(z3, (90, 10))
         Text(z3, "Selection rectangle ?", pos=(10, 50))
-        TextEdit(z3, pos=(10, 75), width=z3.w-20)
+        TextEdit(z3, width=z3.w - 20, pos=(10, 75))
 
         UT_Selectable(self, (10, 10))
         UT_Selectable(self, (50, 10))
         UT_Selectable(self, (90, 10))
         Text(self, "I am selectable", pos=(10, 50))
-        TextEdit(self, pos=(10, 75), width=z.w-20)
+        TextEdit(self, width=z.w - 20, pos=(10, 75))
 
         UT_Selectable(self, (z.right + 10, 10))
         UT_Selectable(self, (z.right + 50, 10))
         UT_Selectable(self, (z.right + 90, 10))
         Text(self, "I am selectable", pos=(z.right + 10, 50))
-        TextEdit(self, pos=(z.right + 10, 75), width=z.w-20)
+        TextEdit(self, width=z.w - 20, pos=(z.right + 10, 75))
 
         self.load_sections()
 

@@ -16,14 +16,14 @@ def set_indicator(self, text=None, get_text=None, indicator=None):
     elif text is None:
         self._indicator = DynamicText(
             self.parent, get_text,
-            color=(255, 255, 255), font_height=15,
+            font_color=(255, 255, 255), font_height=15,
             pos=(0, -5), pos_location="bottom", pos_ref=self, pos_ref_location="top",
             background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False,
         )
     else:
         self._indicator = Text(
             self.parent, text,
-            color=(255, 255, 255), font_height=15,
+            font_color=(255, 255, 255), font_height=15,
             pos=(0, -5), pos_location="bottom", pos_ref=self, pos_ref_location="top",
             background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False,
         )
@@ -532,72 +532,34 @@ class Text(Zone):
         height=0,
     )
     STYLE.create(
-        font_file = None,
-        font_height = 15,
-        color = "theme-color-font",
-        bold = False,
-        italic = False,
-        underline = False,
-        align_mode = "left",
+        font_file=None,
+        font_height=15,
+        font_color="theme-color-font",
+        font_bold=False,
+        font_italic=False,
+        font_underline=False,
+        align_mode="left",
         max_width=None,
     )
     STYLE.set_type("font_height", int)
-    STYLE.set_type("color", Color)
-    STYLE.set_type("bold", bool)
-    STYLE.set_type("italic", bool)
-    STYLE.set_type("underline", bool)
+    STYLE.set_type("font_color", Color)
+    STYLE.set_type("font_bold", bool)
+    STYLE.set_type("font_italic", bool)
+    STYLE.set_type("font_underline", bool)
     STYLE.set_type("align_mode", str)
     STYLE.set_type("padding", MarginType)
     STYLE.set_constraint("font_height", lambda val: val > 0, "a text must have a positive font height")
     STYLE.set_constraint("font_file", lambda val: (val is None) or isinstance(val, str), "must be None or a string")
     STYLE.set_constraint("align_mode", lambda val: val in ("left", "center", "right"), "must be 'left', 'center' or 'right'")
 
-    # TODO : align modes
-    # LEFT_MODE = 50
-    # CENTER_MODE = 51
-    # RIGHT_MODE = 52
+    def __init__(self, parent, text=None, selectable=True, **kwargs):
 
-    def __init__(self,
-        parent,
-        text=None,
-        font=None,  # TODO : remove it
-        font_file=None,
-        font_height=None,
-        color=None,
-        bold=False,
-        italic=False,
-        underline=False,
-        max_width=None,
-        padding=None,
-        selectable=True,
-        **options
-    ):
-
-        # if mode is None: mode = Text.LEFT_MODE
-
-        if max_width is not None:
-            options["max_width"] = max_width
-            assert isinstance(max_width, int)
-            assert max_width > 0
         assert isinstance(selectable, bool)
 
-        Zone.__init__(self, parent, **options)
+        self.inherit_style(parent, options=kwargs)
 
-        if font is None:
-            self.inherit_style(
-                parent,
-                font_file=font_file,
-                font_height=font_height,
-                color=color,
-                bold=bold,
-                italic=italic,
-                underline=underline,
-                padding=padding,
-            )
-            font = Font(self)
-        else:
-            assert isinstance(font, Font), str(font)
-            font = font.copy(text_owner=self)
+        Zone.__init__(self, parent, **kwargs)
+        font = Font(self)
 
         self._font = font
         self._max_width = self.style["max_width"]
@@ -613,11 +575,7 @@ class Text(Zone):
             self.lock_width(True)
 
         self.line_selections = Layer(self, _LineSelection, name="line_selections", touchable=False, sort_by_pos=True)
-        # self.lines = GridLayer(self, "lines", _Line)
         self.lines = Layer(self, _Line, name="lines", default_sortkey=lambda line: line.line_index)
-        # self.layers.add_layer("line_selections", CompsClass=_LineSelection, touchable=False)
-        # self.layers.add_layer("lines", CompsClass=_Line, default_sortkey=lambda line: line.line_index)
-        # self.line_selections.move_behind("lines")
         self.set_text(text)
 
     align_mode = property(lambda self: self._align_mode)

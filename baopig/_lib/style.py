@@ -516,7 +516,7 @@ class HasStyle:
     def inherit_style(self, theme, options=None, **kwargs):
         """
         In dict options, if a key is a style attribute, remove the item from options and apply to self.style
-        In dict kwargs, remove every items with value at None and apply other to self.style
+        In dict kwargs, remove every items with value at None and apply others to self.style
         """
         if hasattr(theme, "_parent"):
             self._parent = theme

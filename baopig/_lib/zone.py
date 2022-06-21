@@ -10,13 +10,9 @@ class Zone(Box):  # TODO : BoxModel
 
     STYLE = Box.STYLE.substyle()
     STYLE.modify(
-        width = 100,
-        height = 100,
+        width=100,
+        height=100,
     )
-
-    def __init__(self, parent, **options):
-
-        Box.__init__(self, parent, **options)
 
     def divide(self, side, width):
         # TODO : rework this function

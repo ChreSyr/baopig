@@ -21,7 +21,7 @@ class Entry(LineEdit, Validable):
         :param kwargs:
         """
 
-        LineEdit.__init__(self, parent, *args, **kwargs)
+        LineEdit.__init__(self, parent, **kwargs)
         Validable.__init__(self, catching_errors=False)
 
         self._entry_type = entry_type

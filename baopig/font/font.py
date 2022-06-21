@@ -187,14 +187,7 @@ from baopig.io import LOGGER
 
 class Font:
 
-    def __init__(self, text_owner,
-        file=None,
-        height=None,
-        color=None,
-        bold=None,
-        italic=None,
-        underline=None
-    ):
+    def __init__(self, owner=None, file=None, height=None, color=None, bold=None, italic=None, underline=None):
 
         self._file = None
         self._filepath = None
@@ -202,22 +195,19 @@ class Font:
         self._ascent = None
         self._font = None
         self._color = None
-        self._text_owner_wkref = (lambda: None) if text_owner is None else text_owner.get_weakref()
+        self._owner_wkref = (lambda: None) if owner is None else owner.get_weakref()
 
-        if file is None: file = text_owner.style["font_file"]
-        if height is None: height = text_owner.style["font_height"]
-        if color is None: color = text_owner.style["color"]
-        if bold is None: bold = text_owner.style["bold"]
-        if italic is None: italic = text_owner.style["italic"]
-        if underline is None: underline = text_owner.style["underline"]
+        if owner is not None:
+            if file is None: file = owner.style["font_file"]
+            if height is None: height = owner.style["font_height"]
+            if color is None: color = owner.style["font_color"]
+            if bold is None: bold = owner.style["font_bold"]
+            if italic is None: italic = owner.style["font_italic"]
+            if underline is None: underline = owner.style["font_underline"]
 
         assert file is None or isinstance(file, str)
 
         self.config(file=file, height=height, color=color, bold=bold, italic=italic, underline=underline, update_owner=False)
-
-        # for i in range(30):
-        #     f = pygame.font.Font(self.file, i)
-        #     print(i, f.size(" ")[1])
 
     def __str__(self):
 
@@ -228,7 +218,7 @@ class Font:
     file = property(lambda self: self._file)
     filepath = property(lambda self: self._filepath)
     height = property(lambda self: self._height)
-    text_owner = property(lambda self: self._text_owner_wkref())
+    owner = property(lambda self: self._owner_wkref())
 
     def config(self, file=None, height=None, color=None, bold=None, italic=None, underline=None, update_owner=True):
 
@@ -307,20 +297,8 @@ class Font:
         if underline is not None:
             self._font.set_underline(underline)
 
-        if update_owner and self.text_owner is not None:
-            self.text_owner.set_text(self.text_owner.text)
-
-    def copy(self, text_owner=None):
-
-        return Font(
-            text_owner=text_owner,
-            file=self.file,
-            height=self.height,
-            color=self.color,
-            bold=self._font.get_bold(),
-            italic=self._font.get_italic(),
-            underline=self._font.get_underline(),
-        )
+        if update_owner and self.owner is not None:
+            self.owner.set_text(self.owner.text)
 
     def get_width(self, text):
 
@@ -475,7 +453,8 @@ if __name__ == "__main__":
     for path in glob.iglob("/Library/Fonts/*.ttf"):
         print(path)
 
-    h = 100
-    font = Font('monospace', height=h)
+    h = 50
+    font = Font(file='monospace', height=h)
+    print(font.height, h, font._font.get_height())
     assert font.height == h == font._font.get_height()
     print(font)

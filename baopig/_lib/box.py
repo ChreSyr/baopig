@@ -45,11 +45,11 @@ class Box(Container):
     # NOTE : if width or height is defined in style, and a background_image is set,
     # the width and height values will be ignored
 
-    def __init__(self, parent, **options):
+    def __init__(self, parent, **kwargs):
 
-        self.inherit_style(parent, options)  # TODO : **options ?
+        self.inherit_style(parent, options=kwargs)
 
-        Container.__init__(self, parent, **options)
+        Container.__init__(self, parent, **kwargs)
 
         self._margin = self.style["margin"]
         self._border = self.style["border_width"]

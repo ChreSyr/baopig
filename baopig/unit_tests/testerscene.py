@@ -59,8 +59,8 @@ app.launch()"""
         self.try_it_yourself = Zone(self, size=(self.w/2-15, self.h-20), background_color="lightgray",
                                     pos=(10, self.menu_zone.bottom + 10), name="try_it_yourself")
         self.try_it_yourself.hide()
-        self.try_it_yourself.code = TextEdit(self.try_it_yourself, width=self.try_it_yourself.w,
-                                                 text=code, font=Font(file="monospace"))  # TODO : font_file
+        self.try_it_yourself.code = TextEdit(self.try_it_yourself, text=code, width=self.try_it_yourself.w,
+                                             font_file="monospace")
 
         self.try_it_yourself.console = Text(self.try_it_yourself, pos=(0, "50%"))
 
@@ -96,9 +96,8 @@ app.launch()"""
                 temp.kill()
 
         self.sections.append([title, tests])
-        ressources.font.config(file="Gill Sans MT")
         Text(self.sections_zone, "--- SECTION {} : {} ---".format(len(self.sections), title),
-             font_height=ressources.font.height+2, bold=True,
+             font_height=self.theme.get_style_for(Text)["font_height"] + 2, font_bold=True,
              row=len(self.sections_zone.children), max_width=self.sections_zone.w)
         for i, text in enumerate(tests):
             # TODO : CheckBoxes

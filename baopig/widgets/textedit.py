@@ -14,39 +14,21 @@ class TextEdit(Text, Selector):
 
     STYLE = Text.STYLE.substyle()
     STYLE.modify(
-        width = 100,
-        background_color = "theme-color-font_opposite",
+        width=100,
+        background_color="theme-color-font_opposite",
     )
 
-    def __init__(self,
-        parent,
-        text=None,
-        pos=None,
-        font=None,
-        font_color=None,
-        font_height=None,
-        width=None,
-        **kwargs
-    ):
+    def __init__(self, parent, text=None, **kwargs):
 
         if text is None: text = ""
         if "max_width" in kwargs:
             raise PermissionError("Use width instead of max_width")
 
-        self.inherit_style(parent, width=width)
+        self.inherit_style(parent, **kwargs)
 
-        Text.__init__(self,
-            parent=parent,
-            text=text,
-            pos=pos,
-            font=font,
-            color=font_color,
-            font_height=font_height,
-            max_width=self.style["width"],
-            selectable=True,
-            **kwargs
-        )
+        Text.__init__(self, parent=parent, text=text, max_width=self.style["width"], selectable=True, **kwargs)
         Selector.__init__(self)
+
         self.enable_selecting(True)
         self._cursor_ref = lambda: None
         self.cursors_layer = Layer(self, Cursor, name="cursors_layer", touchable=False)
