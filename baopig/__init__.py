@@ -16,7 +16,6 @@ from .pybao.issomething import *
 from .pybao.objectutilities import Object, PrefilledFunction, PackedFunctions, \
                                    TypedDict, TypedList, TypedDeque, TypedSet
 
-from .ressources import *
 from .io import *
 from .time import *
 from ._lib import *

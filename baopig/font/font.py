@@ -182,30 +182,19 @@ Here is a few fonts availible on my computer
 
 import glob
 import pygame
-from baopig.pybao.issomething import is_color
-from pygame.locals import *
-from baopig.ressources import *
 from baopig.io import LOGGER
-from baopig.ressources import ressources
 
 
 class Font:
 
-    def __init__(self,
+    def __init__(self, text_owner,
         file=None,
         height=None,
         color=None,
         bold=None,
         italic=None,
-        underline=None,
-        text_owner=None
+        underline=None
     ):
-
-        if file is None: file = ressources.font.file  # TODO : remove ressources
-        if height is None: height = ressources.font.height
-        if color is None: color = ressources.font.color
-
-        assert file is None or isinstance(file, str)
 
         self._file = None
         self._filepath = None
@@ -214,6 +203,15 @@ class Font:
         self._font = None
         self._color = None
         self._text_owner_wkref = (lambda: None) if text_owner is None else text_owner.get_weakref()
+
+        if file is None: file = text_owner.style["font_file"]
+        if height is None: height = text_owner.style["font_height"]
+        if color is None: color = text_owner.style["color"]
+        if bold is None: bold = text_owner.style["bold"]
+        if italic is None: italic = text_owner.style["italic"]
+        if underline is None: underline = text_owner.style["underline"]
+
+        assert file is None or isinstance(file, str)
 
         self.config(file=file, height=height, color=color, bold=bold, italic=italic, underline=underline, update_owner=False)
 
@@ -242,13 +240,16 @@ class Font:
             elif not file.endswith(".ttf"):
                 if file.count("."):
                     LOGGER.warning("Can only look for tff fonts, not " + file)
-                    self._file = file = ressources.font.file
+                    self._file = file = None
                 else:
                     file += ".ttf"
 
             if file not in filepaths:
                 # print("get_filepath(", file, end=") -> ", sep="")
-                filepaths[file] = get_filepath(file)
+                filepath = get_filepath(file)
+                if filepath is None:
+                    LOGGER.warning(f"Font not found : {file} (the default font will be used instead)")
+                filepaths[file] = filepath
                 # print(filepaths[file])
             self._filepath = filepaths[file]
 
@@ -312,13 +313,13 @@ class Font:
     def copy(self, text_owner=None):
 
         return Font(
+            text_owner=text_owner,
             file=self.file,
             height=self.height,
             color=self.color,
             bold=self._font.get_bold(),
             italic=self._font.get_italic(),
             underline=self._font.get_underline(),
-            text_owner=text_owner
         )
 
     def get_width(self, text):
@@ -449,7 +450,6 @@ def get_filepath(file):
         if path.endswith(file): return path
     for path in glob.iglob("/Library/Fonts/*.ttf"):
         if path.endswith(file): return path
-    LOGGER.warning("Font not found : {} (the font {} will be used instaed)".format(file, ressources.font.file))
 
 
 filepaths = {}

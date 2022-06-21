@@ -5,7 +5,6 @@ import pygame
 from baopig.pybao.issomething import is_point
 from baopig.pybao.objectutilities import PackedFunctions, PrefilledFunction, TypedDict, WeakTypedSet, Object
 from baopig._debug import debug_with_assert
-from baopig.ressources import *
 from baopig.communicative import ApplicationExit
 from baopig.io import LOGGER, mouse, keyboard
 

@@ -1,11 +1,6 @@
 
-import pygame
 from math import inf as math_inf
-from baopig.pybao.issomething import *
-from baopig.pybao.objectutilities import Object, TypedList
-from baopig.ressources import *
 from baopig.font.font import Font
-from baopig.io import mouse
 from baopig._lib import *
 
 
@@ -599,15 +594,7 @@ class Text(Zone):
                 underline=underline,
                 padding=padding,
             )
-            font = Font(
-                file=self.style["font_file"],
-                height=self.style["font_height"],
-                color=self.style["color"],
-                bold=self.style["bold"],
-                italic=self.style["italic"],
-                underline=self.style["underline"],
-                text_owner=self,
-            )
+            font = Font(self)
         else:
             assert isinstance(font, Font), str(font)
             font = font.copy(text_owner=self)
