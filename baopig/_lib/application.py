@@ -96,26 +96,18 @@ class Application(HasStyle, Closable):
             elif event.type in (pygame.KEYDOWN, pygame.KEYUP):
                 keyboard.receive(event)
             elif event.type == pygame.ACTIVEEVENT:
+                """
+                gain  : 1 -> mouse in window
+                        2 -> mouse outside window
+                        
+                state : 0 -> no state change
+                        1 -> focus state just changed
+                        2 -> iconify state just changed
+                """
                 if not hasattr(event, "gain"):  # Empty ACTIVEEVENT
                     continue
-
-                # TODO: UPDATE
-                """
-                OLD, NOT TRUE ANYMORE
-                state : 1 -> focused
-                        2 -> just clicked on application icon while iconified, focused, gain = 1
-                        3 -> other application is focsed
-                        4 -> just iconified tha application
-                """
-                if event.state == 2:
+                if event.state == 2 and event.gain == 1:
                     self.refresh()
-                else:
-                    if event.gain:
-                        mouse._hover_display()
-                    else:
-                        mouse._unhover_display()
-            # elif event.type == pygame.VIDEOEXPOSE:
-            #     LOGGER.warning("VIDEOEXPOSE", event)
             elif event.type == pygame.VIDEORESIZE:
                 if event.size != self.focused_scene.size:
                     self.focused_scene.resize(*event.size)
@@ -343,16 +335,6 @@ class Application(HasStyle, Closable):
         self._painter = DrawingThread(self)
         self.painter.set_fps(self._fps)
 
-        events = pygame.event.get()
-        mouse._pos = pygame.mouse.get_pos()
-        mouse_is_hovering_application = True
-        for event in events:
-        # On ne prends pas compte des evenements qui ont eu lieu pendant le chargement de l'application
-            if event.type == pygame.ACTIVEEVENT:
-                continue  # TODO : what has changed ? AttributeError: 'Event' object has no attribute 'gain'
-                if event.gain == 0:
-                    mouse_is_hovering_application = False
-
         if len(self.scenes) == 0:
             from baopig.prefabs.presentationscene import PresentationScene
             PresentationScene(self)
@@ -364,11 +346,10 @@ class Application(HasStyle, Closable):
         assert self.focused_scene is scene
         self.painter.start()
 
-        if mouse_is_hovering_application:
-            mouse._hover_display()
-        # TODO : solve proper hovering display (is it a pygame error ?)
-
         pygame.scrap.init()
+
+        events = pygame.event.get()  # ignore events that took place during the app's load
+        mouse._pos = pygame.mouse.get_pos()
 
         self._run()
 
@@ -387,9 +368,10 @@ class Application(HasStyle, Closable):
 
     def refresh(self):
         """
-        Send an paintrequest to every containers in focused_scene
-        if only_containers is False, send an paintrequest to every focused_scene's components
+        Send a paintrequest to every container in focused_scene
+        if only_containers is False, send a paintrequest to every focused_scene's components
         """
+        # TODO : refresh & screenshot buttons by default
         self.focused_scene.paint(recursive=True, only_containers=False)
 
     def set_caption(self, title, icontitle=""):

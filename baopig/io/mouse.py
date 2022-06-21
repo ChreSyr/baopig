@@ -130,7 +130,7 @@ class _Mouse(Communicative):
 
         self._application = None
         self._display = None
-        self._is_hovering_display = False
+        self._is_hovering_display = True
         self.last_event = None
 
     def __repr__(self):
