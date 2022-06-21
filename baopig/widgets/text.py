@@ -487,7 +487,6 @@ class _LineSelection(Rectangle):
         index_start, index_end = sorted((index_start, index_end))
         self.set_start(index_start)
         self.set_end(index_end, selecting_line_end)
-        # TODO : remove set_start and set_end
 
     def get_data(self):
         end = self.line.end if self._is_selecting_line_end else ''

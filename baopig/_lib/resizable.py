@@ -39,9 +39,6 @@ class ResizableWidget(Widget):
                 if isinstance(coord, str):
                     size[i] = self.parent.size[i] * int(coord[:-1]) / 100
 
-                    # self.origin.reference.signal.RESIZE.connect(hardcoder)
-                    # TODO WARNING : if the origin's reference gets changed, this is not updated
-
         return size
 
     def inherit_style(self, theme, options=None, **kwargs):
@@ -63,20 +60,20 @@ class ResizableWidget(Widget):
 
     def resize_height(self, h):
 
-        if h < 0: h = 0
+        if h < 0: raise PermissionError
         if h == self.h: return
-        self.style.modify(height=h)
+        self.style.modify(height=h)  # important for self.get_asked_size()
         self.resize(self.w, h)
 
     def resize_width(self, w):
 
-        if w < 0: w = 0
+        if w < 0: raise PermissionError
         if w == self.w: return
-        self.style.modify(width=w)
+        self.style.modify(width=w)  # important for self.get_asked_size()
         self.resize(w, self.h)
 
-    h =                 property(lambda self: self._rect.h, resize_height)
-    height =            property(lambda self: self._rect.height, resize_height)
-    size =              property(lambda self: self._rect.size, resize)
-    w =                 property(lambda self: self._rect.w, resize_width)
-    width =             property(lambda self: self._rect.width, resize_width)
+    h =      property(lambda self: self._rect.h)
+    height = property(lambda self: self._rect.height)
+    size =   property(lambda self: self._rect.size)
+    w =      property(lambda self: self._rect.w)
+    width =  property(lambda self: self._rect.width)

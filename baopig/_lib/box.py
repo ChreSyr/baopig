@@ -61,11 +61,6 @@ class Box(Container):
         background_image = self.style["background_image"]
         if background_image is not None:
             self.set_background_image(background_image)
-            return
-            if self.style["width"] is None:
-                self.style.modify(width=background_image.get_width())
-            if self.style["height"] is None:
-                self.style.modify(height=background_image.get_height())
 
     background = property(lambda self: self._background_ref())
     border = property(lambda self: self._border)

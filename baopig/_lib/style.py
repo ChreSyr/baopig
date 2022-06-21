@@ -498,7 +498,7 @@ class HasStyle:
             theme = all_themes[theme]
 
         self._theme = theme
-        self._style = InstanciatedStyle(self)  # TODO : do not touch an InstanciatedStyle ?
+        self._style = InstanciatedStyle(self)
 
     style = property(lambda self: self._style)
     theme = property(lambda self: self._theme)
