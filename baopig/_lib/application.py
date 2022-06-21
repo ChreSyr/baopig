@@ -47,7 +47,7 @@ class Application(HasStyle, Closable):
         self._is_fullscreen_TO_REMOVE = False
         self._scenes = WeakTypedList(Scene)
         self._focused_scene = None
-        self._caption = "baopig application"
+        self._caption = self.name
         self._painter = None  # To be set in self.launch()
         self._time_manager = None  # To be set in self.launch()
         self._runables_manager = _runables_manager
@@ -61,12 +61,10 @@ class Application(HasStyle, Closable):
 
     default_mode = property(lambda self: self._default_mode)
     default_size = property(lambda self: self._default_size)
-    display = property(lambda self: self._focused_scene._surface)
     focused_scene = property(lambda self: self._focused_scene)
     fps = property(lambda self: self._fps)
     is_fullscreen = property(lambda self: bool(self.default_mode & pygame.FULLSCREEN))
     is_launched = property(lambda self: self._is_launched)
-    is_running = property(lambda self: self._is_running)
     max_resolution = property(lambda self: self._max_resolution)
     name = property(lambda self: self._name)
     painter = property(lambda self: self._painter)
@@ -112,17 +110,17 @@ class Application(HasStyle, Closable):
                 if event.size != self.focused_scene.size:
                     self.focused_scene.resize(*event.size)
                 else:
-                    # We need and update
+                    # We need an update
                     self.focused_scene.paint()
 
             # DEFAULT SHORTKEYS
             if event.type == pygame.KEYDOWN:
                 if keyboard.mod.ctrl:
                     # Cmd + e -> toggle debugging
-                    if event.key == pygame.K_e:  # pour debugger dans l'application
+                    if event.key == pygame.K_e:
                         if keyboard.mod.maj:
                             c = self.focused_scene.children
-                            raise AssertionError("Made for debugging")
+                            raise Exception("Made for debugging")
                         self.toggle_debugging()
                     # Cmd + f -> toggle debug fps
                     elif event.key is keyboard.f:
@@ -134,34 +132,28 @@ class Application(HasStyle, Closable):
                         import gc
                         gc.collect()
                         LOGGER.info("Garbage collected")
-                    # Cmd + n -> swap to the next scene
-                    elif event.key == pygame.K_n:  # TODO : rewrite (-> menu bar ? one day ?)
-                        # NOTE : resizing the application will release all pressed keys
-                        index = self.scenes.index(self.focused_scene)
-                        index = (index + 1) % len(self.scenes)
-                        self.open(self.scenes[index])
                     # Cmd + u -> application freeze
                     elif event.key == keyboard.u:
                         def u_is_pressed():
                             for event in pygame.event.get():
-                                if event.type is keyboard.KEYDOWN:
-                                    if event.key is keyboard.F6:
+                                if event.type == keyboard.KEYDOWN:
+                                    if event.key == keyboard.F6:
                                         self.exit("Pressed F6")
-                                    elif event.key is keyboard.u:
+                                    elif event.key == keyboard.u:
                                         return True
-                                    elif event.key is keyboard.ESCAPE:  # quit fullscreen or exit
+                                    elif event.key == keyboard.ESCAPE:  # quit fullscreen or exit
                                         if self.is_fullscreen:
                                             self.exit_fullscreen()
                                         else:
                                             self.exit("pressed ESCAPE")
-                                    elif event.key is keyboard.F5:  # fullscreen
+                                    elif event.key == keyboard.F5:  # fullscreen
                                         self.focused_scene.toggle_fullscreen()
-                                    elif event.key is keyboard.F4:  # minimize
+                                    elif event.key == keyboard.F4:  # minimize
                                         self.iconify()
-                                    elif event.key is keyboard.F3:  # refresh
+                                    elif event.key == keyboard.F3:  # refresh
                                         self.refresh()
                                         LOGGER.info("Display refreshed")
-                                    elif event.key is keyboard.F2:  # screenshot TODO : A faire avec un clic droit
+                                    elif event.key == keyboard.F2:  # screenshot TODO : A faire avec un clic droit
                                         self.painter.screenshot()
                                         LOGGER.info("Screenchot !")
                             return False
@@ -171,7 +163,7 @@ class Application(HasStyle, Closable):
                         if self.painter.is_recording:
                             self.painter.stop_recording()
                         else:
-                            self.painter.start_recording(only_at_change=self.mod.maj)
+                            self.painter.start_recording(only_at_change=keyboard.mod.maj)
 
                 elif keyboard.mod.alt:
                     pass  # Nothing implemented
@@ -212,7 +204,7 @@ class Application(HasStyle, Closable):
 
             self._is_running = True
 
-            while self.is_running:
+            while self._is_running:
 
                 # User events
                 self._manage_events()

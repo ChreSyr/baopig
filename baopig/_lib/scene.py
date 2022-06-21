@@ -174,7 +174,7 @@ class Scene(Zone, Selector, Openable, Closable):
 
         if self.painter.is_recording and self.painter.is_recording.only_at_change:
             pygame.image.save(self.surface,
-                              self.painter.record_directory + "record_{:0>3}.png".format(
+                              self.painter.out_directory + "record_{:0>3}.png".format(
                                   self.painter.record_index))
             self.painter.record_index += 1
 
@@ -225,7 +225,7 @@ class Scene(Zone, Selector, Openable, Closable):
         else:
             self.debug_zone.toggle_debugging()
 
-    def toggle_fullscreen(self):
+    def toggle_fullscreen(self):  # TODO : fullscreen
 
         if self.mode == pygame.FULLSCREEN:
             self.set_mode(self._mode_before_fullscreen)

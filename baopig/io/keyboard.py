@@ -10,7 +10,7 @@ class KeyEvent(Object):
 
     def __init__(self, event):
 
-        Object.__init__(self, type=event.type, **event.__dict__)
+        Object.__init__(self, **event.__dict__)
         keyboard.last_event = self
 
     def __str__(self):

@@ -132,12 +132,8 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
         try:
 
             # Threads communication
-            # for executable_request in self.executable_requests:
-            #     executable_request()
-            # self.executable_requests.clear()
 
             # Drawings
-            # TODO : render the display only if at least one run in Application is done
             self._paint()
 
             # launch time
@@ -159,11 +155,10 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
             if infinite_fps is False and self.required_fps is not None:
                 self.clock.tick(self.required_fps)  # keep the game running slower than the given FPS
             if self.app._debug_fps:
-                pygame.display.set_caption(f"fps : {int(self.clock.get_fps()*100)/100}")
+                print(f"fps : {self.fps_history[-1]}")
             self._can_draw.clear()
 
         except pygame.error as e:
-            # print(e.__str__())
             if e.__str__() == "video system not initialized":
                 self.stop()
                 LOGGER.error("The window have been closed")
