@@ -11,7 +11,7 @@ class ApplicationExit(Exception):
 
 class Signal:
 
-    def __init__(self, emitter, id, catching_errors):
+    def __init__(self, emitter, id):
 
         assert isinstance(emitter, Communicative), emitter
         assert isinstance(id, str) and (id == id.upper()), id
@@ -19,20 +19,18 @@ class Signal:
         self._emitter = emitter
         self._id = id
         self._connections = []
-        self._catching_errors = catching_errors
-        self.emit = self.emit_with_catch if catching_errors else self.emit_no_catch
 
     def __str__(self):
 
         return f"Signal(id={self._id}, emitter={self._emitter})"
 
-    def connect(self, command, owner=None, **options):  # TODO : rename as connect
+    def connect(self, command, owner=None, **options):
         """
         Connect the command to the signal
-        When self will emits 'signal', the owner's method 'command' will be executed
+        When self will emit 'signal', the owner's method 'command' will be executed
         if option 'need_arguments' is False, the emitted argumaents will be ignored
         :param command: a method of owner
-        :param owner: an Communicative object
+        :param owner: a Communicative object
         NOTE : The "owner" parameter is very important when it comes to deletion
                When the owner is deleted, this connection is automatically killed
         """
@@ -40,8 +38,7 @@ class Signal:
             raise TypeError("'{}' object is not callable".format(command))
         for con in self._connections:
             if con.slot is command:
-                return
-                raise PermissionError(f"{command} already connected to {self}")
+                return  # command already connected to self
         Connection(owner, self, command, **options)
 
     def disconnect(self, listener):
@@ -65,9 +62,9 @@ class Signal:
             except ApplicationExit as e:
                 raise e
             except Exception as e:
-                LOGGER.warning("Error : {} -- while exectuting {}".format(e, con))
+                LOGGER.warning(f"Error : {e} -- while exectuting {con}")
 
-    def emit_no_catch(self, *args, catching_errors=None):
+    def emit(self, *args):
         """
         Emitting a signal will execute all its connected commands
         If an error occurs while executing a command, it will be raised
@@ -80,11 +77,6 @@ class Signal:
         for con in tuple(self._connections):
             if con.slot is command:
                 con.kill()
-
-    def set_catching_errors(self, catching_errors):
-
-        self._catching_errors = bool(catching_errors)
-        self.emit = self.emit_with_catch if catching_errors else self.emit_no_catch
 
 
 class Signals(Object): pass
@@ -137,17 +129,16 @@ class Communicative:
 
         signal.connect(method, owner=self, **options)
 
-    def create_signal(self, signal_id, catching_errors=False):  # TODO : change catching_errors for testing
-        # TODO : rename signal_id as name
+    def create_signal(self, signal_id):
 
         if not isinstance(signal_id, str) or not (signal_id == signal_id.upper()):
             raise PermissionError("A signal id must be an uppercase str")
         if hasattr(self.signal, signal_id):
             raise PermissionError("A signal already has this id : {}".format(signal_id))
 
-        setattr(self.signal, signal_id, Signal(emitter=self, id=signal_id, catching_errors=catching_errors))
+        setattr(self.signal, signal_id, Signal(emitter=self, id=signal_id))
 
-    def disconnect(self, *, signal=None, emitter=None, command=None):
+    def disconnect(self, *, signal=None, emitter=None):
         """
         Remove connections from any signal to commands owned by self
         :param signal: if set, only remove connections from this signal to commands owned by self
@@ -158,9 +149,6 @@ class Communicative:
         elif emitter is not None:
             for signal in emitter.signal.__dict__.values():
                 signal.disconnect(self)
-        elif command is not None:
-            for signal in self.signal:
-                signal.rem_command(command)
         else:
             for con in tuple(self._connections):
                 con.kill()

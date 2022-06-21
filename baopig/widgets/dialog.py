@@ -152,7 +152,7 @@ class Dialog(Scene):
 
         app = self.application
         self.hovered_scene = app.focused_scene
-        background = app.display.copy()
+        background = app.focused_scene.surface.copy()
         sail = pygame.Surface(app.size, pygame.SRCALPHA)
         sail.fill((0, 0, 0, 100))
         background.blit(sail, (0, 0))
