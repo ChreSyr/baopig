@@ -207,7 +207,7 @@ class Highlighter(Widget):
         self._width = width
 
         self.set_nontouchable()
-        self.resizefromtarget_connection = self.target.signal.RESIZE.connect(self.config, owner=self)
+        self.target.signal.RESIZE.connect(self.config, owner=self)
 
     color = property(lambda self: self._color)
     target = property(lambda self: self._target_ref())
@@ -221,9 +221,9 @@ class Highlighter(Widget):
                 target = None
 
             if target is not None:
-                self.resizefromtarget_connection.kill()
+                self.target.signal.RESIZE.disconnect(self.config)
                 self._target_ref = target.get_weakref()
-                self.resizefromtarget_connection = self.target.signal.RESIZE.connect(self.config, owner=self)
+                self.target.signal.RESIZE.connect(self.config, owner=self)
                 w = self.width if width is None else width
                 self.origin.config(pos=(-w+1, -w+1), reference_comp=self.target, from_hitbox=True)
 

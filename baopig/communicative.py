@@ -38,7 +38,30 @@ class Signal:
         for con in self._connections:
             if con.slot is command:
                 raise PermissionError(f"This command is already connected to the signal {self._id}")
-        return Connection(owner, self, command)
+
+        conn = Connection(owner, self, command)
+        self._connections.append(conn)
+        if owner is not None:
+            owner._connections.add(conn)
+
+    def disconnect(self, command):
+
+        for con in tuple(self._connections):
+            if con.slot == command:
+                con.kill()
+                return
+        raise ValueError(f"This command is not connected to the signal {self._id}")
+
+    def emit(self, *args):
+        """
+        Emitting a signal will execute all its connected commands
+        If an error occurs while executing a command, it will be raised
+        """
+        for con in self._connections:
+            if con.need_arguments:
+                con.slot(*args)
+            else:
+                con.slot()
 
     def emit_with_catch(self, *args):
         """
@@ -58,25 +81,6 @@ class Signal:
             except Exception as e:
                 LOGGER.warning(f"Error : {e} -- while exectuting {con}")
 
-    def emit(self, *args):
-        """
-        Emitting a signal will execute all its connected commands
-        If an error occurs while executing a command, it will be raised
-        """
-        for con in self._connections:
-            if con.need_arguments:
-                con.slot(*args)
-            else:
-                con.slot()
-
-    def rem_command(self, command):
-
-        for con in tuple(self._connections):
-            if con.slot is command:
-                con.kill()
-                return
-        raise ValueError(f"This command is not connected to the signal {self._id}")
-
 
 class Connection:
 
@@ -86,10 +90,6 @@ class Connection:
         self.signal = signal
         self.slot = slot
         self.need_arguments = len(inspect.signature(slot).parameters) > 0
-
-        signal._connections.append(self)
-        if owner is not None:
-            owner._connections.add(self)
 
     def kill(self):
 

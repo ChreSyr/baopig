@@ -339,7 +339,7 @@ class Application(HasStyle):
         assert self.focused_scene is scene
         self.painter.start()
 
-        pygame.scrap.init()
+        pygame.scrap.init()  # clipboard uses
 
         events = pygame.event.get()  # ignore events that took place during the app's load
         mouse._pos = pygame.mouse.get_pos()

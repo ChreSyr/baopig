@@ -170,10 +170,12 @@ class _Origin:
         if reference_comp is not None:
             assert isinstance(reference_comp, Widget)
             for signal in (self.reference.signal.MOTION, self.reference.signal.RESIZE):
-                try: signal.rem_command(self._weak_update_owner_pos)
+                try:
+                    signal.disconnect(self._weak_update_owner_pos)
                 except ValueError: pass
             if self._has_adaptable_size:
-                try: self.reference.signal.RESIZE.rem_command(self.owner._update_size)
+                try:
+                    self.reference.signal.RESIZE.disconnect(self.owner._update_size)
                 except ValueError: pass
             self._reference_ref = reference_comp.get_weakref()
             self.reference.signal.RESIZE.connect(self._weak_update_owner_pos, owner=self.owner)
