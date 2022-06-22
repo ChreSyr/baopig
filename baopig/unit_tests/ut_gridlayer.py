@@ -19,41 +19,43 @@ from baopig import *
 
 # TODO : rethink : can a component located in a grid move itself (via Dragable for example)
 
-class UT_GridLayer_Scene(Zone):
+class UT_GridLayer_Zone(Zone):
 
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
 
-        self.set_mode(RESIZABLE)
-
-        Layer(self, "zones_layer", adaptable=False)  # TODO : test adaptable
+        Layer(self, name="zones_layer", adaptable=False)  # TODO : test adaptable
         z1 = Zone(self, size=(self.w-20, 130), background_color=(150, 150, 150), pos=(10, 10))
         z2 = Zone(self, size=(self.w-20, 130), background_color=(150, 150, 150),
-                  origin=Origin(pos=(0, 10), reference_comp=z1, reference_location="bottomleft"))
+                  pos=(0, 10), pos_ref=z1, pos_ref_location="bottomleft")
         z3 = Zone(self, size=(self.w-20, 400), background_color=(150, 150, 150),
-                  origin=Origin(pos=(0, 10), reference_comp=z2, reference_location="bottomleft"))
+                  pos=(0, 10), pos_ref=z2, pos_ref_location="bottomleft")
+        z3.set_style_for(Button, padding=2)
 
-        z1.grid = GridLayer(z1, "grid_layer", row_height=40, col_width=100)
+        z1.grid = GridLayer(z1, name="grid_layer", row_height=40, col_width=100)
         assert z1.layers_manager.default_layer == z1.grid
         for row in range(2):
             for col in range(5):
                 text = "row:{}\ncol:{}".format(row, col)
                 Text(z1, text, row=row, col=col, name=text)
 
-        z2.grid = GridLayer(z2, "grid_layer")
+        z2.grid = GridLayer(z2, name="grid_layer")  # TODO : solve : some text disappear when selected, warn_change problem
         for row in range(3):
             for col in range(5):
                 text = "row:{}\ncol:{}".format(row, col)
                 Text(z2, text, row=row, col=col, name=text)
-        r = Rectangle(z2, (130, 49, 128), size=(30, 30), col=5, row=0)
-        Dragable.set_dragable(r)
+
+        class DragableRectangle(Rectangle, Dragable):
+            def __init__(self, **kwargs):
+                Rectangle.__init__(self, **kwargs)
+                Dragable.__init__(self)
+        r = DragableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30))
         Text(z2, "HI", col=6, row=0)
         Text(z2, "HI", col=7, row=1)
-        r = Rectangle(z2, (130, 49, 128), size=(30, 30), col=8, row=2)
-        Dragable.set_dragable(r)
+        r = DragableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30), col=8, row=2)
         Button(z2, "Update sizes", command=z2.grid._update_size, col=0, row=3)
 
-        grid = GridLayer(z3, "grid_layer", nbrows=3, nbcols=3)
+        grid = GridLayer(z3, name="grid_layer", nbrows=10, nbcols=10)
         class RemovableRect(Rectangle, Linkable):
             def __init__(self, *args, **kwargs):
                 Rectangle.__init__(self, *args, **kwargs)
@@ -61,11 +63,11 @@ class UT_GridLayer_Scene(Zone):
                 def update(*args):
                     if self.collidemouse() and isinstance(mouse.linked_comp, RemovableRect):
                         self.kill()
-                self.connect("kill", self.signal.LINK)
-                mouse.signal.DRAG.add_command(update)
-                self.parent.signal.RESIZE.add_command(update)
+                self.signal.LINK.connect(self.kill, owner=self)
+                mouse.signal.DRAG.connect(update, owner=None)
+                self.parent.signal.RESIZE.connect(update, owner=self)
         import random
-        color = lambda: [int(random.random() * 255)] * 2 + [128]
+        random_color = lambda: [int(random.random() * 255)] * 2 + [128]
         def toggle_col_size(col_index):
             col = grid.get_col(col_index)
             if col.is_adaptable:  col.set_width(40)
@@ -83,16 +85,14 @@ class UT_GridLayer_Scene(Zone):
                 for col in range(grid.nbcols):
                     if grid._data[row][col] is None:
                         if row is grid.nbrows-1:
-                            Button(z3, "TOG", row=row, col=col,
-                                   command=PrefilledFunction(toggle_col_size, col),
-                                   catch_errors=False, w=30, h=30)
+                            Button(z3, "TOG", row=row, col=col, size=(30, 30), catching_errors=True,
+                                   command=PrefilledFunction(toggle_col_size, col))
                         elif col is grid.nbcols-1:
-                            Button(z3, "TO\nG", row=row, col=col,
-                                   command=PrefilledFunction(toggle_row_size, row),
-                                   catch_errors=False, w=30, h=30)
+                            Button(z3, "TOG", row=row, col=col, size=(30, 30), catching_errors=True,
+                                   command=PrefilledFunction(toggle_row_size, row))
                         else:
-                            RemovableRect(z3, color(), (30, 30), col=col, row=row)
-        Button(z3, "ADD", row=0, col=0, command=add_rect, catch_errors=True, w=30, h=30)
+                            RemovableRect(z3, color=random_color(), size=(30, 30), col=col, row=row)
+        Button(z3, "ADD", row=0, col=0, command=add_rect, width=30, height=30)
         def fix():
             if grid.cols_are_adaptable:
                 grid.set_row_height(30)
@@ -100,23 +100,20 @@ class UT_GridLayer_Scene(Zone):
             else:
                 grid.set_row_height(None)
                 grid.set_col_width(None)
-        Button(z3, "FIX", row=0, col=1, command=fix, catch_errors=False)
+        Button(z3, "FIX", row=0, col=1, command=fix)
 
         # self.handle_event[mouse.LEFTBUTTON_DOWN].add(print)
         # self.handle_event[mouse.DRAG].add(print)
         # self.handle_event[mouse.RELEASEDRAG].add(print)
 
 
-ut_scenes = [
-    UT_GridLayer_Scene,
+ut_zones = [
+    UT_GridLayer_Zone,
 ]
 
-
 if __name__ == "__main__":
-    from baopig.unit_tests.TesterScene import TesterScene
+    from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    for scene in ut_scenes:
+    for scene in ut_zones:
         TesterScene(app, scene)
     app.launch()
-
-
