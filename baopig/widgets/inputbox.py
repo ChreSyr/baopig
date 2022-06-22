@@ -95,7 +95,7 @@ class InputBox(DynamicLabel, Selector):
 
         def handle_click():
             # self.selection.start(self.text_component.find_mouse_index())
-            # if self.cursor.is_sleeping:
+            # if self.cursor.is_asleep:
             #     self.cursor.wake()
             # self.cursor.set_index(self.selection.index_end)
             print("CLICK")
@@ -103,7 +103,7 @@ class InputBox(DynamicLabel, Selector):
         # self.handle_drag.add(lambda: self.cursor.set_index(self.selection.index_end))
 
         def handle_focus():
-            if self.cursor.is_sleeping:
+            if self.cursor.is_asleep:
                 index = self.text_component.find_mouse_index() if mouse.button[1] else len(self.text)
                 self.cursor.set_index(index)
             # else, the cursor have been woke up by a click

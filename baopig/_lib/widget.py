@@ -829,9 +829,9 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         self._dirty = 0
 
         """
-        A sleeping component won't be visible and won't update itself until it awakes
+        An asleep component won't be visible and won't update itself until it awakes
         The memory is an object who remember all the changements the component should
-        have done while it is sleeping
+        have done while it is asleep
         When it awakes, it will operate all the changements
         
         Exemple : you can do
@@ -844,7 +844,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
             and the comp will reappear positionned at (10, 10)
         This is very usefull for components who are often hidden and shown
         """
-        self._is_sleeping = False
+        self._is_asleep = False
         self._memory = Object(  # TODO : requests_at_awake
             need_appear=None,
             need_start_animation=None,
@@ -979,15 +979,15 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         return f"{self.__class__.__name__}(name={self.name})"
 
     # GETTERS ON PROTECTED FIELDS
-    app = application = property(lambda self: self._app)
+    app = application = property(lambda self: self._app)  # TODO : remove application ?
     col =               property(lambda self: self._col)
     dirty =             property(lambda self: self._dirty)
     has_locked =        property(lambda self: self._has_locked)
     is_alive =          property(lambda self: self._weakref._comp is not None)
-    is_awake =          property(lambda self: not self._is_sleeping)
+    is_asleep =         property(lambda self: self._is_asleep)
+    is_awake =          property(lambda self: not self._is_asleep)
     is_dead =           property(lambda self: self._weakref._comp is None)
     is_hidden =         property(lambda self: not self._is_visible)
-    is_sleeping =       property(lambda self: self._is_sleeping)
     is_visible =        property(lambda self: self._is_visible)
     layer =             property(lambda self: self._layer)
     name =              property(lambda self: self._name)
@@ -1037,7 +1037,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         if not self.is_visible:
             return
 
-        if self.is_sleeping:
+        if self.is_asleep:
             self._memory.need_appear = False
             return
 
@@ -1060,7 +1060,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
                     if self.is_awake:
                         assert self in self.parent.awake_children
                     else:
-                        assert self in self.parent.sleeping_children
+                        assert self in self.parent.asleep_children
                 self.parent._remove_child(self)
                 self.disconnect()
                 self.signal.KILL.emit(self._weakref)
@@ -1153,7 +1153,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         if self.is_visible:
             return
 
-        if self.is_sleeping:
+        if self.is_asleep:
             self._memory.need_appear = True
             return
 
@@ -1170,13 +1170,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
 
         if isinstance(layer, str): layer = self.parent.layers_manager.get_layer(layer)
         self.parent.layers_manager.swap_layer(self, layer)
-
-    def toggle_sleeping(self):
-
-        if self.is_sleeping:
-            self.wake()
-        else:
-            self.asleep()
 
     def toggle_visibility(self):
 

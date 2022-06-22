@@ -517,7 +517,7 @@ class _LineSelection(Rectangle):
         self.resize_width(0)
         self.left = self.line.find_pixel(self._index_start)
 
-        if self.is_sleeping:
+        if self.is_asleep:
             self.wake()
         self.show()
 

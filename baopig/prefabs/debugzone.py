@@ -149,7 +149,7 @@ class DebugZone(Zone, Handler_SceneClose):
         self.set_nontouchable()
         self.set_always_dirty()
 
-    is_debugging = property(lambda self: not self.is_sleeping)
+    is_debugging = property(lambda self: self.is_awake)
 
     def asleep(self):
 

@@ -118,7 +118,7 @@ class Runable(Communicative):
     """
 
     # TODO : application.runables instead of parent.children.runables, don't depend on Widget
-    # -> if widget, sleeping will not run
+    # -> if widget, asleep will not run
     def __init__(self, start=False):
 
         _runables_manager.add(self)

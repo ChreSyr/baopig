@@ -50,11 +50,11 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
             def __init__(children):
                 set.__init__(children)
 
+                children.asleep = set()
                 children.awake = set()
                 children.containers = set()
                 children.handlers_sceneclose = set()
                 children.handlers_sceneopen = set()
-                children.sleeping = set()
                 children._lists = {
                     Handler_SceneClose: children.handlers_sceneclose,
                     Handler_SceneOpen: children.handlers_sceneopen,
@@ -68,10 +68,10 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                 """
 
                 assert child.parent == self
-                if child.is_sleeping:
-                    if child in children.sleeping:
-                        raise PermissionError(f"{child} already sleeping in {children.sleeping}")
-                    children.sleeping.add(child)
+                if child.is_asleep:
+                    if child in children.asleep:
+                        raise PermissionError(f"{child} already asleep in {children.asleep}")
+                    children.asleep.add(child)
                     return
 
                 if child in children.awake:
@@ -88,8 +88,8 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
 
             def _remove(children, child):
 
-                if child.is_sleeping:
-                    children.sleeping.remove(child)
+                if child.is_asleep:
+                    children.asleep.remove(child)
                 else:
                     children.awake.remove(child)
                     self.layers_manager.remove(child)
@@ -130,11 +130,11 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         if self.is_hidden:
             self.set_dirty(1)
 
-    all_children = property(lambda self: self._children.awake.union(self._children.sleeping))
+    all_children = property(lambda self: self._children.awake.union(self._children.asleep))
+    asleep_children = property(lambda self: self._children.asleep)
     awake_children = property(lambda self: self._children.awake)
     background_color = property(lambda self: self._background_color)
     default_layer = property(lambda self: self.layers_manager.default_layer)
-    sleeping_children = property(lambda self: self._children.sleeping)
 
     def _add_child(self, child):
         self._children._add(child)
@@ -195,7 +195,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
 
         with paint_lock:
             super()._move(dx, dy)
-            for tup in tuple(self.awake_children), tuple(self.sleeping_children):
+            for tup in tuple(self.awake_children), tuple(self.asleep_children):
                 for child in tup:
                     child._update_from_parent_movement()  # TODO : signal.MOTION ?
 
@@ -321,16 +321,16 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
 
     def asleep_child(self, child):
 
-        if child.is_sleeping:
+        if child.is_asleep:
             return
 
         assert child in self._children.awake
 
         child._memory.need_appear = child.is_visible
-        # self.children.sleeping.add(child)
+        # self.children.asleep.add(child)
         self._children._remove(child)
         child.hide()
-        child._is_sleeping = True
+        child._is_asleep = True
         self._children._add(child)
         child.signal.ASLEEP.emit()
 
@@ -436,10 +436,10 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         if child.is_awake:
             return
 
-        assert child in self._children.sleeping
+        assert child in self._children.asleep
 
         self._children._remove(child)  # TODO : .remove & .add since ._children is no longer accessible
-        child._is_sleeping = False
+        child._is_asleep = False
         self._children._add(child)
 
         if child._memory.need_start_animation:

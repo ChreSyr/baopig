@@ -42,7 +42,7 @@ class RepetivelyAnimated(Handler_SceneClose):
 
     def start_animation(self):
 
-        if self.is_sleeping:
+        if self.is_asleep:
             self._memory.need_start_animation = True
             return
 
@@ -52,7 +52,7 @@ class RepetivelyAnimated(Handler_SceneClose):
 
     def stop_animation(self):
 
-        if self.is_sleeping:
+        if self.is_asleep:
             self._memory.need_start_animation = False
             return
 
