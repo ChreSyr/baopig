@@ -1,12 +1,8 @@
 
 import inspect
-import threading
 from collections import deque
-from weakref import ref as wkref, WeakSet, WeakValueDictionary
+from weakref import ref as wkref, WeakSet
 import functools
-
-
-class AcceptError(PermissionError): pass
 
 
 def ref(obj, callback=None):
@@ -84,10 +80,8 @@ class PackedFunctions:
 
 
 class Object:
-    def __init__(self, dict=None, **kwargs):
-        if dict is None:
-            dict = kwargs.items()
-        for key, value in dict:
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
             self.__setattr__(key, value)
 
     def __str__(self) -> str:
@@ -176,7 +170,7 @@ class EditableTuple:
         """
         return self._tup.index(value, start, stop)
 
-
+# TODO : stop using all TypedThing, too heavy
 class TypedDeque(deque):
     """
     A TypedDeque is a deque who can only contain items of type ItemsClass
@@ -214,7 +208,7 @@ class TypedDeque(deque):
 
     def _check(self, p_object):
         if not self.accept(p_object):
-            raise AcceptError(self.msg_item_type_error)
+            raise PermissionError(self.msg_item_type_error)
 
     def accept(self, p_object):
         return isinstance(p_object, self.ItemsClass)
@@ -289,11 +283,11 @@ class TypedDict(dict):
 
     def _checkkey(self, key):
         if not self.acceptkey(key):
-            raise AcceptError(self.msg_key_type_error)
+            raise PermissionError(self.msg_key_type_error)
 
     def _checkvalue(self, value):
         if not self.acceptvalue(value):
-            raise AcceptError(self.msg_value_type_error)
+            raise PermissionError(self.msg_value_type_error)
 
     def acceptkey(self, item):
         return isinstance(item, self.KeysClass)
@@ -317,7 +311,7 @@ class TypedDict(dict):
             d = self.ValuesClass()
 
         self._checkkey(k)
-        self._checkvalue(v)
+        self._checkvalue(d)
 
         return dict.setdefault(self, k, d)
 
@@ -365,7 +359,7 @@ class TypedList(list):
 
     def _check(self, item):
         if not self.accept(item):
-            raise AcceptError(self.msg_item_type_error.format(item.__class__.__name__))
+            raise PermissionError(self.msg_item_type_error.format(item.__class__.__name__))
 
     def accept(self, item):
         # print("accept", item.__class__.__name__, self.ItemsClass_name, isinstance(item, self.ItemsClass))
@@ -401,10 +395,10 @@ class TypedList(list):
         self.msg_item_type_error = "Only {} objects are accepted in this list".format(self.ItemsClass_name) + \
             " (wrong object class:{})"
         for item in self:
-            self._check(p_object)
+            self._check(item)
 
 
-class SortedTypedList(TypedList):
+class SortedTypedList_TBR(TypedList):
     """
     Create an list of Focusable components ordered by there positions
     """
@@ -465,7 +459,7 @@ class TypedSet(set):
 
     def _check(self, item):
         if not self.accept(item):
-            raise AcceptError(self.msg_item_type_error)
+            raise PermissionError(self.msg_item_type_error)
 
     def accept(self, item):
         return isinstance(item, self.ItemsClass)

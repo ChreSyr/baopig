@@ -1,7 +1,7 @@
 
 
 import inspect
-from baopig.pybao.objectutilities import PackedFunctions, Object, TypedSet
+from baopig.pybao.objectutilities import Object
 from baopig.io.logging import LOGGER
 
 
@@ -103,7 +103,7 @@ class Communicative:
     def __init__(self):
 
         self.signal = Object()
-        self._connections = TypedSet(Connection)
+        self._connections = set()
 
     def create_signal(self, signal_id):
 

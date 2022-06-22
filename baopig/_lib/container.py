@@ -1,11 +1,7 @@
 
 
-import threading
-import pygame
-from baopig.pybao.issomething import *
 from baopig.pybao.objectutilities import *
 from baopig._debug import debug_screen_updates
-from baopig.io import LOGGER, mouse, keyboard
 from .utilities import *
 from .widget import Widget
 from .resizable import ResizableWidget
@@ -40,7 +36,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
             self.style.modify(width=size[0], height=size[1])
         size = self.get_asked_size()
 
-        class ChildrenList(TypedSet):
+        class ChildrenList(set):
             """
             Class for an ordered list of children
 
@@ -52,7 +48,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
             """
 
             def __init__(children):
-                TypedSet.__init__(children, ItemsClass=Widget)
+                set.__init__(children)
 
                 children._lists = []
                 children._strong_refs = set()
@@ -100,7 +96,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                     hasattr(list, "add"),
                     hasattr(list, "remove"),
                 ):
-                    raise PermissionError("Wrong list argument : {}".format(list))
+                    raise PermissionError(f"Wrong list argument : {list}")
 
                 list.name = name
                 children._lists.append(list)
@@ -119,28 +115,6 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                 if child.is_visible:
                     self._warn_change(child.hitbox)
 
-                def find(f, key, start):
-                    res = start
-                    for child2 in children:
-                        res = f(child2.__getattribute__(key), res)
-                    return res
-                """if child.left == 0:
-                    dx = find(min, "left", self.w)
-                    if children:
-                        self.move(dx=dx)
-                        for child2 in children:
-                            child2.move(dx=-dx)
-                    self.resize_width(self.w - dx)
-                if child.top == 0:
-                    dy = find(min, "top", self.h)
-                    if children:
-                        self.move(dy=dy)
-                        for child2 in children:
-                            child2.move(dy=-dy)
-                    self.resize_height(self.h - dy)"""
-                # if child.right == self.auto_hitbox.w or child.bottom == self.auto_hitbox.h:
-                #     self._adapt(self.widgets)
-
             def remove(children):
                 raise PermissionError
 
@@ -151,7 +125,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                 for child in children.runables_at_frame:
                     if child.is_running:
                         yield child
-            running = property(lambda children: tuple(children.get_irunning()))
+            running = property(lambda children: tuple(children.get_irunning()))  # TODO : works ??
         self._children = ChildrenList()
 
         # Only layers can guarantie the overlay
@@ -164,15 +138,6 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         self.children.add_list("layers_manager", self.layers_manager)
 
         self._children_to_paint = WeakTypedSet(Widget)  # a set cannot have two same occurences
-        class RectsToUpdate(TypedSet):
-            def __init__(set):
-                TypedSet.__init__(set, ItemsClass=tuple)
-                super().add((0, 0) + size)
-            def add(set, rect):
-                rect = self.auto_hitbox.clip(rect)
-                if rect[2:] == (0, 0): return
-                with paint_lock:
-                    super().add(tuple(rect))
         self._rects_to_update = None
         # self._rects_to_update = RectsToUpdate()
         self._rect_to_update = None

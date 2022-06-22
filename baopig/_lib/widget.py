@@ -2,12 +2,11 @@
 # TODO : replace sticky and pos_ref and pos_ref_location by flags ?
 
 
-import inspect
 import pygame
 from baopig.pybao.issomething import *
-from baopig.pybao.objectutilities import EditableTuple, Object, PackedFunctions, TypedSet
+from baopig.pybao.objectutilities import Object
 from baopig._debug import *
-from baopig.io import LOGGER, mouse
+from baopig.io import mouse
 from baopig.communicative import Communicative
 from .utilities import paint_lock, functools
 from .style import HasStyle, StyleClass, Theme

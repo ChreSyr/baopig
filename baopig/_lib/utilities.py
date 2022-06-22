@@ -404,7 +404,7 @@ class Dragable(Linkable):
 
         def drag(drag_event):
             widget.move(*drag_event.rel)
-        widget.signal.LINK_MOTION.connect(drag)
+        widget.signal.LINK_MOTION.connect(drag, owner=widget)
 
 
 class Openable:
