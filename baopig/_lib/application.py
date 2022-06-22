@@ -108,6 +108,7 @@ class Application(HasStyle, Closable):
                     self.refresh()
             elif event.type == pygame.VIDEORESIZE:
                 if event.size != self.focused_scene.size:
+                    self._default_size = event.size
                     self.focused_scene.resize(*event.size)
                 else:
                     # We need an update
