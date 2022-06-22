@@ -119,7 +119,7 @@ class Application(HasStyle):
                     # Cmd + e -> toggle debugging
                     if event.key == pygame.K_e:
                         if keyboard.mod.maj:
-                            c = self.focused_scene.children
+                            c = self.focused_scene.all_children
                             raise Exception("Made for debugging")
                         self.toggle_debugging()
                     # Cmd + f -> toggle debug fps

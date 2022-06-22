@@ -50,18 +50,17 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
             def __init__(children):
                 set.__init__(children)
 
-                children.handlers_sceneclose = set()
+                children.awake = set()
                 children.containers = set()
+                children.handlers_sceneclose = set()
                 children.handlers_sceneopen = set()
+                children.sleeping = set()
                 children._lists = {
                     Handler_SceneClose: children.handlers_sceneclose,
-                    Container: children.containers,
                     Handler_SceneOpen: children.handlers_sceneopen,
+                    Container: children.containers,
                 }
                 children._strong_refs = set()
-                children._sleeping = WeakTypedList(Widget)
-
-            sleeping = property(lambda children: children._sleeping)
 
             def _add(children, child):
                 """
@@ -71,50 +70,40 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                 assert child.parent == self
                 if child.is_sleeping:
                     if child in children.sleeping:
-                        LOGGER.warning(f"{child} already sleeping in {children.sleeping}")
-                        return
-                    children.sleeping.append(child)
+                        raise PermissionError(f"{child} already sleeping in {children.sleeping}")
+                    children.sleeping.add(child)
                     return
 
-                if child in children:
-                    LOGGER.warning(f"{child} already in {children}")
-                    return
-                super().add(child)
+                if child in children.awake:
+                    raise PermissionError(f"{child} already in {children}")
+
+                children.awake.add(child)
                 children._strong_refs.add(child)
                 self.layers_manager.add(child)
                 for children_class, children_set in children._lists.items():
                     if isinstance(child, children_class):
                         children_set.add(child)
-
                 if child.is_visible:
                     self._warn_change(child.hitbox)
 
             def _remove(children, child):
 
                 if child.is_sleeping:
-                    children._sleeping.remove(child)
+                    children.sleeping.remove(child)
                 else:
-                    super().remove(child)
+                    children.awake.remove(child)
                     self.layers_manager.remove(child)
                     for children_class, children_set in children._lists.items():
                         if isinstance(child, children_class):
                             children_set.remove(child)
+                    if child.is_visible:
+                        self._warn_change(child.hitbox)
 
-                if child.is_visible:
-                    self._warn_change(child.hitbox)
+            def add(children):
+                raise PermissionError
 
             def remove(children):
                 raise PermissionError
-
-            def get_irunning(children):
-                1/0
-                for child in children.runables_always:
-                    if child.is_running:
-                        yield child
-                for child in children.runables_at_frame:
-                    if child.is_running:
-                        yield child
-            running = property(lambda children: tuple(children.get_irunning()))  # TODO : works ??
         self._children = ChildrenList()
 
         # Only layers can guarantie the overlay
@@ -141,22 +130,21 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         if self.is_hidden:
             self.set_dirty(1)
 
-    all_children = property(lambda self: list(self._children) + list(self._children.sleeping),
-                            doc="Awake and sleeping children")
+    all_children = property(lambda self: self._children.awake.union(self._children.sleeping))
+    awake_children = property(lambda self: self._children.awake)
     background_color = property(lambda self: self._background_color)
-    children = property(lambda self: self._children,
-                        doc="Awake children")
     default_layer = property(lambda self: self.layers_manager.default_layer)
+    sleeping_children = property(lambda self: self._children.sleeping)
 
     def _add_child(self, child):
-        self.children._add(child)
+        self._children._add(child)
 
     def _dirty_child(self, child, dirty):
         """
         Should only be called by Widget.send_paint_request()
         """
         try:
-            assert (child in self.children) or child is self  # for scenes
+            assert (child in self._children.awake) or child is self  # for scenes
         except AssertionError as e:
             raise e
         assert dirty in (0, 1, 2)
@@ -207,11 +195,12 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
 
         with paint_lock:
             super()._move(dx, dy)
-            for child in tuple(self.children):
-                child._update_from_parent_movement()
+            for tup in tuple(self.awake_children), tuple(self.sleeping_children):
+                for child in tup:
+                    child._update_from_parent_movement()  # TODO : signal.MOTION ?
 
     def _remove_child(self, child):
-        self.children._remove(child)
+        self._children._remove(child)
 
     def _update_rect(self):
         """
@@ -335,38 +324,33 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         if child.is_sleeping:
             return
 
-        assert child in self.children
+        assert child in self._children.awake
 
         child._memory.need_appear = child.is_visible
-
-        # WARNING : trying new order for the temporary layer, so it is not killed if its only widget is set asleep
-        # OLD :
-        # self.children._remove(child)
-        # self.children.sleeping.append(child)
-
-        self.children.sleeping.append(child)
-        self.children._remove(child)
+        # self.children.sleeping.add(child)
+        self._children._remove(child)
         child.hide()
         child._is_sleeping = True
+        self._children._add(child)
         child.signal.ASLEEP.emit()
 
-    def container_close(self):
+    def container_close(self):  # TODO : private
 
-        for cont in self.children.containers:
+        for cont in self._children.containers:
             cont.container_close()
-        for child in tuple(self.children.handlers_sceneclose):  # tuple prevent from in-loop killed handlers_sceneclose
+        for child in tuple(self._children.handlers_sceneclose):  # tuple prevent from in-loop killed handlers_sceneclose
             child.handle_scene_close()
 
     def container_open(self):
 
-        for cont in self.children.containers:
+        for cont in self._children.containers:
             cont.container_open()
-        for child in self.children.handlers_sceneopen:
+        for child in self._children.handlers_sceneopen:
             child.handle_scene_open()
 
     def container_paint(self):
 
-        for cont in self.children.containers:
+        for cont in self._children.containers:
             cont.container_paint()
 
         if self._children_to_paint:
@@ -381,7 +365,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         if self.dirty == 0:  # else, paint() is called by parent
             self._update_rect()
 
-    def container_exec_requests(self):
+    def container_exec_requests(self):  # TODO
 
         self._requests()
         self._requests.clear()
@@ -404,7 +388,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
     def paint(self, recursive=False, only_containers=True, with_update=True):
 
         if recursive:
-            for c in self.children:
+            for c in self._children.awake:
                 if isinstance(c, Container):
                     c.paint(recursive, only_containers, with_update=False)
                 elif not only_containers:
@@ -452,11 +436,11 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         if child.is_awake:
             return
 
-        assert child in self.children.sleeping
+        assert child in self._children.sleeping
 
-        self.children.sleeping.remove(child)
+        self._children._remove(child)  # TODO : .remove & .add since ._children is no longer accessible
         child._is_sleeping = False
-        self.children._add(child)
+        self._children._add(child)
 
         if child._memory.need_start_animation:
             child.start_animation()

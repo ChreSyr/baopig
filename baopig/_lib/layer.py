@@ -243,8 +243,8 @@ class TemporaryLayer(Layer):
     def remove(self, comp):
 
         super().remove(comp)
-        if len(self._comps) is 0:
-            for comp in self.container.children.sleeping:
+        if len(self._comps) == 0:
+            for comp in self.container.sleeping_children:
                 if comp.layer is self:
                     return
             self.kill()

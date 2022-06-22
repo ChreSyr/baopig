@@ -255,7 +255,7 @@ class Focusable(Enablable):
         """
 
         all_focs = []
-        for child in self.parent.children:
+        for child in self.parent.awake_children:
             if isinstance(child, Focusable):
                 if child.is_enabled:
                     if child.is_visible:
@@ -270,7 +270,7 @@ class Focusable(Enablable):
         Give the focus to the next focusable (ranked by position) is self.parent
         """
         all_focs = []
-        for child in self.parent.children:
+        for child in self.parent.awake_children:
             if isinstance(child, Focusable):
                 if child.is_enabled:
                     if child.is_visible:

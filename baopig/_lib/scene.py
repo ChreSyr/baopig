@@ -46,8 +46,6 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
     def __init__(self, application, size=None, **options):
 
-        # self.open = decorator_open(self, self.handle_scene_open)
-
         if "name" not in options:
             options["name"] = self.__class__.__name__
         self._application = self._app = application

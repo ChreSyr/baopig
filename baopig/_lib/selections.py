@@ -170,8 +170,8 @@ class Selector(Linkable):
             def __init__(selectables):
                 WeakTypedSet.__init__(selectables, ItemsClass=Selectable)
                 def add_selectables(cont):
-                    for comp in cont.children:
-                        if hasattr(comp, "children"):
+                    for comp in cont.all_children:
+                        if hasattr(comp, "all_children"):
                             add_selectables(comp)
                         if isinstance(comp, Selectable):
                             selectables.add(comp)

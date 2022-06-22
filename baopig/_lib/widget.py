@@ -1058,14 +1058,14 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
             try:
                 if debug_with_assert:
                     if self.is_awake:
-                        assert self in self.parent.children
+                        assert self in self.parent.awake_children
                     else:
-                        assert self in self.parent.children.sleeping
+                        assert self in self.parent.sleeping_children
                 self.parent._remove_child(self)
                 self.disconnect()
                 self.signal.KILL.emit(self._weakref)
                 self._weakref._comp = None
-                if debug_with_assert: assert self not in self.parent.children
+                if debug_with_assert: assert self not in self.parent.all_children
             except Exception as e:
                 raise e
 

@@ -92,18 +92,18 @@ app.launch()"""
 
         if self.sections and self.sections[0] == ["NO TEST SECTION YET", []]:
             self.sections.pop(0)
-            for temp in tuple(self.sections_zone.children):
+            for temp in tuple(self.sections_zone.all_children):
                 temp.kill()
 
         self.sections.append([title, tests])
         Text(self.sections_zone, "--- SECTION {} : {} ---".format(len(self.sections), title),
              font_height=self.theme.get_style_for(Text)["font_height"] + 2, font_bold=True,
-             row=len(self.sections_zone.children), max_width=self.sections_zone.w)
+             row=len(self.sections_zone.all_children), max_width=self.sections_zone.w)
         for i, text in enumerate(tests):
             # TODO : CheckBoxes
             Text(self.sections_zone, text="TEST {} : ".format(i+1) + text,  # {:0>2} for 01, 02...
-                 row=len(self.sections_zone.children), max_width=self.sections_zone.w)
-        Text(self.sections_zone, "", row=len(self.sections_zone.children))
+                 row=len(self.sections_zone.all_children), max_width=self.sections_zone.w)
+        Text(self.sections_zone, "", row=len(self.sections_zone.all_children))
 
     def set_code(self, code):
         self.try_it_yourself.code.set_text(code)

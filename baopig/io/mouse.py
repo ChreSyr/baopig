@@ -157,7 +157,6 @@ class _Mouse(Communicative):
         assert self.linked_comp is None
 
         if comp is not None:
-            # assert comp.is_visible
             assert not comp.is_linked
 
             self._linked_comp = comp
@@ -173,7 +172,7 @@ class _Mouse(Communicative):
                     assert layer.touchable
                     for comp in reversed(layer):
                         if comp.is_visible and comp.collidemouse():
-                            if hasattr(comp, "children"):
+                            if hasattr(comp, "all_children"):
                                 return get_pointed_comp(comp)
                             return comp
                 return cont
