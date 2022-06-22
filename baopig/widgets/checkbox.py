@@ -87,7 +87,7 @@ class CheckBox(Button):
     checkmarkframe = property(lambda self: self._checkmarkframe_ref())
     is_selected = property(lambda self: self._is_selected)
 
-    def validate(self, *args, **kwargs):
+    def handle_validate(self, *args, **kwargs):
 
         self._is_selected = not self.is_selected
 

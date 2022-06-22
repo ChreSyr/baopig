@@ -43,13 +43,13 @@ class Entry(LineEdit, Validable):
 
         if key is keyboard.RETURN:
             if self.accept(self.text):
-                self.validate()
+                self.handle_validate()
         elif key is keyboard.TAB:
             self.focus_next()
         else:
             self.cursor.handle_keydown(key)
 
-    def validate(self):
+    def handle_validate(self):
 
         if self.command is not None:
             self.command(self.text)

@@ -174,14 +174,14 @@ class AbstractButton(Box, Clickable, Hoverable):
     hover_sail = property(lambda self: self._hover_sail_ref())
     link_sail = property(lambda self: self._link_sail_ref())
 
-    def enable(self):
+    def handle_enable(self):
 
         self.disable_sail.hide()
         self.hover_sail.lock_visibility(locked=False)
         if self.is_hovered:
             self.hover_sail.show()
 
-    def disable(self):
+    def handle_disable(self):
 
         self.disable_sail.show()
         self.hover_sail.hide()
@@ -193,7 +193,7 @@ class AbstractButton(Box, Clickable, Hoverable):
 
         if key is keyboard.RETURN:
             self.link_sail.show()
-            self.validate()
+            self.handle_validate()
         elif key is keyboard.TAB:
             self.focus_next()
         elif key in (keyboard.RIGHT, keyboard.DOWN):
@@ -207,7 +207,7 @@ class AbstractButton(Box, Clickable, Hoverable):
         if key is keyboard.RETURN:
             self.link_sail.hide()
 
-    def validate(self, *args, **kwargs):
+    def handle_validate(self, *args, **kwargs):
 
         self.command(*args, **kwargs)
 

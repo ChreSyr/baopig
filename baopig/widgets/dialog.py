@@ -16,7 +16,7 @@ class DialogAnswerButton(Button):
 
     dialog = property(get_dialog)
 
-    def validate(self):
+    def handle_validate(self):
 
         self.dialog._answer(self.text_widget.text)
 

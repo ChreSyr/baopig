@@ -124,34 +124,9 @@ class MarginType:
     is_null = property(lambda self: self.left == self.top == self.right == self.bottom == 0)
 
 
-def decorator_enable(widget, enable):
-    functools.wraps(enable)
-    def wrapped_func(*args, **kwargs):
-        if widget.is_enabled: return
-        widget._is_enabled = True
-        res = enable(*args, **kwargs)
-        widget.signal.ENABLE.emit()
-        return res
-    return wrapped_func
-
-
-def decorator_disable(widget, disable):
-    functools.wraps(disable)
-    def wrapped_func(*args, **kwargs):
-        if widget.is_enabled is False: return
-        widget._is_enabled = False
-        res = disable(*args, **kwargs)
-        widget.signal.DISABLE.emit()
-        return res
-    return wrapped_func
-
-
 class Enablable:
 
     def __init__(self):
-
-        self.enable = decorator_enable(self, self.enable)
-        self.disable = decorator_disable(self, self.disable)
 
         self._is_enabled = True
         self.create_signal("ENABLE")
@@ -159,7 +134,21 @@ class Enablable:
 
     is_enabled = property(lambda self: self._is_enabled)
 
+    def disable(self):
+        if self.is_enabled is False:
+            return
+        self._is_enabled = False
+        self.handle_disable()
+        self.signal.DISABLE.emit()
+
     def enable(self):
+        if self.is_enabled:
+            return
+        self._is_enabled = True
+        self.handle_enable()
+        self.signal.ENABLE.emit()
+
+    def handle_enable(self):
         """Stuff to do when enable is called (decorated method)"""
 
     @staticmethod
@@ -167,7 +156,7 @@ class Enablable:
 
         return tuple(Enablable.ienabled_from(enables_list))
 
-    def disable(self):
+    def handle_disable(self):
         """Stuff to do when disable is called (decorated method)"""
 
     @staticmethod
@@ -178,37 +167,31 @@ class Enablable:
                 yield enablable
 
 
-def decorator_validate(widget, validate):
-    functools.wraps(validate)
-    def wrapped_func(*args, **kwargs):
-        if widget._catch_errors:
-            res = None
-            try:
-                res = validate(*args, **kwargs)
-            except Exception as e:
-                if isinstance(e, ApplicationExit):
-                    raise e
-                LOGGER.warning("Error while executing {} validation: {}".format(widget, e))
-        else:
-            res = validate(*args, **kwargs)
-        widget.signal.VALIDATE.emit(res)
-        return res
-    return wrapped_func
-
-
 class Validable:
 
     def __init__(self, catching_errors=False):
 
-        self.validate = decorator_validate(self, self.validate)
+        # self.validate = decorator_validate(self, self.handle_validate)
 
         self._catch_errors = catching_errors
         self.create_signal("VALIDATE")
 
     catching_erros = property(lambda self: self._catch_errors)
 
-    def validate(self):  # TODO : handle_validate
+    def handle_validate(self):
         """Stuff to do when validate is called (decorated method)"""
+
+    def validate(self):
+        if self._catch_errors:
+            try:
+                self.handle_validate()
+            except Exception as e:
+                if isinstance(e, ApplicationExit):
+                    raise e
+                LOGGER.warning(f"Error while executing {self} validation: {e}")
+        else:
+            self.handle_validate()
+        self.signal.VALIDATE.emit()
 
 
 class Focusable(Enablable):
@@ -222,7 +205,7 @@ class Focusable(Enablable):
     container parent
 
     When the mouse click on a Text inside a Button inside a focusable Zone inside a Scene,
-    then the only the youngest Focusable is focused
+    then only the youngest Focusable is focused
     Here, it is the Button -> display.focused_comp = Button
     """
     def __init__(self):
