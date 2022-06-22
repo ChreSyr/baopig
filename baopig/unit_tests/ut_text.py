@@ -5,7 +5,7 @@ import pygame
 
 
 # TODO : solve : selection error, there seems to be a problem with abs_hitbox or selection_rect
-class UT_Text_Scene(Scene):
+class UT_Text_Zone(Scene):
 
     def __init__(self, app):
 
@@ -85,7 +85,7 @@ class UT_Text_Scene(Scene):
         #z.default_layer.pack()
 
 
-class UT_TextEdit_Scene(Scene):
+class UT_TextEdit_Zone(Scene):
 
     def __init__(self, app):
 
@@ -124,8 +124,14 @@ class UT_TextEdit_Scene(Scene):
         clipboard.put(scrap)
 
 
+ut_zones = [
+    UT_Text_Zone,
+    UT_TextEdit_Zone,
+]
+
 if __name__ == "__main__":
-    app = Application(size=(600, 900))
-    UT_Text_Scene(app)
-    UT_TextEdit_Scene(app)
+    from baopig.unit_tests.testerscene import TesterScene
+    app = Application()
+    for scene in ut_zones:
+        TesterScene(app, scene)
     app.launch()

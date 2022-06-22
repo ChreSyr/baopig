@@ -48,11 +48,11 @@ class UTMenu_Scene(Scene):
         import importlib
         for filename in get_ut_filenames():
             print(filename)
-            if filename in ("testerscene", "ut_baopig"):
+            if filename == "testerscene":
                 continue
             ut_file = importlib.import_module("baopig.unit_tests." + filename)
             for zone_class in ut_file.ut_zones:
                 def open_testerscene(zc):
                     TesterScene(app, ContentZoneClass=zc).open()
-                Button(self, row=len(self.default_layer), text=filename[3:],  # discards 'ut_'
-                       command=PrefilledFunction(open_testerscene, zone_class))
+                Button(self, row=len(self.default_layer), text=zone_class.__name__[3:-5],  # discards 'UT_' and '_Zone'
+                       command=PrefilledFunction(open_testerscene, zone_class), catching_errors=True)

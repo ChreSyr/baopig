@@ -56,7 +56,7 @@ class AbstractButton(Box, Clickable, Hoverable):
         padding=10,
     )
     STYLE.create(
-        catching_errors = False,
+        catching_errors=False,
     )
 
     def __init__(self, parent, command=None, name=None,
@@ -193,7 +193,7 @@ class AbstractButton(Box, Clickable, Hoverable):
 
         if key is keyboard.RETURN:
             self.link_sail.show()
-            self.handle_validate()
+            self.validate()
         elif key is keyboard.TAB:
             self.focus_next()
         elif key in (keyboard.RIGHT, keyboard.DOWN):
@@ -207,9 +207,9 @@ class AbstractButton(Box, Clickable, Hoverable):
         if key is keyboard.RETURN:
             self.link_sail.hide()
 
-    def handle_validate(self, *args, **kwargs):
+    def handle_validate(self):
 
-        self.command(*args, **kwargs)
+        self.command()
 
 
 class Button(AbstractButton):

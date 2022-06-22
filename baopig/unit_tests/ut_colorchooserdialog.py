@@ -3,7 +3,7 @@
 from baopig import *
 
 
-class UT_ColorChooserDialog(Zone):
+class UT_ColorChooserDialog_Zone(Zone):
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
 
@@ -15,7 +15,7 @@ class UT_ColorChooserDialog(Zone):
 
 
 ut_zones = [
-    UT_ColorChooserDialog,
+    UT_ColorChooserDialog_Zone,
 ]
 
 if __name__ == "__main__":

@@ -110,7 +110,7 @@ class ColorEntry(NumEntry):
         self.attr = attr
         self.parent.entries.append(self)
 
-    def validate(self):
+    def handle_validate(self):
 
         setattr(self.parent.color, self.attr, int(self.text))
         self.lock_text(True)
@@ -124,7 +124,7 @@ class ColorEntry(NumEntry):
 
 
 class ColorAnswerButton(DialogAnswerButton):
-    def validate(self):
+    def handle_validate(self):
         self.dialog._answer(self.dialog.frame.color)
 
 

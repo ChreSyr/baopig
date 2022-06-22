@@ -3,7 +3,7 @@
 from baopig import *
 
 
-class UT_Scrollable(Zone):
+class UT_Scrollable_Zone(Zone):
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
         self.set_style_for(Button, height=20)
@@ -27,7 +27,7 @@ class UT_Scrollable(Zone):
 
 
 ut_zones = [
-    UT_Scrollable,
+    UT_Scrollable_Zone,
 ]
 
 

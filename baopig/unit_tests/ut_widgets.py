@@ -3,7 +3,7 @@
 from baopig import *
 
 
-class UT_Container_pack_Scene(Scene):
+class UT_Container_pack_Zone(Scene):
 
     def __init__(self):
 
@@ -51,6 +51,13 @@ class UT_Container_pack_Scene(Scene):
         self.handle_keydown[keyboard.a].add(plus)
 
 
+ut_zones = [
+    UT_Container_pack_Zone,
+]
+
 if __name__ == "__main__":
-    UT_Container_pack_Scene()
-    launch()
+    from baopig.unit_tests.testerscene import TesterScene
+    app = Application()
+    for scene in ut_zones:
+        TesterScene(app, scene)
+    app.launch()

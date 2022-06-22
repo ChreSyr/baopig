@@ -3,7 +3,7 @@
 from baopig import *
 
 
-class UT_Origin_Scene(Scene):
+class UT_Origin_Zone(Scene):
 
     def __init__(self):
         # TEST : the cross is always at the application center, even after a scene resize
@@ -26,12 +26,10 @@ class UT_Origin_Scene(Scene):
         # TEST : dragging the yellow center don't cause lag
         # TEST : when you drag one of the twins (brown and green rects at the application top), a RecursiveError is raised
 
-        Scene.__init__(self)#, size=(400, 400))
-
-        self.set_mode(pygame.RESIZABLE)
+        Scene.__init__(self)
 
         # CORNERS
-        z = Zone(self, origin=Origin(pos=(10, -10), location="bottom", reference_location="bottom", locked=True),
+        z = Zone(self, pos=(10, -10), pos_location="bottom", pos_ref_location="bottom", locked=True,
                  size=(100, 100), background_color=(0, 64, 64), name="bottom")
         Dragable.set_dragable(z)
         z = Zone(self, origin=Origin(pos=(-10, -10), location="bottomright", reference_location="bottomright"),
@@ -98,6 +96,13 @@ class UT_Origin_Scene(Scene):
                        origin=Origin(pos=(0, 0), location="center", reference_location="center"))
 
 
+ut_zones = [
+    UT_Origin_Zone,
+]
+
 if __name__ == "__main__":
-    UT_Origin_Scene()
-    launch()
+    from baopig.unit_tests.testerscene import TesterScene
+    app = Application()
+    for scene in ut_zones:
+        TesterScene(app, scene)
+    app.launch()

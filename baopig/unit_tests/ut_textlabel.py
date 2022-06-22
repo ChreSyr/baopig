@@ -3,7 +3,7 @@
 from baopig import *
 
 
-class UT_TextLabel(Zone):
+class UT_TextLabel_Zone(Zone):
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
 
@@ -13,7 +13,7 @@ class UT_TextLabel(Zone):
 
 
 ut_zones = [
-    UT_TextLabel,
+    UT_TextLabel_Zone,
 ]
 
 

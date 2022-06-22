@@ -362,7 +362,7 @@ class Dragable(Linkable):
 
         def drag(drag_event):
             self.move(*drag_event.rel)
-        self.signal.LINK_MOTION.connect(drag)
+        self.signal.LINK_MOTION.connect(drag, owner=self)
 
     @staticmethod
     def set_dragable(widget):

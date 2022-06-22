@@ -74,7 +74,7 @@ class UT_Selector(Zone, Selector):
         self.enable_selecting(True)
 
 
-class UT_Selections_Frame(UT_Selector):
+class UT_Selections_Zone(UT_Selector):
 
     def __init__(self, *args, **kwargs):
         UT_Selector.__init__(self, *args, **kwargs)
@@ -160,7 +160,7 @@ class UT_Selections_Frame(UT_Selector):
 
 
 ut_zones = [
-    UT_Selections_Frame,
+    UT_Selections_Zone,
 ]
 
 
