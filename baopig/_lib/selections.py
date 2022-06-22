@@ -1,10 +1,10 @@
 
 
 import pygame
-from baopig.pybao.objectutilities import WeakTypedSet, PackedFunctions, PrefilledFunction
+from baopig.pybao.objectutilities import WeakTypedSet, PackedFunctions
 from baopig.pybao.issomething import is_point
-from baopig.io import mouse, keyboard, clipboard
-from .utilities import Linkable, Focusable, paint_lock
+from baopig.io import keyboard, clipboard
+from .utilities import Linkable, paint_lock
 from .layer import Layer
 from .shapes import Rectangle
 from .container import Container

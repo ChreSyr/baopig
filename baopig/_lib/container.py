@@ -64,16 +64,17 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                 assert child.parent == self
                 if child.is_sleeping:
                     if child in children.sleeping:
-                        LOGGER.warning("{} already sleeping in {}".format(child, children.sleeping))
+                        LOGGER.warning(f"{child} already sleeping in {children.sleeping}")
                         return
                     children.sleeping.append(child)
                     return
 
                 if child in children:
-                    LOGGER.warning("{} already in {}".format(child, children))
+                    LOGGER.warning(f"{child} already in {children}")
                     return
                 super().add(child)
                 children._strong_refs.add(child)
+                self.layers_manager.add(child)
                 for list in children._lists:
                     if list.accept(child):
                         list.add(child)
@@ -91,6 +92,18 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                 Each time the container gets a new child, list.add(child) is called
                 Each time a container's child gets killed, list.remove(child) is called
                 """
+
+                class TypedSet(set):
+                    """
+                    A TypedSet is a unordered collection of unique elements
+                    who can only contain items of type ItemsClass
+
+                    seq is the optionnal initial sequence
+                    """
+
+                    def accept(self, item):
+                        return isinstance(item, self.ItemsClass)
+
                 if False in (
                     hasattr(list, "accept"),
                     hasattr(list, "add"),
@@ -108,6 +121,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                     children._sleeping.remove(child)
                 else:
                     super().remove(child)
+                    self.layers_manager.remove(child)
                     for list in children._lists:
                         if list.accept(child):
                             list.remove(child)
@@ -119,6 +133,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                 raise PermissionError
 
             def get_irunning(children):
+                1/0
                 for child in children.runables_always:
                     if child.is_running:
                         yield child
@@ -135,7 +150,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
             assert issubclass(layersmanager_class, LayersManager)
         self.layers_manager = layersmanager_class(self)
         self.layers = self.layers_manager.layers
-        self.children.add_list("layers_manager", self.layers_manager)
+        # self.children.add_list("layers_manager", self.layers_manager)
 
         self._children_to_paint = WeakTypedSet(Widget)  # a set cannot have two same occurences
         self._rects_to_update = None
@@ -152,12 +167,10 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
             def insert(self):
                 raise PermissionError
             def sort(self):
-                super().sort(key=lambda c: (c.abs.top, c.abs.left))
+                super().sort(key=lambda c: (c.top, c.left))
         self.children.add_list("closables", TypedSet(Closable))
         self.children.add_list("containers", TypedSet(Container))
         self.children.add_list("openables", TypedSet(Openable))
-        self.children.add_list("focusables", PositionSortingList(Focusable))
-        # self.children.add_list("sorted_by_pos", PositionSortingList(Widget))
 
         # BACKGROUND
         background_color = self.style["background_color"]

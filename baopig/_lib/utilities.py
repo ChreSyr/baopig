@@ -263,27 +263,32 @@ class Focusable(Enablable):
         """
         Give the focus to the previous focusable (ranked by position) is self.parent
         """
-        all_focs = self.parent.children.focusables
-        all_focs.sort()
-        all_focs = Enablable.enabled_from(self.ivisibles_from(all_focs))
-        for foc in all_focs:
-            assert foc.is_visible and foc.is_enabled
+
+        all_focs = []
+        for child in self.parent.children:
+            if isinstance(child, Focusable):
+                if child.is_enabled:
+                    if child.is_visible:
+                        all_focs.append(child)
+
         if len(all_focs) > 1:
+            all_focs.sort(key=lambda c: (c.top, c.left))
             self.scene._focus(all_focs[(all_focs.index(self) -1) % len(all_focs)])
 
     def focus_next(self):
         """
         Give the focus to the next focusable (ranked by position) is self.parent
         """
-        all_focs = self.parent.children.focusables
-        all_focs.sort()
-        all_focs = Enablable.enabled_from(self.ivisibles_from(all_focs))
-        for foc in all_focs:
-            assert foc.is_visible and foc.is_enabled
+        all_focs = []
+        for child in self.parent.children:
+            if isinstance(child, Focusable):
+                if child.is_enabled:
+                    if child.is_visible:
+                        all_focs.append(child)
+
         if len(all_focs) > 1:
-            self.scene._focus(
-                all_focs[(all_focs.index(self) + (1 if keyboard.mod.maj == 0 else -1))
-                         % len(all_focs)])
+            all_focs.sort(key=lambda c: (c.top, c.left))
+            self.scene._focus(all_focs[(all_focs.index(self) + (1 if keyboard.mod.maj == 0 else -1)) % len(all_focs)])
 
     def handle_defocus(self):
         """Stuff to do when the widget loose the focus"""

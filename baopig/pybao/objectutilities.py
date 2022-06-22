@@ -88,88 +88,6 @@ class Object:
         return "<{}({})>".format(self.__class__.__name__, str(self.__dict__)[1:-1])
 
 
-class EditableTuple:
-    """
-    An EditableTuple has a fixed length but its elements can be changed
-
-    WARNING : an EditableTuple is not a tuple instance
-    """
-
-    def __init__(self, tup):
-
-        self._tup = tuple(tup)
-    def __contains__(self, key):
-        """ Return key in self. """
-        return self._tup.__contains__(key)
-
-    def __eq__(self, value):
-        """ Return self==value. """
-        return self._tup.__eq__(value)
-
-    def __ge__(self, value):
-        """ Return self>=value. """
-        return self._tup.__ge__(value)
-
-    def __getitem__(self, key):
-        """ Return self[key]. """
-        return self._tup.__getitem__(key)
-
-    def __gt__(self, value):
-        """ Return self>value. """
-        return self._tup.__gt__(value)
-
-    def __hash__(self):
-        """ Return hash(self). """
-        return self._tup.__hash__()
-
-    def __iter__(self):
-        """ Implement iter(self). """
-        return self._tup.__iter__()
-
-    def __len__(self):
-        """ Return len(self). """
-        return self._tup.__len__()
-
-    def __le__(self, value):
-        """ Return self<=value. """
-        return self._tup.__le__(value)
-
-    def __lt__(self, value):
-        """ Return self<value. """
-        return self._tup.__lt__(value)
-
-    def __ne__(self, value):
-        """ Return self!=value. """
-        return self._tup.__ne__(value)
-
-    def __repr__(self):
-        """ Return repr(self). """
-        return self._tup.__repr__()
-
-    def __setitem__(self, key, value):
-        """ Set self[key] to value. """
-
-        change = lambda k, v: value if k == key else v
-        # tup = tuple([change(k, v) for k, v in enumerate(self._tup)])
-        # if tup == self._tup:
-        #     raise IndexError("tuple index out of range (given index : %s)" % key)
-        self._tup = tuple([change(k, v) for k, v in enumerate(self._tup)])
-
-    def __str__(self):
-        """ Return str(self). """
-        return self._tup.__str__()
-
-    def count(self, value):
-        """ T.count(value) -> integer -- return number of occurrences of value """
-        return self._tup.count(value)
-
-    def index(self, value, start=None, stop=None):
-        """
-        T.index(value, [start, [stop]]) -> integer -- return first index of value.
-        Raises ValueError if the value is not present.
-        """
-        return self._tup.index(value, start, stop)
-
 # TODO : stop using all TypedThing, too heavy
 class TypedDeque(deque):
     """
@@ -237,6 +155,7 @@ class TypedDeque(deque):
         deque.insert(self, index, p_object)
 
 
+# TODO : stop using all TypedThing, too heavy
 class TypedDict(dict):
     def __init__(self, KeysClass, ValuesClass, seq={}, **kwargs):
         """
@@ -333,6 +252,7 @@ class TypedDict(dict):
             self[k] = v
 
 
+# TODO : stop using all TypedThing, too heavy
 class TypedList(list):
 
     def __init__(self, *ItemsClass, seq=()):
@@ -396,40 +316,6 @@ class TypedList(list):
             " (wrong object class:{})"
         for item in self:
             self._check(item)
-
-
-class SortedTypedList_TBR(TypedList):
-    """
-    Create an list of Focusable components ordered by there positions
-    """
-
-    def __init__(self, *ItemsClass, sort_key, seq=()):
-
-        TypedList.__init__(self, *ItemsClass, seq)
-        self._sort_key = sort_key
-
-    def accept(self, item):
-        return hasattr(item, self._sort_key) and super().accept(item)
-
-    def append(self, item):
-        assert item not in self
-
-        item_key = getattr(item, self._sort_key)
-        for i, item2 in enumerate(self):
-            item2_key = getattr(item2, self._sort_key)
-            if item_key < item2_key:
-                super().insert(i, item)
-                break
-        if not item in self:
-            super().append(item)
-
-        assert list(self) == sorted(self, key=lambda o: getattr(o, self._sort_key))
-
-    def insert(self, index, comp):
-        raise PermissionError("Cannot insert item on a sorted list")
-
-    def sort(self):
-        super().sort(key=lambda o: getattr(o, self._sort_key))
 
 
 class TypedSet(set):
@@ -748,100 +634,6 @@ class WeakTypedSet(WeakSet, TypedSet):
             for item in seq:
                 self.add(item)
 
-
-class WeakSortedTypedList_TBR(WeakTypedList):
-    """
-    Create an list of Focusable components ordered by a key
-    WARNING : the list will be sorted after an append(elt) and after a sort(),
-              but it is not updating in real-time
-    """
-    # TODO : remove this class, because it creates logic issues (we think the list is always sorted but it's not)
-
-    def __init__(self, *ItemsClass, key=None, seq=()):
-
-        WeakTypedList.__init__(self, *ItemsClass, seq)
-        self._key = key
-        if key is not None:
-            def cannot_insert(index, p_object):
-                raise PermissionError("Cannot insert item on a sorted list")
-            self.insert = cannot_insert
-
-    def append(self, item):
-        assert item not in self
-
-        super().append(item)
-        if self._key is not None:
-            self.sort()
-
-    def sort(self):
-        if self._dirty: self.flush()
-        if self._key is not None:
-            super().sort(key=self._key)
-        else:
-            super().sort()
-
-
-""" --- Unit tests for WeakList and WeakTypedList ---
-
-class Obj:
-    def __init__(self, num):
-        self.id = num
-    def __str__(self):
-        return "Obj(%s)" % self.id
-
-
-weak_list = WeakList()
-weak_list2 = WeakList()
-strong_list = []
-weak_typed_list = WeakTypedList(ItemsClass=Obj)
-
-weak_typed_list.append(Obj(4))
-assert len(weak_typed_list) == 0
-
-for i in range(4):
-    obj = Obj(i)
-    strong_list.append(obj)
-    weak_list.append(obj)
-    weak_list2.append(obj)
-    weak_typed_list.append(obj)
-
-print(weak_list)
-print(len(weak_list))
-assert len(weak_list) == 4
-
-del strong_list[2]
-assert len(weak_list) == 3
-for obj in weak_list:
-    print(obj)
-print(weak_list, weak_list2, weak_typed_list)
-print(strong_list)
-"""
-
-"""
-# --- Unit tests for WeakSet and WeakTypedSet ---
-
-class Obj:
-    def __init__(self, num):
-        self.id = num
-    def __str__(self):
-        return "Obj(%s)" % self.id
-    def __del__(self):
-        print("DELETE : " + str(self))
-
-
-obj = Obj(3)
-weak_set = WeakSet()
-weak_typed_set = WeakTypedSet(Obj)
-
-weak_set.add(obj)
-weak_typed_set.add(obj)
-
-print("weak_set :", weak_set)
-print("weak_typed_set :", weak_typed_set)
-del obj
-print("weak_set", weak_set)
-print("weak_typed_set :", weak_typed_set)
-"""
 
 def get_name(obj):
     for k, v in globals().items():
