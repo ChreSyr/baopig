@@ -12,15 +12,15 @@ class UT_TextLabel(Zone):
         Button(self, "Click", pos=(120, 10), height=100)
 
 
-ut_scenes = [
+ut_zones = [
     UT_TextLabel,
 ]
 
 
 if __name__ == "__main__":
-    from baopig.unit_tests.TesterScene import TesterScene
+    from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    for scene in ut_scenes:
+    for scene in ut_zones:
         TesterScene(app, scene)
     app.launch()
 

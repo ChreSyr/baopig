@@ -558,9 +558,8 @@ class Text(Zone):
         self.inherit_style(parent, options=kwargs)
 
         Zone.__init__(self, parent, **kwargs)
-        font = Font(self)
 
-        self._font = font
+        self._font = Font(self)
         self._max_width = self.style["max_width"]
         self._min_width = self.font.get_width("m")
         self._is_selectable = selectable

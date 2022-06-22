@@ -318,6 +318,10 @@ class Application(HasStyle):
 
     def launch(self):
 
+        if len(self.scenes) == 0:
+            from baopig.prefabs.presentationscene import PresentationScene
+            PresentationScene(self)
+
         assert not self.is_launched and pygame.get_init(), \
             "An application can only be launched once, due to pygame restrictions"
         self._is_launched = True
@@ -327,10 +331,6 @@ class Application(HasStyle):
         from baopig.threads import DrawingThread
         self._painter = DrawingThread(self)
         self.painter.set_fps(self._fps)
-
-        if len(self.scenes) == 0:
-            from baopig.prefabs.presentationscene import PresentationScene
-            PresentationScene(self)
 
         assert self.focused_scene is not None
         scene = self.focused_scene

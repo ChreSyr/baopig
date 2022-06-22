@@ -14,13 +14,13 @@ class UT_ColorChooserDialog(Zone):
 
 
 
-ut_scenes = [
+ut_zones = [
     UT_ColorChooserDialog,
 ]
 
 if __name__ == "__main__":
     from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    for scene in ut_scenes:
+    for scene in ut_zones:
         TesterScene(app, scene)
     app.launch()

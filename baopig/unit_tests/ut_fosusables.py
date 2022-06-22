@@ -1,6 +1,7 @@
 
 from baopig import *
 
+
 # TODO : test not focus a disabled button, a hidden button, an asleep button
 class UT_Focusable_Frame(Zone):
     def __init__(self, *args, **kwargs):
@@ -26,14 +27,15 @@ class UT_Focusable_Frame(Zone):
             y = random.randrange(z.h - b0.h)
             PosButton(z, pos=(x, y))
 
-ut_scenes = [
+
+ut_zones = [
     UT_Focusable_Frame,
 ]
 
 
 if __name__ == "__main__":
-    from baopig.unit_tests.TesterScene import TesterScene
+    from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    for scene in ut_scenes:
+    for scene in ut_zones:
         TesterScene(app, scene)
     app.launch()

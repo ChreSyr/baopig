@@ -105,6 +105,10 @@ app.launch()"""
                  row=len(self.sections_zone.all_children), max_width=self.sections_zone.w)
         Text(self.sections_zone, "", row=len(self.sections_zone.all_children))
 
+    def handle_scene_close(self):
+
+        self.kill()
+
     def set_code(self, code):
         self.try_it_yourself.code.set_text(code)
 

@@ -26,15 +26,15 @@ class UT_Scrollable(Zone):
                 b.command = lambda: scroller.set_window(scroller.window[:2] + (300, 140))
 
 
-ut_scenes = [
+ut_zones = [
     UT_Scrollable,
 ]
 
 
 if __name__ == "__main__":
-    from baopig.unit_tests.TesterScene import TesterScene
+    from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    for scene in ut_scenes:
+    for scene in ut_zones:
         TesterScene(app, scene)
     app.launch()
 

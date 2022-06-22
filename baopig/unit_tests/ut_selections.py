@@ -159,14 +159,14 @@ class UT_Selections_Frame(UT_Selector):
         )
 
 
-ut_scenes = [
+ut_zones = [
     UT_Selections_Frame,
 ]
 
 
 if __name__ == "__main__":
-    from baopig.unit_tests.TesterScene import TesterScene
+    from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    for scene in ut_scenes:
+    for scene in ut_zones:
         TesterScene(app, scene)
     app.launch()

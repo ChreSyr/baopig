@@ -14,14 +14,11 @@ class PresentationScene(Scene):
         GridLayer(self)
 
         Text(self, text="", row=len(self.default_layer))
-        Text(self, text="Welcome to baopig version {}".format(version), row=len(self.default_layer))
+        Text(self, text=f"Welcome to baopig version {version}", row=len(self.default_layer))
         Text(self, text="You can look for the tutorial or experiment unit tests", row=len(self.default_layer))
-        Text(self, text="", row=len(self.default_layer))
-
         Button(self, text="Unit Tests", command=PrefilledFunction(app.open, "UTMenu_Scene"),
                row=len(self.default_layer))
         Button(self, text="Tutorial", row=len(self.default_layer))
-
         UTMenu_Scene(app)
 
 
@@ -55,10 +52,8 @@ class UTMenu_Scene(Scene):
             if filename in ("testerscene", "ut_baopig"):
                 continue
             ut_file = importlib.import_module("baopig.unit_tests." + filename)
-            # exec("from {} import get_ut_scenes".format(path))
-            # from path import get_ut_scenes
-            for zone_class in ut_file.ut_scenes:  # TODO : replace ut_scenes by ut_zones
+            for zone_class in ut_file.ut_zones:
                 def open_testerscene(zc):
                     TesterScene(app, ContentZoneClass=zc).open()
-                Button(self, row=len(self.default_layer), text=filename[3:],  # discard 'ut_'
+                Button(self, row=len(self.default_layer), text=filename[3:],  # discards 'ut_'
                        command=PrefilledFunction(open_testerscene, zone_class))

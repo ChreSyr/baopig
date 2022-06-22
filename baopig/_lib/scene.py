@@ -181,6 +181,9 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
     def divide(self, side, width):
         raise PermissionError("Cannot divide a Scene")  # TODO : rework Zone.divide
 
+    def kill(self):
+        raise NotImplemented
+
     def open(self):
 
         app = self.application
