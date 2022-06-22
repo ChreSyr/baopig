@@ -62,19 +62,16 @@ app.launch()"""
         self.try_it_yourself.code = TextEdit(self.try_it_yourself, text=code, width=self.try_it_yourself.w,
                                              font_file="monospace")
 
-        self.try_it_yourself.console = Text(self.try_it_yourself, pos=(0, "50%"))
-
-        # TODO : TextEdit and LineEdit
-        # TODO : CodeEdit
         def run():
             import tempfile
-            with tempfile.NamedTemporaryFile(suffix=".py", mode="w") as script:
+            with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False) as script:
                 script.write(self.try_it_yourself.code.text)
                 script.seek(0)
+                script.close()
 
                 import subprocess
                 with tempfile.TemporaryFile(mode="r") as output_file:
-                    subprocess.call("python3 {}".format(script.name), shell=True, stdout=output_file, stderr=output_file)
+                    subprocess.call(f"python3 {script.name}", shell=True, stdout=output_file, stderr=output_file)
                     output_file.seek(0)
                     output = output_file.read()
 
@@ -85,8 +82,12 @@ app.launch()"""
                     # output = output_file.read()
                     self.try_it_yourself.console.set_text(str(output))
 
-        self.try_it_yourself.run = Button(self.try_it_yourself, "RUN",
-                                          sticky="right", command=run, catching_errors=False)
+        self.try_it_yourself.run = Button(self.try_it_yourself, "RUN", command=run, pos_ref=self.try_it_yourself.code,
+                                          pos_location="topright", pos_ref_location="bottomright")
+        self.try_it_yourself.console = Text(self.try_it_yourself, max_width=self.try_it_yourself.w,
+                                            pos_ref=self.try_it_yourself.run, pos_location="topright",
+                                            pos_ref_location="bottomright", background_color=(211, 189, 189),
+                                            font_file="monospace")
 
     def add_section(self, title, tests):
 
