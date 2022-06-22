@@ -2,19 +2,9 @@
 
 import functools
 import pygame
-from baopig.pybao.issomething import is_point
-from baopig.pybao.objectutilities import PackedFunctions, PrefilledFunction, TypedDict, WeakTypedSet, Object
-from baopig._debug import debug_with_assert
 from baopig.communicative import ApplicationExit
 from baopig.io import LOGGER, mouse, keyboard
 
-"""
-
-    NOTE : handle functionnement
-           In order to execute a function at handle_something, write :
-                handle_something.add(function)
-                
-"""
 
 import threading
 paint_lock = threading.RLock()
@@ -375,14 +365,6 @@ class Clickable(Linkable, Validable):
         self.signal.UNLINK.connect(unlink, owner=self)
 
 
-class Closable:
-    """
-    A Closable is a widget whose 'close' function is called when its scene is closed
-    """
-    def close(self):
-        """Stuff to do when the widget'scene is closed"""
-
-
 class Dragable(Linkable):
     """
     Abstract class for components who want to be moved by mouse
@@ -412,11 +394,18 @@ class Dragable(Linkable):
         widget.signal.LINK_MOTION.connect(drag, owner=widget)
 
 
-class Openable:
+class Handler_SceneOpen:
     """
-    An Openable is a widget whose 'open' function is called when its scene gets open
+    A Handler_SceneOpen is a widget whose 'handle_scene_open' function is called when its scene gets open
     """
-    # TODO : rework
-    def open(self):
+    def handle_scene_open(self):
         """Stuff to do when the widget's scene gets open"""
+
+
+class Handler_SceneClose:
+    """
+    A Handler_SceneClose is a widget whose 'handle_scene_close' function is called when its scene is closed
+    """
+    def handle_scene_close(self):
+        """Stuff to do when the widget'scene is closed"""
 

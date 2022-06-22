@@ -4,7 +4,7 @@ from baopig import *
 
 
 # --- DEBUG ---
-class DebugZone(Zone, Closable):
+class DebugZone(Zone, Handler_SceneClose):
 
     def __init__(self, scene):
 
@@ -140,9 +140,9 @@ class DebugZone(Zone, Closable):
             # self.print(repr(mouse.pointed_comp))
         # self.handle_keydown[keyboard.SPACE].add(print_pointed_comp)
 
-        self.connect("update", self.parent.signal.RESIZE)
-        self.connect("update_pointed_outline", mouse.signal.MOTION)
-        self.connect("update_pointed_outline", mouse.signal.DRAG)
+        self.parent.signal.RESIZE.connect(self.update, owner=self)
+        mouse.signal.MOTION.connect(self.update_pointed_outline, owner=self)
+        mouse.signal.DRAG.connect(self.update_pointed_outline, owner=self)
 
         self.update_pointed_outline()
         self.debug_zone.adapt(self.debug_zone.default_layer, horizontally=False)
@@ -156,7 +156,7 @@ class DebugZone(Zone, Closable):
         self.highlighter.hide()
         super().asleep()
 
-    def close(self):
+    def handle_scene_close(self):
 
         self.kill()
 

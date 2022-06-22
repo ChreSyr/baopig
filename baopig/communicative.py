@@ -38,7 +38,7 @@ class Signal:
         for con in self._connections:
             if con.slot is command:
                 raise PermissionError(f"This command is already connected to the signal {self._id}")
-        Connection(owner, self, command)
+        return Connection(owner, self, command)
 
     def emit_with_catch(self, *args):
         """

@@ -158,13 +158,13 @@ class Dialog(Scene):
         background.blit(sail, (0, 0))
         self.set_background_image(background)
 
-    def open(self):  # TODO : handle_open for Scene
+    def handle_scene_open(self):
         self._focus(self.frame.buttons_zone.default_layer[self.default_choice_index])
 
     def _answer(self, ans):
         """Only called by DialogAnswerButton"""
         self.answer = ans
-        self.app.open(self.hovered_scene)  # TODO : self.hovered_scene.open()
+        self.hovered_scene.open()
         self.signal.ANSWERED.emit(self.answer)
         if self.one_shot:
             self.kill()

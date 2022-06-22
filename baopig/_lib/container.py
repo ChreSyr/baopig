@@ -15,7 +15,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
     Abstract class for widgets who need to contain other widgets
 
     We need the self.container_[action]() functions for recursivity between Container,
-    because a container can contain an Openable without being a Openable himself
+    because a container can contain an Handler_SceneOpen without being a Handler_SceneOpen himself
 
     WARNING : Try to do not override 'container_something' methods
     """
@@ -43,8 +43,8 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
             Widgets are sort by overlay, you can access to children sorted by their
             position with children.orderedbypos
 
-            For more efficiency, you can access all the Closable children of a Container
-            by doing : Container.children.closable -> WeakTypedList(Closable)
+            For more efficiency, you can access all the Handler_SceneClose children of a Container
+            by doing : Container.children.closable -> WeakTypedList(Handler_SceneClose)
             """
 
             def __init__(children):
@@ -168,9 +168,9 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                 raise PermissionError
             def sort(self):
                 super().sort(key=lambda c: (c.top, c.left))
-        self.children.add_list("closables", TypedSet(Closable))
+        self.children.add_list("closables", TypedSet(Handler_SceneClose))
         self.children.add_list("containers", TypedSet(Container))
-        self.children.add_list("openables", TypedSet(Openable))
+        self.children.add_list("openables", TypedSet(Handler_SceneOpen))
 
         # BACKGROUND
         background_color = self.style["background_color"]
@@ -397,14 +397,14 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         for cont in self.children.containers:
             cont.container_close()
         for child in tuple(self.children.closables):  # tuple prevent from killing closables
-            child.close()
+            child.handle_scene_close()
 
     def container_open(self):
 
         for cont in self.children.containers:
             cont.container_open()
         for child in self.children.openables:
-            child.open()
+            child.handle_scene_open()
 
     def container_paint(self):
 

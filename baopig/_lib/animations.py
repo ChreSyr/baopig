@@ -1,9 +1,9 @@
 
-from .utilities import Closable
+from .utilities import Handler_SceneClose
 from baopig.time.timer import RepeatingTimer
 
 
-class RepetivelyAnimated(Closable):
+class RepetivelyAnimated(Handler_SceneClose):
     """
     A RepetivelyAnimated object is a component who blinks every interval seconds
 

@@ -18,7 +18,7 @@ from .scene import Scene
 from baopig.io import clipboard
 
 
-class Application(HasStyle, Closable):
+class Application(HasStyle):
     """
     This is the main class in baopig
     It needs to be instanced before everything else
@@ -30,7 +30,6 @@ class Application(HasStyle, Closable):
         if name is None: name = self.__class__.__name__
         if theme is None: theme = Theme()
         HasStyle.__init__(self, theme)
-        Closable.__init__(self)
 
         pygame.init()
         info = pygame.display.Info()
@@ -263,8 +262,6 @@ class Application(HasStyle, Closable):
 
             Widget.set_surface(self.focused_scene, pygame.display.set_mode(size, mode))
 
-            if debug_with_assert: assert pygame.display.get_surface() is self.focused_scene.surface
-
             if size != self._current_size:
                 LOGGER.fine(f"Display size set to {size}")
 
@@ -276,7 +273,7 @@ class Application(HasStyle, Closable):
         self._is_running = False
         with paint_lock:
             self.painter.stop()
-            self.close()
+            self.handle_app_close()
 
             # If the program launch the app again
             # self._is_launched = False
@@ -309,6 +306,9 @@ class Application(HasStyle, Closable):
             self._time_manager.resume()
             self.painter._can_draw.set()
 
+    def handle_app_close(self):
+        """Stuff to do when the app is closed"""
+
     def iconify(self):
 
         with paint_lock:
@@ -334,7 +334,7 @@ class Application(HasStyle, Closable):
 
         assert self.focused_scene is not None
         scene = self.focused_scene
-        self._focused_scene = None
+        self._focused_scene = None  # whitout this line, scene.open() does nothing, because it thinks it's already open
         scene.open()
         assert self.focused_scene is scene
         self.painter.start()

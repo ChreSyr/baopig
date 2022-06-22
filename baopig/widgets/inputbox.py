@@ -6,7 +6,7 @@ from baopig.pybao.issomething import *
 from baopig.pybao.objectutilities import TypedDeque, PrefilledFunction
 from baopig.ressources import *
 from baopig.io import LOGGER, mouse
-from baopig._lib import Closable, Focusable, Container, Selector, Rectangle
+from baopig._lib import Handler_SceneClose, Focusable, Container, Selector, Rectangle
 from .text import Text
 from .label import DynamicLabel
 
@@ -227,7 +227,7 @@ class InputBox(DynamicLabel, Selector):
             # We use sorted because the self.index_end can be lower than self.index_start
             index_start, index_end = self.selection.sorted
             self.set_text(self.text[:index_start] + self.text[index_end:], cursor_index=index_start)
-            self.selection.close()
+            self.selection.handle_scene_close()
 
     def handle_KEYDOWN(self, event):
 
@@ -332,7 +332,7 @@ class InputBox(DynamicLabel, Selector):
                     self.cursor.set_index(self.selection.lowest)
                 elif event.key in (pygame.K_RIGHT, pygame.K_END):
                     self.cursor.set_index(self.selection.highest)
-                self.selection.close()
+                self.selection.handle_scene_close()
             elif event.key == pygame.K_LEFT:
                 self.cursor.set_index(self.cursor.index - 1)
             elif event.key == pygame.K_HOME:  # Fn + K_LEFT

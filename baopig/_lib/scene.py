@@ -30,7 +30,7 @@ def decorator_open(scene, open):
     return wrapped_func
 
 
-class Scene(Zone, Selector, Openable, Closable):
+class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
     """
     A Scene is like a page in an application. It can be the menu, the parameters page...
 
@@ -46,7 +46,7 @@ class Scene(Zone, Selector, Openable, Closable):
 
     def __init__(self, application, size=None, **options):
 
-        self.open = decorator_open(self, self.open)
+        # self.open = decorator_open(self, self.handle_scene_open)
 
         if "name" not in options:
             options["name"] = self.__class__.__name__
@@ -102,7 +102,7 @@ class Scene(Zone, Selector, Openable, Closable):
 
         if self.application.focused_scene is not self: return
         self.container_close()
-        self.close()
+        self.handle_scene_close()
         Widget.set_surface(self, pygame.Surface(self.size))  # not pygame.display anymore
         self._focus(None)
         self.application._focused_scene = None
@@ -169,7 +169,6 @@ class Scene(Zone, Selector, Openable, Closable):
             if debug_screen_updates:
                 LOGGER.info("update in {} :  {}".format(self, rect))
 
-            if debug_with_assert: assert pygame.display.get_surface() is self.surface
             pygame.display.update(rect)
 
         if self.painter.is_recording and self.painter.is_recording.only_at_change:
@@ -183,6 +182,24 @@ class Scene(Zone, Selector, Openable, Closable):
 
     def divide(self, side, width):
         raise PermissionError("Cannot divide a Scene")  # TODO : rework Zone.divide
+
+    def open(self):
+
+        app = self.application
+        if app.focused_scene is self:
+            return
+
+        with paint_lock:
+            self.pre_open()
+            if app.focused_scene:
+                app.focused_scene._close()
+            app._focused_scene = self
+            app._update_display()
+            self.container_open()
+            self.handle_scene_open()
+            self.paint(recursive=True)
+
+        LOGGER.debug("Open scene : {}".format(self))
 
     def pre_open(self):
         """Stuff to do right before this scene is open"""
