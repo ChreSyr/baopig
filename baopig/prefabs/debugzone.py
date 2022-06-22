@@ -75,11 +75,23 @@ class DebugZone(Zone, Handler_SceneClose):
                 pos=(0, mouse_pos_presentator.bottom),
                 name="pointed_comp_presentator")
 
+            # CLASS TRACKER
+            class_presentator = Text(
+                parent=presentators_zone,
+                text="- class : ",
+                pos=(0, pointed_comp_presentator.bottom),
+                name="class_presentator")
+            DynamicText(
+                parent=trackers_zone,
+                get_text=lambda: mouse.pointed_comp.__class__.__name__ if mouse.pointed_comp else None,
+                pos=(0, class_presentator.top),
+                name="class_tracker")
+
             # NAME TRACKER
             name_presentator = Text(
                 parent=presentators_zone,
                 text="- name : ",
-                pos=(0, pointed_comp_presentator.bottom),
+                pos=(0, class_presentator.bottom),
                 name="name_presentator")
             DynamicText(
                 parent=trackers_zone,
