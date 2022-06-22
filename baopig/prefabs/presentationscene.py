@@ -4,7 +4,6 @@ from baopig.version.version import version
 from baopig.unit_tests.testerscene import TesterScene
 
 
-
 class PresentationScene(Scene):
 
     def __init__(self, app):

@@ -10,7 +10,7 @@ class TesterScene(Scene):
         # TODO : finish to automatically collect every UT_Scene
         # TODO : button Home
 
-        Scene.__init__(self, app, size=(900, 600), name=str(ContentZoneClass))
+        Scene.__init__(self, app, name=str(ContentZoneClass))
         self.sections = []
         # TODO : automatically pack zones with margin
 

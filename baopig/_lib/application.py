@@ -40,7 +40,7 @@ class Application(HasStyle):
         self._fps = None
         self._debug_fps = False
         self._default_mode = mode
-        self._default_size = pygame.display.list_modes()[-1] if size is None else size
+        self._default_size = pygame.display.list_modes()[2] if size is None else size
         self._current_mode = self._current_size = None
         self._max_resolution = (info.current_w, info.current_h)
         self._is_fullscreen_TO_REMOVE = False
