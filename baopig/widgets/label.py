@@ -1,14 +1,9 @@
 
 
-import pygame
 from baopig.pybao.issomething import *
-from baopig.ressources import ressources
-from baopig.font.font import _all, Font
-from baopig.io import mouse
-from baopig._lib import Runable, Widget, Zone, paint_lock
+from baopig.font.font import Font
+from baopig._lib import Runable, Zone
 from .text import Text
-
-fonts = _all[ressources.font.file]
 
 
 class AbstractLabel(Zone):

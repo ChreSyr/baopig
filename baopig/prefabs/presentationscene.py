@@ -1,6 +1,6 @@
 
-from baopig.pybao.objectutilities import PrefilledFunction
 from baopig import *
+from baopig.version.version import version
 from baopig.unit_tests.testerscene import TesterScene
 
 
@@ -57,7 +57,8 @@ class UTMenu_Scene(Scene):
             ut_file = importlib.import_module("baopig.unit_tests." + filename)
             # exec("from {} import get_ut_scenes".format(path))
             # from path import get_ut_scenes
-            for zone in ut_file.ut_scenes:  # TODO : replace ut_scenes by ut_zones
-                scene = TesterScene(app, zone)
+            for zone_class in ut_file.ut_scenes:  # TODO : replace ut_scenes by ut_zones
+                def open_testerscene(zc):
+                    TesterScene(app, ContentZoneClass=zc).open()
                 Button(self, row=len(self.default_layer), text=filename[3:],  # discard 'ut_'
-                       command=PrefilledFunction(app.open, scene.name))
+                       command=PrefilledFunction(open_testerscene, zone_class))

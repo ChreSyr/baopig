@@ -8,9 +8,7 @@ from .resizable import ResizableWidget
 from .layersmanager import LayersManager
 
 
-class Container(ResizableWidget):  # TODO : philosophy : is it good to force all containers to have a resize() method ?
-                                   # TODO : where is it usefull and where is it a problem ?
-                                   # A problem for Button who should never be resized ? right ?
+class Container(ResizableWidget):
     """
     Abstract class for widgets who need to contain other widgets
 
@@ -27,8 +25,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
     STYLE.set_type("background_color", Color)
 
     def __init__(self, parent, size=None, **options):
-        
-        # TODO : explain why is there an argument size=None since it looks like it's not used
+        """can be size=(50, 45) or width=50, height=45"""
 
         self.inherit_style(parent, options)
 
