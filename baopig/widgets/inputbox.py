@@ -109,7 +109,7 @@ class InputBox(DynamicLabel, Selector):
             # else, the cursor have been woke up by a click
             print("FOCUS")
         def handle_defocus():
-            self.cursor.asleep()
+            self.cursor.sleep()
         def handle_enter():
             # TODO : use handle.add(...)
             assert self.is_focused

@@ -996,10 +996,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
     scene =             property(lambda self: self.__scene)
     sticky =            property(lambda self: self._sticky)
 
-    def asleep(self):
-
-        self.parent.asleep_child(self)
-
     def copy(self):
         """
         Abstract method
@@ -1165,6 +1161,10 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         if self._dirty:
             self.send_paint_request()
         self.signal.SHOW.emit()
+
+    def sleep(self):
+
+        self.parent.asleep_child(self)
 
     def swap_layer(self, layer):
 

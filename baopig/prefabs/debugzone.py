@@ -151,10 +151,10 @@ class DebugZone(Zone, Handler_SceneClose):
 
     is_debugging = property(lambda self: self.is_awake)
 
-    def asleep(self):
+    def sleep(self):
 
         self.highlighter.hide()
-        super().asleep()
+        super().sleep()
 
     def handle_scene_close(self):
 
@@ -177,7 +177,7 @@ class DebugZone(Zone, Handler_SceneClose):
         if not self.is_debugging:
             return
 
-        self.asleep()
+        self.sleep()
 
     def toggle_debugging(self):
 

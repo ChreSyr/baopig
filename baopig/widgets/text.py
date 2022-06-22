@@ -32,9 +32,9 @@ def set_indicator(self, text=None, get_text=None, indicator=None):
         self._indicator.swap_layer(self.layer)
         self._indicator.move_in_front_of(self)
     self.signal.HOVER.connect(self._indicator.wake, owner=self._indicator)
-    self.signal.UNHOVER.connect(self._indicator.asleep, owner=self._indicator)
+    self.signal.UNHOVER.connect(self._indicator.sleep, owner=self._indicator)
     if not self.is_hovered:
-        self._indicator.asleep()
+        self._indicator.sleep()
 Hoverable.set_indicator = set_indicator
 
 

@@ -247,7 +247,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         else:
             self.set_mode(pygame.FULLSCREEN)
 
-    def asleep(self): raise PermissionError("A Scene cannot sleep")
+    def sleep(self): raise PermissionError("A Scene cannot sleep")
     def wake(self): raise PermissionError("A Scene cannot sleep")
     def show(self): pass
     def hide(self): pass
