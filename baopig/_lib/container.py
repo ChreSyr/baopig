@@ -44,13 +44,20 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
             position with children.orderedbypos
 
             For more efficiency, you can access all the Handler_SceneClose children of a Container
-            by doing : Container.children.closable -> WeakTypedList(Handler_SceneClose)
+            with Container.children.handlers_sceneclose
             """
 
             def __init__(children):
                 set.__init__(children)
 
-                children._lists = []
+                children.handlers_sceneclose = set()
+                children.containers = set()
+                children.handlers_sceneopen = set()
+                children._lists = {
+                    Handler_SceneClose: children.handlers_sceneclose,
+                    Container: children.containers,
+                    Handler_SceneOpen: children.handlers_sceneopen,
+                }
                 children._strong_refs = set()
                 children._sleeping = WeakTypedList(Widget)
 
@@ -75,45 +82,12 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                 super().add(child)
                 children._strong_refs.add(child)
                 self.layers_manager.add(child)
-                for list in children._lists:
-                    if list.accept(child):
-                        list.add(child)
+                for children_class, children_set in children._lists.items():
+                    if isinstance(child, children_class):
+                        children_set.add(child)
 
                 if child.is_visible:
                     self._warn_change(child.hitbox)
-
-            def add_list(children, name, list):
-                """
-                make : children.name = list
-                a list must have the following methods :
-                    - accept(child) -> bool
-                    - add(child) -> None
-                    - remove(child) -> None
-                Each time the container gets a new child, list.add(child) is called
-                Each time a container's child gets killed, list.remove(child) is called
-                """
-
-                class TypedSet(set):
-                    """
-                    A TypedSet is a unordered collection of unique elements
-                    who can only contain items of type ItemsClass
-
-                    seq is the optionnal initial sequence
-                    """
-
-                    def accept(self, item):
-                        return isinstance(item, self.ItemsClass)
-
-                if False in (
-                    hasattr(list, "accept"),
-                    hasattr(list, "add"),
-                    hasattr(list, "remove"),
-                ):
-                    raise PermissionError(f"Wrong list argument : {list}")
-
-                list.name = name
-                children._lists.append(list)
-                setattr(children, name, list)
 
             def _remove(children, child):
 
@@ -122,9 +96,9 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
                 else:
                     super().remove(child)
                     self.layers_manager.remove(child)
-                    for list in children._lists:
-                        if list.accept(child):
-                            list.remove(child)
+                    for children_class, children_set in children._lists.items():
+                        if isinstance(child, children_class):
+                            children_set.remove(child)
 
                 if child.is_visible:
                     self._warn_change(child.hitbox)
@@ -150,27 +124,11 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
             assert issubclass(layersmanager_class, LayersManager)
         self.layers_manager = layersmanager_class(self)
         self.layers = self.layers_manager.layers
-        # self.children.add_list("layers_manager", self.layers_manager)
 
         self._children_to_paint = WeakTypedSet(Widget)  # a set cannot have two same occurences
         self._rects_to_update = None
-        # self._rects_to_update = RectsToUpdate()
         self._rect_to_update = None
         self._requests = PackedFunctions()  # using PackedFunctions allow to set an owner for a request
-
-        class PositionSortingList(TypedList):
-            def __init__(self, *args, **kwargs):
-                TypedList.__init__(self, *args, **kwargs)
-            def add(self, p_object):
-                super().append(p_object)
-                self.sort()
-            def insert(self):
-                raise PermissionError
-            def sort(self):
-                super().sort(key=lambda c: (c.top, c.left))
-        self.children.add_list("closables", TypedSet(Handler_SceneClose))
-        self.children.add_list("containers", TypedSet(Container))
-        self.children.add_list("openables", TypedSet(Handler_SceneOpen))
 
         # BACKGROUND
         background_color = self.style["background_color"]
@@ -396,14 +354,14 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
 
         for cont in self.children.containers:
             cont.container_close()
-        for child in tuple(self.children.closables):  # tuple prevent from killing closables
+        for child in tuple(self.children.handlers_sceneclose):  # tuple prevent from in-loop killed handlers_sceneclose
             child.handle_scene_close()
 
     def container_open(self):
 
         for cont in self.children.containers:
             cont.container_open()
-        for child in self.children.openables:
+        for child in self.children.handlers_sceneopen:
             child.handle_scene_open()
 
     def container_paint(self):
