@@ -182,7 +182,21 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         raise PermissionError("Cannot divide a Scene")  # TODO : rework Zone.divide
 
     def kill(self):
-        raise NotImplemented
+
+        if not self.is_alive:
+            return
+        if self.app.focused_scene is self:
+            raise PermissionError("Cannot kill a focused scene")
+
+        with paint_lock:
+            for child in tuple(self.all_children):
+                child.kill()
+            self.disconnect()
+            self.signal.KILL.emit(self._weakref)
+            self._weakref._comp = None
+            self.app.scenes.remove(self)
+
+        del self
 
     def open(self):
 
@@ -192,9 +206,10 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
         with paint_lock:
             self.pre_open()
-            if app.focused_scene:
-                app.focused_scene._close()
+            scene_to_close = app.focused_scene
             app._focused_scene = self
+            if scene_to_close:
+                scene_to_close._close()
             app._update_display()
             self.container_open()
             self.handle_scene_open()
