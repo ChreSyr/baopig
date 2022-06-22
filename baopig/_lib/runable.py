@@ -140,10 +140,9 @@ class Runable(Communicative):
         self.create_signal("STOP_RUNNING")
 
         if isinstance(self, Widget):
-        # if hasattr(self, "_dirty") and hasattr(self, "_is_sleeping"):  # if sub-classed by a Widget
-            self.connect("pause", self.signal.ASLEEP)
-            self.connect("resume", self.signal.WAKE)
-            self.signal.KILL.connect(lambda: _runables_manager.remove(self))
+            self.signal.ASLEEP.connect(self.pause, owner=self)
+            self.signal.WAKE.connect(self.resume, owner=self)
+            self.signal.KILL.connect(lambda: _runables_manager.remove(self), owner=None)
 
         if start:
             self.start_running()

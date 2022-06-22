@@ -23,8 +23,8 @@ class Hoverable:
         self.create_signal("HOVER")
         self.create_signal("UNHOVER")
 
-        self.connect("handle_hover", self.signal.HOVER)
-        self.connect("handle_unhover", self.signal.UNHOVER)
+        self.signal.HOVER.connect(self.handle_hover, owner=self)
+        self.signal.UNHOVER.connect(self.handle_unhover, owner=self)
 
     indicator = property(lambda self: self._indicator)
     is_hovered = property(lambda self: self._is_hovered)

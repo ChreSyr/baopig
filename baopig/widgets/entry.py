@@ -28,7 +28,7 @@ class Entry(LineEdit, Validable):
         self.command = command
 
         if validate_on_defocus:
-            self.connect("validate", self.signal.DEFOCUS)
+            self.signal.DEFOCUS.connect(self.validate, owner=self)
 
     def accept(self, text):
 

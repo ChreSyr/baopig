@@ -33,7 +33,7 @@ class Timer(Communicative):
         self.create_signal("START")
         if args or kwargs:
             command = PrefilledFunction(command, *args, **kwargs)
-        self.signal.TIMEOUT.connect(command)
+        self.signal.TIMEOUT.connect(command, owner=None)
 
     interval = property(lambda self: self._interval)
     is_paused = property(lambda self: self._pause_time is not None)  # NOTE : a paused Timer is not running

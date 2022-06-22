@@ -369,7 +369,7 @@ class Container(ResizableWidget):  # TODO : philosophy : is it good to force all
         if self._rect_to_update is None:
             self._rect_to_update = pygame.Rect(rect)
         else:
-            self._rect_to_update.union_ip(rect)
+            self._rect_to_update.union_ip(rect)  # TODO : with paint_lock
         # self._rects_to_update.add(rect)
 
     def _warn_parent(self, rect):

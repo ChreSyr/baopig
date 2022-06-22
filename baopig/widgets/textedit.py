@@ -210,7 +210,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         self._text_index = None  # index of cusor in Text.text
 
         self.parent._cursor_ref = self.get_weakref()
-        self.connect("kill", self.parent.signal.DEFOCUS)
+        self.parent.signal.DEFOCUS.connect(self.kill, owner=self)
         self.swap_layer("cursors_layer")
         self.set_nontouchable()
         self.start_animation()

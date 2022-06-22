@@ -170,16 +170,18 @@ class _Origin:
 
         if reference_comp is not None:
             assert isinstance(reference_comp, Widget)
-            self.reference.signal.MOTION.rem_command(self._weak_update_owner_pos)
-            self.reference.signal.RESIZE.rem_command(self._weak_update_owner_pos)
+            for signal in (self.reference.signal.MOTION, self.reference.signal.RESIZE):
+                try: signal.rem_command(self._weak_update_owner_pos)
+                except ValueError: pass
             if self._has_adaptable_size:
-                self.reference.signal.RESIZE.rem_command(self.owner._update_size)
+                try: self.reference.signal.RESIZE.rem_command(self.owner._update_size)
+                except ValueError: pass
             self._reference_ref = reference_comp.get_weakref()
             self.reference.signal.RESIZE.connect(self._weak_update_owner_pos, owner=self.owner)
             if self.reference != self.owner.parent:
                 self.reference.signal.MOTION.connect(self._weak_update_owner_pos, owner=self.owner)
             if self._has_adaptable_size:
-                self.reference.signal.RESIZE.connect(self.owner._update_size)
+                self.reference.signal.RESIZE.connect(self.owner._update_size, owner=self.owner)
 
         if reference_location is not None:
             self._reference_location = WidgetLocation(reference_location)
@@ -1005,7 +1007,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
 
     def depend_on(self, comp):
 
-        self.connect("kill", comp.signal.KILL)
+        comp.signal.KILL.connect(self.kill, owner=self)
 
     def get_weakref(self, callback=None):
         """
@@ -1021,7 +1023,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         """
         if callback is not None:
             assert callable(callback)
-            self.signal.KILL.connect(callback)
+            self.signal.KILL.connect(callback, owner=None)
         return self._weakref
 
     def hide(self):

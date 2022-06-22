@@ -18,7 +18,8 @@ class UT_Scrollable(Zone):
             i += 1
             b.set_indicator("Empty")
             def cut():
-                scroller.scrollsliders[0].width -= 20
+                scrollslider = scroller.scrollsliders[0]
+                scrollslider.resize_width(scrollslider.w - 20)
             if h == 10:
                 b.command = cut
             else:

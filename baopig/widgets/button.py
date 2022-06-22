@@ -77,9 +77,6 @@ class AbstractButton(Box, Clickable, Hoverable):
         Hoverable.__init__(self)
         Clickable.__init__(self, catching_errors=self.style["catching_errors"])
 
-        self.connect("press", self.signal.LINK)
-        self.connect("unpress", self.signal.UNLINK)  # TODO : only self.signal.THING.connect(function)
-
         self.command = command  # non protected field
 
         if self.default_layer is None:
@@ -108,8 +105,8 @@ class AbstractButton(Box, Clickable, Hoverable):
                     self, hover, layer="nontouchable_layer", name=self.name+".hover_sail"
                 ).get_weakref()
             self.hover_sail.hide()
-            self.hover_sail.connect("show", self.signal.HOVER)
-            self.hover_sail.connect("hide", self.signal.UNHOVER)
+            self.signal.HOVER.connect(self.hover_sail.show, owner=self.hover_sail)
+            self.signal.UNHOVER.connect(self.hover_sail.hide, owner=self.hover_sail)
             self.hover_sail.swap_layer(self.above_lines)
 
         if focus != -1:
@@ -129,8 +126,8 @@ class AbstractButton(Box, Clickable, Hoverable):
                     self, focus, layer="nontouchable_layer", name=self.name+".focus_sail"
                 ).get_weakref()
             self.focus_rect.hide()
-            self.focus_rect.connect("show", self.signal.FOCUS)
-            self.focus_rect.connect("hide", self.signal.DEFOCUS)
+            self.signal.FOCUS.connect(self.focus_rect.show, owner=self.focus_rect)
+            self.signal.DEFOCUS.connect(self.focus_rect.hide, owner=self.focus_rect)
             self.focus_rect.swap_layer(self.behind_lines)
 
         if link != -1:
@@ -147,8 +144,8 @@ class AbstractButton(Box, Clickable, Hoverable):
                     self, link, layer="nontouchable_layer", name=self.name+".link_sail"
                 ).get_weakref()
             self.link_sail.hide()
-            self.link_sail.connect("show", self.signal.LINK)
-            self.link_sail.connect("hide", self.signal.UNLINK)
+            self.signal.LINK.connect(self.link_sail.show, owner=self.link_sail)
+            self.signal.UNLINK.connect(self.link_sail.hide, owner=self.link_sail)
             self.link_sail.swap_layer(self.behind_lines)
 
         self._disable_sail_ref = Sail(  # TODO : same as hover, focus and link
@@ -209,12 +206,6 @@ class AbstractButton(Box, Clickable, Hoverable):
 
         if key is keyboard.RETURN:
             self.link_sail.hide()
-
-    def press(self):
-        """Stuff to do when the button is pressed"""
-
-    def unpress(self):
-        """Stuff to do when the button is unpressed"""
 
     def validate(self, *args, **kwargs):
 

@@ -56,11 +56,11 @@ class Box(Container):
         self._padding = self.style["padding"]
         self.background_layer = None
         self._background_ref = lambda: None
-
-        self.connect("handle_resize", self.signal.RESIZE)
         background_image = self.style["background_image"]
         if background_image is not None:
             self.set_background_image(background_image)
+
+        self.signal.RESIZE.connect(self.handle_resize, owner=self)
 
     background = property(lambda self: self._background_ref())
     border = property(lambda self: self._border)
@@ -71,7 +71,7 @@ class Box(Container):
     padding = property(lambda self: self._padding)
     padding_rect = property(lambda self: BoxRect(self.rect, self.border))
 
-    def handle_resize(self, old_size):
+    def handle_resize(self):
 
         if self.background is not None:
             self.background.resize(*self.size)
@@ -101,4 +101,4 @@ class Box(Container):
             def handle_background_kill(weakref):
                 if weakref is self._background_ref:
                     self._background_ref = lambda: None
-            self.background.signal.KILL.connect(handle_background_kill)
+            self.background.signal.KILL.connect(handle_background_kill, owner=self)

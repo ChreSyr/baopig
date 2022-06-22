@@ -31,8 +31,8 @@ def set_indicator(self, text=None, get_text=None, indicator=None):
     if self.layer.accept(self._indicator):
         self._indicator.swap_layer(self.layer)
         self._indicator.move_in_front_of(self)
-    self._indicator.connect("wake", self.signal.HOVER)
-    self._indicator.connect("asleep", self.signal.UNHOVER)
+    self.signal.HOVER.connect(self._indicator.wake, owner=self._indicator)
+    self.signal.UNHOVER.connect(self._indicator.asleep, owner=self._indicator)
     if not self.is_hovered:
         self._indicator.asleep()
 Hoverable.set_indicator = set_indicator
@@ -883,5 +883,5 @@ class TextLabel(Text):
                 self.padding.bottom += plus
             self._pack()
 
-
+# TODO : copy a selected text
 

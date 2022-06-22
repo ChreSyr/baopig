@@ -10,7 +10,7 @@ from .shapes import Rectangle
 from .container import Container
 
 
-class Selectable():
+class Selectable:
     """
     A Selectable is a Widget who can be selected
 
@@ -49,9 +49,9 @@ class Selectable():
         if hasattr(self.selector, "selectables"):  # selector might not have been initialized
             self.selector.selectables.add(self)
 
-        self.connect("unselect", self.signal.NEW_SURF)
-        self.connect("unselect", self.signal.MOTION)
-        self.connect("unselect", self.signal.HIDE)
+        self.signal.NEW_SURF.connect(self.unselect, owner=self)
+        self.signal.MOTION.connect(self.unselect, owner=self)
+        self.signal.HIDE.connect(self.unselect, owner=self)
 
     is_selected = property(lambda self: self._is_selected)
     selector = property(lambda self: self._selector_ref())
@@ -122,7 +122,7 @@ class DefaultSelectionRect(Rectangle):
         self.end = None
         self.parent._selection_rect_ref = self.get_weakref()
         self.set_visibility(parent._selectionrect_visibility)
-        self.connect("hide", self.parent.signal.UNLINK)
+        self.parent.signal.UNLINK.connect(self.hide, owner=self)
 
         self.set_start(start)
         self.set_end(end)
@@ -179,7 +179,7 @@ class Selector(Linkable):
             def add(selectables, comp):
                 if comp not in selectables:
                     super().add(comp)
-                    comp.signal.KILL.connect(lambda: selectables.remove(comp))
+                    comp.signal.KILL.connect(lambda: selectables.remove(comp), owner=self)
             def get_selected(selectables):
                 for comp in selectables:
                     if comp.is_selected:
@@ -193,14 +193,14 @@ class Selector(Linkable):
         self._selectionrect_visibility = True
         self.selectionrect_layer = None
 
-        self.connect("_interact_with_clipboard", self.signal.KEYDOWN)
-        self.connect("close_selection", self.signal.DEFOCUS)
-        self.connect("close_selection", self.signal.LINK)  # only usefull at link while focused
+        self.signal.KEYDOWN.connect(self._handle_keydown, owner=self)
+        self.signal.DEFOCUS.connect(self.close_selection, owner=self)
+        self.signal.LINK.connect(self.close_selection, owner=self)  # only usefull at link while focused
 
     is_selecting = property(lambda self: self._selection_rect_ref() is not None)
     selection_rect = property(lambda self: self._selection_rect_ref())
 
-    def _interact_with_clipboard(self, key):
+    def _handle_keydown(self, key):
 
         if keyboard.mod.cmd:
             if key is pygame.K_a:

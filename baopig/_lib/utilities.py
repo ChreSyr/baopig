@@ -215,16 +215,7 @@ class Validable:
         self._catch_errors = catching_errors
         self.create_signal("VALIDATE")
 
-        if isinstance(self, Focusable):
-            self.connect("_check_validate", self.signal.KEYDOWN)
-
     catching_erros = property(lambda self: self._catch_errors)
-
-    def _check_validate(self, key):
-        """Checks if the keydown asks for validation"""
-        if key is keyboard.RETURN:
-            # Enter or validation key
-            self.validate()
 
     def validate(self):  # TODO : handle_validate
         """Stuff to do when validate is called (decorated method)"""
@@ -254,16 +245,16 @@ class Focusable(Enablable):
         self.create_signal("KEYDOWN")
         self.create_signal("KEYUP")
 
-        self.connect("defocus", self.signal.DISABLE)
-        self.connect("handle_focus", self.signal.FOCUS)
-        self.connect("handle_defocus", self.signal.DEFOCUS)
-        self.connect("handle_keydown", self.signal.KEYDOWN)
-        self.connect("handle_keyup", self.signal.KEYUP)
+        self.signal.DISABLE.connect(self.defocus, owner=self)
+        self.signal.DEFOCUS.connect(self.handle_defocus, owner=self)
+        self.signal.FOCUS.connect(self.handle_focus, owner=self)
+        self.signal.KEYDOWN.connect(self.handle_keydown, owner=self)
+        self.signal.KEYUP.connect(self.handle_keyup, owner=self)
 
     is_focused = property(lambda self: self._is_focused)
 
     def defocus(self):
-        """Send a request for defousing this widget"""
+        """Send a request for defocusing this widget"""
         if not self.is_focused:
             return
         self.scene._focus(None)
@@ -333,13 +324,13 @@ class Linkable(Focusable):
         Focusable.__init__(self)
 
         self.is_linked = False
-        self.create_signal("LINK")
+        self.create_signal("LINK")  # TODO : Communicative ?
         self.create_signal("LINK_MOTION")
         self.create_signal("UNLINK")
 
-        self.connect("handle_link", self.signal.LINK)
-        self.connect("handle_link_motion", self.signal.LINK_MOTION)
-        self.connect("handle_unlink", self.signal.UNLINK)
+        self.signal.LINK.connect(self.handle_link, owner=self)
+        self.signal.LINK_MOTION.connect(self.handle_link_motion, owner=self)
+        self.signal.UNLINK.connect(self.handle_unlink, owner=self)
 
     def handle_link(self):
         """Stuff to do when the widget gets linked"""
@@ -372,9 +363,11 @@ class Clickable(Linkable, Validable):
 
         Linkable.__init__(self)
         Validable.__init__(self, catching_errors=catching_errors)
+
         def unlink():
-            if self.collidemouse(): self.validate()
-        self.signal.UNLINK.connect(unlink)
+            if self.collidemouse():
+                self.validate()
+        self.signal.UNLINK.connect(unlink, owner=self)
 
 
 class Closable:

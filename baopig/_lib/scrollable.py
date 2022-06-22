@@ -65,7 +65,7 @@ class ScrollableByMouse(Scrollable, Hoverable):
         Hoverable.__init__(self)
 
         self._last_scroll_time = time.time()  # for faster scroll when together
-        self.connect("handle_mouse_scroll", mouse.signal.SCROLL)
+        mouse.signal.SCROLL.connect(self.handle_mouse_scroll, owner=self)
 
     def handle_mouse_scroll(self, scroll_event):
         """

@@ -79,8 +79,8 @@ class Column:
     components = property(lambda self: tuple(comp for comp in self if comp is not None))
     icomponents = property(lambda self: (comp for comp in self if comp is not None))
     is_adaptable = property(lambda self: self._width is None)
-    is_first = property(lambda self: self._col_index is 0)
-    is_last = property(lambda self: self._col_index is len(self._grid.cols) - 1)
+    is_first = property(lambda self: self._col_index == 0)
+    is_last = property(lambda self: self._col_index == len(self._grid.cols) - 1)
     left = property(lambda self: self._left)
     right = property(lambda self: self.left + self.width)
 
@@ -113,7 +113,7 @@ class Column:
     def _update_left(self, left):
 
         dx = left - self.left
-        if dx is 0: return
+        if dx == 0: return
         self._left = left
         for comp in self.icomponents:
             comp.origin.unlock()
@@ -223,8 +223,8 @@ class Row:
     components = property(lambda self: tuple(comp for comp in self if comp is not None))
     icomponents = property(lambda self: (comp for comp in self if comp is not None))
     is_adaptable = property(lambda self: self._height is None)
-    is_first = property(lambda self: self._row_index is 0)
-    is_last = property(lambda self: self._row_index is len(self._grid.rows)-1)
+    is_first = property(lambda self: self._row_index == 0)
+    is_last = property(lambda self: self._row_index == len(self._grid.rows)-1)
     top = property(lambda self: self._top)
 
     def _update_height(self):
@@ -251,7 +251,7 @@ class Row:
     def _update_top(self, top):
 
         dy = top - self.top
-        if dy is 0: return
+        if dy == 0: return
         self._top = top
         for comp in self.icomponents:
             comp.origin.unlock()
@@ -498,8 +498,8 @@ class GridLayer(Layer):
 
             # don't need owner because, if the grid is killed,
             # it means the container is killed, so the comp is also killed
-            self.connect("_update_size", comp.signal.RESIZE)
-            self.connect("_update_size", comp.signal.KILL)
+            comp.signal.RESIZE.connect(self._update_size, owner=self)
+            comp.signal.KILL.connect(self._update_size, owner=self)
 
         except Exception as e:
             raise e
@@ -529,7 +529,7 @@ class GridLayer(Layer):
 
         super().remove(comp)
         assert self._data[comp.row][comp.col] is comp
-        self._data[comp.row][comp.col] = None
+        self._data[comp.row][comp.col] = None  # TODO : remove connections from add() method
 
     def get_cell(self, row, col):
 

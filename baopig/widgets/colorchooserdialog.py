@@ -70,7 +70,7 @@ class ColorSlider(Slider):
         )
         parent.sliders.append(self)
 
-        self.connect("handle_new_val", self.signal.NEW_VAL)
+        self.signal.NEW_VAL.connect(self.handle_new_val, owner=self)
 
     def handle_link(self):
 

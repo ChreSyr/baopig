@@ -24,30 +24,21 @@ class Signal:
 
         return f"Signal(id={self._id}, emitter={self._emitter})"
 
-    def connect(self, command, owner=None, **options):
+    def connect(self, command, owner):
         """
         Connect the command to the signal
         When self will emit 'signal', the owner's method 'command' will be executed
-        if option 'need_arguments' is False, the emitted argumaents will be ignored
         :param command: a method of owner
         :param owner: a Communicative object
         NOTE : The "owner" parameter is very important when it comes to deletion
                When the owner is deleted, this connection is automatically killed
         """
         if not callable(command):
-            raise TypeError("'{}' object is not callable".format(command))
+            raise TypeError(f"'{command}' object is not callable")
         for con in self._connections:
             if con.slot is command:
-                return  # command already connected to self
-        Connection(owner, self, command, **options)
-
-    def disconnect(self, listener):
-        """
-        Remove all connections from this signal to the listener
-        """
-        for con in tuple(self._connections):
-            if con.owner is listener:
-                con.kill()
+                raise PermissionError(f"This command is already connected to the signal {self._id}")
+        Connection(owner, self, command)
 
     def emit_with_catch(self, *args):
         """
@@ -58,7 +49,10 @@ class Signal:
 
         for con in self._connections:
             try:
-                con.transmit(*args) if args else con.slot()  # little optimization ?
+                if con.need_arguments:
+                    con.slot(*args)
+                else:
+                    con.slot()
             except ApplicationExit as e:
                 raise e
             except Exception as e:
@@ -70,32 +64,28 @@ class Signal:
         If an error occurs while executing a command, it will be raised
         """
         for con in self._connections:
-            con.transmit(*args) if args else con.slot()  # little optimization TODO : signal.transmit_arguments
+            if con.need_arguments:
+                con.slot(*args)
+            else:
+                con.slot()
 
     def rem_command(self, command):
 
         for con in tuple(self._connections):
             if con.slot is command:
                 con.kill()
-
-
-class Signals(Object): pass
+                return
+        raise ValueError(f"This command is not connected to the signal {self._id}")
 
 
 class Connection:
 
-    def __init__(self, owner, signal, slot, **options):
-
-        need_arguments = False
-        if len(inspect.signature(slot).parameters) > 0:
-            need_arguments = True
-        if "need_arguments" in options:
-            need_arguments = options.pop("need_arguments")
+    def __init__(self, owner, signal, slot):
 
         self.owner = owner
         self.signal = signal
         self.slot = slot
-        self.transmit = slot if need_arguments else lambda *args: slot()
+        self.need_arguments = len(inspect.signature(slot).parameters) > 0
 
         signal._connections.append(self)
         if owner is not None:
@@ -104,30 +94,16 @@ class Connection:
     def kill(self):
 
         self.signal._connections.remove(self)
-        self.owner._connections.remove(self)
+        if self.owner is not None:
+            self.owner._connections.remove(self)
 
 
 class Communicative:
 
     def __init__(self):
 
-        self.signal = Signals()
+        self.signal = Object()
         self._connections = TypedSet(Connection)
-
-    def connect(self, method_name, signal, **options):
-        """
-        Connect the method called 'method_name' to the signal
-        When the 'signal' will be emited, the self's method 'method_name' will be executed
-        :param signal: a Signal
-        :param method_name: a string representing a method of self
-        """
-        method = getattr(self, method_name)
-        # if not inspect.ismethod(method):  # can be a decorator
-        #     raise ValueError("The method_name must be a string representing a method of '{}' object"
-        #                      "".format(self.__class__.__name__))
-        assert isinstance(signal, Signal), signal
-
-        signal.connect(method, owner=self, **options)
 
     def create_signal(self, signal_id):
 
@@ -138,17 +114,7 @@ class Communicative:
 
         setattr(self.signal, signal_id, Signal(emitter=self, id=signal_id))
 
-    def disconnect(self, *, signal=None, emitter=None):
-        """
-        Remove connections from any signal to commands owned by self
-        :param signal: if set, only remove connections from this signal to commands owned by self
-        :param emitter: if set, only remove connections from this emitter to commands owned by self
-        """
-        if signal is not None:
-            signal.disconnect(self)
-        elif emitter is not None:
-            for signal in emitter.signal.__dict__.values():
-                signal.disconnect(self)
-        else:
-            for con in tuple(self._connections):
-                con.kill()
+    def disconnect(self):
+        """Kills all connections whose commands are owned by this Communicative object"""
+        for con in tuple(self._connections):
+            con.kill()
