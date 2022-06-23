@@ -1,7 +1,7 @@
 
 
 import pygame
-from .utilities import MarginType, Color, paint_lock
+from .utilities import MarginType, paint_lock
 from .layer import Layer
 from .container import Container
 from .image import Image

@@ -5,11 +5,11 @@ import pygame
 
 
 # TODO : solve : selection error, there seems to be a problem with abs_hitbox or selection_rect
-class UT_Text_Zone(Scene):
+class UT_Text_Zone(Zone):
 
-    def __init__(self, app):
+    def __init__(self, *args, **kwargs):
 
-        Scene.__init__(self, app)
+        Zone.__init__(self, *args, **kwargs)
 
         hello = Text(
             parent=self,
@@ -18,9 +18,8 @@ class UT_Text_Zone(Scene):
                  "\nIamaverylongword,canyoureadmecorrectly?"
                  "\nWhat do you want to do ?",
             width=250,
-            # mode=Text.FILLED_MODE,  # TODO
         )
-        ressources.font.config(file="Arial Narrow Bold Italic.ttf")
+        self.set_style_for(Text, font_file="Arial Narrow Bold Italic.ttf")
         hello2 = Text(
             parent=self,
             pos=(hello.right + 10, 10),
@@ -28,13 +27,12 @@ class UT_Text_Zone(Scene):
                  "\nIamaverylongword,canyoureadmecorrectly?"
                  "\nWhat do you want to do ?",
             width=hello.width,
-            # mode=Text.FILLED_MODE,
         )
 
         # TODO : hide selection_rect on double clic
-        ressources.font.config(file="monospace")
-        ressources.font.config(height=60)
-        ressources.font.config(color=(0, 100, 0))
+        self.set_style_for(Text, font_file="monospace")
+        self.set_style_for(Text, font_height=60)
+        self.set_style_for(Text, font_color=(0, 100, 0))
         text = Text(
             self,
             pos=hello.bottomleft,
@@ -46,15 +44,16 @@ class UT_Text_Zone(Scene):
             "- Merci monsieur !\n"
             "Et il partit. (vert fonce)",
             width=370,
-            font=Font(height=10, file="Arial Narrow Bold Italic.ttf")
+            font_height=10,
+            font_file="Arial Narrow Bold Italic.ttf"
         )
         text.font.config(height=25)
         text.set_background_color((255, 255, 255, 128))
-        edit = TextEdit(self, text="Green", width=text.max_width, pos=text.bottomleft)
+        edit = TextEdit(self, text="Green", width=text.width, pos=text.bottomleft)
         text.font.config(color=(10, 50, 30))
 
-        ressources.font.config(height=20)
-        ressources.font.config(color=(0, 0, 0))
+        self.set_style_for(Text, font_height=20)
+        self.set_style_for(Text, font_color=(0, 0, 0))
         z = Zone(self, pos=edit.bottomleft, size=("90%", "100%"))
         GridLayer(z)
         for i, file in enumerate((
@@ -81,15 +80,15 @@ class UT_Text_Zone(Scene):
             "JetBrainsMono-ExtraBold.ttf",
             "Nimportequoi.ttf",
         )):
-            Text(z, text=file[:-4] if file.endswith(".ttf") else file, font=Font(file=file), row=i)
+            Text(z, text=file[:-4] if file.endswith(".ttf") else file, font_file=file, row=i)
         #z.default_layer.pack()
 
 
-class UT_TextEdit_Zone(Scene):
+class UT_TextEdit_Zone(Zone):
 
-    def __init__(self, app):
+    def __init__(self, *args, **kwargs):
 
-        Scene.__init__(self, app, size=(1000, 700))
+        Zone.__init__(self, *args, **kwargs)
 
         self.zone1 = Zone(self, pos=(10, 10), size=(self.w / 2 - 15, self.h - 20), background_color=(100, 100, 100, 50))
         # print(self.zone1)
@@ -100,7 +99,7 @@ class UT_TextEdit_Zone(Scene):
 
         text = TextEdit(self.zone2, width=self.zone2.w - 20, pos=(10, 10))
 
-        self.b = Button(self.zone2, text="RUN", pos=text.topright, command=lambda: exec(text.text))
+        self.b = Button(self.zone2, text="RUN", pos=text.topright, command=lambda: exec(text.text), catching_errors=True)
         self.b.origin.config(location="topright")
         text.signal.RESIZE.connect(lambda: self.b.origin.config(pos=text.topright), owner=self.b)
         text.signal.MOTION.connect(lambda: self.b.origin.config(pos=text.topright), owner=self.b)
@@ -124,9 +123,22 @@ class UT_TextEdit_Zone(Scene):
         clipboard.put(scrap)
 
 
+class UT_TextLabel_Zone(Zone):
+    def __init__(self, *args, **kwargs):
+        Zone.__init__(self, *args, **kwargs)
+
+        Button(self, "Click", pos=(150, 10), height=100)
+        TextLabel(self, "Hello\nHow are you dear ?", background_color="yellow", pos=(10, 10),
+                  width=100, height=200, align_mode="center")
+        self.set_style_for(Text, max_width=100)
+        TextLabel(self, "Hello\nHow are you dear ?", background_color="yellow", pos=(10, 220),
+                  width=100, height=200, align_mode="center")
+
+
 ut_zones = [
     UT_Text_Zone,
     UT_TextEdit_Zone,
+    UT_TextLabel_Zone,
 ]
 
 if __name__ == "__main__":
