@@ -47,13 +47,12 @@ class UT_Origin_Zone(Zone):
                       border_color=(128, 10, 10), size=(100, 100), border_width=3)
 
         # Prisonner at center of the magical show
-        z = DragableZone(self, pos=(10, -10), sticky="top",
-                         size=(100, 100), background_color=(40, 34, 34), name="bottom")
+        z = DragableZone(self, sticky="top", size=(100, 100), background_color=(40, 34, 34), name="bottom")
         z.move_behind(b)
         DragableRectangle(z, color=(0, 128, 128), size=(30, 30), pos=z.auto.center, pos_location="center", pos_ref=b)
 
         # Prisonner inside magical show, at center of its zone
-        z = DragableZone(self, pos=(-10, -10), pos_location="topright", pos_ref_location="topright",
+        z = DragableZone(self, pos_location="topright", pos_ref_location="topright",
                          size=(100, 100), background_color=(40, 34, 34), name="bottomright")
         z.move_behind(b)
         r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), pos=z.auto.center, pos_location="center")
@@ -66,8 +65,7 @@ class UT_Origin_Zone(Zone):
         handle_motion(z, b, r, 0, 0)
 
         # PRISONNER
-        z = DragableZone(self, pos=(-10, 10), sticky="right",
-                 size=(100, 100), background_color=(0, 64, 64), name="right")
+        z = DragableZone(self, sticky="right", size=(100, 100), background_color=(0, 64, 64), name="right")
         r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), pos=z.auto.center, pos_location="center")
         wb = Rectangle(z, pos=("50%", "50%"), pos_location="center", color=(0, 0, 0, 0),
                        size=[z.w-20]*2, border_color=(0, 0, 0), border_width=1, touchable=False)

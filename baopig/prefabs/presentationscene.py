@@ -47,7 +47,6 @@ class UTMenu_Scene(Scene):
 
         import importlib
         for filename in get_ut_filenames():
-            print(filename)
             if filename == "testerscene":
                 continue
             ut_file = importlib.import_module("baopig.unit_tests." + filename)

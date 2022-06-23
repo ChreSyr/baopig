@@ -13,7 +13,6 @@ class UT_ColorChooserDialog_Zone(Zone):
         b = Button(self, "Wich color ?", sticky="top", command=colorchooser.open)
 
 
-
 ut_zones = [
     UT_ColorChooserDialog_Zone,
 ]

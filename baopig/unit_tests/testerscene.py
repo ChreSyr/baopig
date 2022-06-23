@@ -15,7 +15,7 @@ class TesterScene(Scene):
         # TODO : automatically pack zones with margin
 
         # Menu
-        self.menu_zone = Zone(self, size=(self.w-20, 25), pos=(10, 10), name="menu")
+        self.menu_zone = Zone(self, size=(int(self.w / 2) - 15, 25), pos=(10, 10), name="menu")
         GridLayer(self.menu_zone, nbrows=1)  # TODO : margin
         Button(self.menu_zone, "< BACK", col=0, command=PrefilledFunction(app.open, "UTMenu_Scene"))
         def try_it_yourself():
@@ -38,8 +38,8 @@ class TesterScene(Scene):
         self._init_try_it_yourself()
 
         # Content
-        self.content = ContentZoneClass(self, size=(self.w/2-15, self.h-self.menu_zone.h-20), name="content",
-                      pos=(-10, self.menu_zone.bottom + 10), sticky="right")
+        self.content = ContentZoneClass(self, size=(self.w/2-15, self.h - 20), name="content",
+                      pos=(-10, 10), sticky="topright")
 
     def _init_try_it_yourself(self):
 
