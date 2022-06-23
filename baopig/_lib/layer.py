@@ -1,43 +1,48 @@
 
 from baopig.pybao.objectutilities import WeakTypedList
+from .utilities import MarginType
 from .widget import Widget, Communicative
 
 
 class Layer(Communicative):
     """
-    A Layer is a manager who contains some of its container's children
-    Every component is stored in one of its parent's layers
+    A Layer is a manager who contains some of its container's children.
+    Every component is stored in one of its parent's layers.
     The positions of components inside a layer define the overlay : first behind, last in front.
-    Eache layer can be overlay in the foreground, the main ground or the background.
-    Layers from one ground are overlay depending on their weight : a weight of 0 means it need
+    Each layer can be overlaid in the foreground, the main ground or the background.
+    2 layers from the same ground are overlaid depending on their weight : a weight of 0 means it needs
     to stand behind a layer with weight 6. The default weight is 2.
     """
 
-    def __init__(self, container, *filter, name=None, level=None, weight=None,
+    def __init__(self, container, *filter, name=None, level=None, weight=None, margin=None,
                  default_sortkey=None, sort_by_pos=False, touchable=True, maxlen=None, adaptable=False):
         """
         :param container: the Container who owns the layer
-        :param name: a unic identifier for the layer
+        :param name: an unic identifier for the layer
         :param filter: a class or list of class from wich every layer's component must herit
         :param level: inside the container's layers : lowest behind greatest in front, default to MAINGROUND
         :param weight: inside the layer's level : lowest behind greatest in front, default to 2
+        :param margin: space between 2 widget's borders
         :param default_sortkey: default key fo layer.sort(). if set, at each append, the layer will be sorted
         :param sort_by_pos: if set, the default sortkey will be a function who sort components by y then x
-        :param touchable: components of non touchable layer are not hoverable
+        :param touchable: components of non-touchable layer are not hoverable
         :param maxlen: the maximum numbers of components the layer can contain
         """
 
         if name is None: name = "UnnamedLayer{}".format(len(container.layers))
         if not filter: filter = [Widget]
         if weight is None: weight = 2
+        if margin is None: margin = MarginType(0)
+        elif isinstance(margin, int): margin = MarginType(margin)
         if level is None: level = container.layers_manager.DEFAULT_LEVEL
         if sort_by_pos:
             assert default_sortkey is None
             default_sortkey = lambda c: (c.top, c.left)
 
+        for filter_class in filter: assert issubclass(filter_class, Widget), filter_class
         assert isinstance(name, str), name
         assert name not in container.layers, name
-        for filter_class in filter: assert issubclass(filter_class, Widget), filter_class
+        assert isinstance(margin, MarginType)
         if default_sortkey is not None: assert callable(default_sortkey), default_sortkey
         if maxlen is not None: assert isinstance(maxlen, int), maxlen
         assert isinstance(weight, (int, float)), weight
@@ -51,11 +56,12 @@ class Layer(Communicative):
         self._comps = WeakTypedList(*filter)
         self._container = container
         self._filter = filter
+        self._name = name
+        self.margin = margin  # TODO : philosophy - Should a layer manage the margin ?
         self.default_sortkey = default_sortkey  # don't need protection
         self._layer_index = None  # defined by container.layers
         self._layers_manager = container.layers_manager
         self._maxlen = maxlen
-        self._name = name
         self._touchable = bool(touchable)
         self._level = level
         self._weight = weight
@@ -163,38 +169,34 @@ class Layer(Communicative):
         self._comps.insert(index, comp)
         self.container._warn_change(comp.hitbox)
 
-    def pack_TO_MOVE_OUT(self, key=None, horizontal=False, margin=None, padding=None, adapt=True):
+    def pack(self, key=None, horizontal=False, adapt=False):
         """
         Place children on one row or one column, sorted by key (default : pos)
         If horizontal is False, they will be placed vertically
-        The margin is the space between two children
-        The margin is the minimum space between a comp and the container's border
         If adapt is True, the container's sizes will try to adapt to the layer's
-        children, including the padding
+        children, including the margin
         """
         if key is None: key = lambda o: (o.top, o.left)
-        if margin is None: margin = 0
-        if padding is None: padding = 0
 
         sorted_children = sorted(self, key=key)
 
         if horizontal:
-            left = padding
-            for comp in self:
-                comp.topleft = (left, padding)
-                if comp.topleft != (left, padding):
+            left = self.margin.left
+            for comp in sorted_children:
+                if comp.has_locked.origin:
                     raise PermissionError("Cannot pack a layer who contains locked children")
-                left = comp.right + margin
+                comp.topleft = (left, self.margin.top)
+                left = comp.right + self.margin.left
         else:
-            top = padding
-            for comp in self:
-                comp.topleft = (padding, top)
-                if comp.topleft != (padding, top):
+            top = self.margin.top
+            for comp in sorted_children:
+                if comp.has_locked.origin:
                     raise PermissionError("Cannot pack a layer who contains locked children")
-                top = comp.bottom + margin
+                comp.topleft = (self.margin.left, top)
+                top = comp.bottom + self.margin.top
 
         if adapt:
-            self.container.adapt(self, padding=padding)
+            self.container.adapt(self, padding=self.margin)
 
     def remove(self, comp):
         """
@@ -228,6 +230,8 @@ class Layer(Communicative):
         superpositionnement
         """
         if key is None: key = self.default_sortkey
+        if key is None:  # No sort key defined
+            return
         self._comps.sort(key=key)
 
 

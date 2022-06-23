@@ -311,7 +311,7 @@ class Container(ResizableWidget):
             (self.rect.left + rect[0], self.rect.top + rect[1]) + tuple(rect[2:])
         )
 
-    def adapt(self, children, padding=0, vertically=True, horizontally=True):
+    def adapt(self, children, padding=0, vertically=True, horizontally=True):  # TODO : re padding, use Container.padding
         """
         Resize in order to contain every widget in children
         Only use padding.right and padding.bottom, because it is not supposed to move children
