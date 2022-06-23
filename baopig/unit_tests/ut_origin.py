@@ -74,7 +74,7 @@ class UT_Origin_Zone(Zone):
         r.set_window(wb.rect)
 
         # CLOCK
-        z2 = DragableZone(self, pos=("-50%", 100), pos_location="midtop", pos_ref_location="topright",
+        z2 = DragableZone(self, pos=("-50%", 186), pos_location="midtop", pos_ref_location="topright",
                   size=(350, 350), background_color=(140, 140, 140), name="z3")
         z3 = DragableZone(z2, pos=(0, 0), pos_location="center", pos_ref_location="center",
                   size=(250, 250), background_color=(150, 150, 150), name="z2")

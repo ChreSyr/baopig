@@ -173,7 +173,15 @@ class Container(ResizableWidget):
             for layer in self.layers:
                 for child in layer.visible:
                     try:
-                        self.surface.blit(child.surface, child.hitbox.topleft)
+                        # collision is relative to self
+                        collision = child.hitbox.clip(self.auto)
+                        if collision == child.rect:
+                            self.surface.blit(child.surface, child.rect.topleft)
+                        else:
+                            self.surface.blit(child.surface.subsurface(
+                                (collision.left - child.rect.left, collision.top - child.rect.top) + collision.size),
+                                collision.topleft
+                            )
                     except pygame.error as e:
                         # can be raised from a child.surface who is a subsurface from self.surface
                         assert child.surface.get_parent() is self.surface
@@ -268,11 +276,13 @@ class Container(ResizableWidget):
                         try:
                             # collision is relative to self
                             collision = child.hitbox.clip(rect)
-                            self.surface.blit(
-                                child.surface.subsurface(
+                            if collision == child.rect:
+                                self.surface.blit(child.surface, child.rect.topleft)
+                            else:
+                                self.surface.blit(child.surface.subsurface(
                                     (collision.left - child.rect.left, collision.top - child.rect.top) + collision.size),
-                                collision.topleft
-                            )
+                                    collision.topleft
+                                )
                         except pygame.error as e:
                             # can be raised from a child.surface who is a subsurface from self.surface
                             assert child.surface.get_parent() is self.surface
