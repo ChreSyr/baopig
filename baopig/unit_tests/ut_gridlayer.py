@@ -107,13 +107,11 @@ class UT_GridLayer_Zone(Zone):
         # self.handle_event[mouse.RELEASEDRAG].add(print)
 
 
-ut_zones = [
-    UT_GridLayer_Zone,
-]
+# For the PresentationScene import
+ut_zone_class = UT_GridLayer_Zone
 
 if __name__ == "__main__":
     from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    for scene in ut_zones:
-        TesterScene(app, scene)
+    TesterScene(app, ut_zone_class)
     app.launch()

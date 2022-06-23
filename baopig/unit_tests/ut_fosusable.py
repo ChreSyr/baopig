@@ -28,13 +28,11 @@ class UT_Focusable_Zone(Zone):
             PosButton(z, pos=(x, y))
 
 
-ut_zones = [
-    UT_Focusable_Zone,
-]
+# For the PresentationScene import
+ut_zone_class = UT_Focusable_Zone
 
 if __name__ == "__main__":
     from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    for scene in ut_zones:
-        TesterScene(app, scene)
+    TesterScene(app, ut_zone_class)
     app.launch()

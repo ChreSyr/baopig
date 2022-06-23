@@ -54,13 +54,11 @@ class UT_LayerPack_Zone(Zone, Focusable):
             zone.default_layer.pack(adapt=True)
 
 
-ut_zones = [
-    UT_LayerPack_Zone,
-]
+# For the PresentationScene import
+ut_zone_class = UT_LayerPack_Zone
 
 if __name__ == "__main__":
     from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    for scene in ut_zones:
-        TesterScene(app, scene)
+    TesterScene(app, ut_zone_class)
     app.launch()

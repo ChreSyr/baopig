@@ -1,27 +1,5 @@
-import pygame
 
 from baopig import *
-"""
-# TEST : the cross is always at the application center, even after a scene resize
-# TEST : the prisonner (light blue rect) is not visible inside the window (black border on topright corner)
-# TEST : the corners are still at the application corners after a scene resize
-# TEST : the bottomleft corner cannot be dragged, despite the set_dragable
-# TEST : the topright and bottom right corners can be dragged
-# TEST : the topright and bottom right corners follow the scene resizing even after being moved
-# TEST : if the topright corner is set inside the topleft blue border, the prisonner appears
-# TEST : the prisonner can only be seen trought the window
-# TEST : when the topright corner moves, the prisonner is visually static, even with low fps
-# TEST : the prisonner can be dragged
-# TEST : the prisonner can only be seen trought the window, once again
-# TEST : after the scene width changed, the clock abcissa is still at the center of the application
-# TEST : the clock (light gray surface at the center) can be dragged
-# TEST : if the clock has moved, after a scene resizing, it keeps the same distance from the scene's right
-# TEST : the yellow belt (yellow rects around the clock center) cannot be dragged
-# TEST : the yellow center (yellow rect at the clock center) can be dragged
-# TEST : the yellow belt follow the yellow center everywhere he goes
-# TEST : dragging the yellow center don't cause lag
-# TEST : when you drag one of the twins (brown and green rects at the application top), a RecursiveError is raised
-"""
 
 
 class DragableRectangle(Rectangle, Dragable):
@@ -111,13 +89,32 @@ class UT_Origin_Zone(Zone):
                        pos=(0, 0), pos_location="center", pos_ref_location="center")
 
 
-ut_zones = [
-    UT_Origin_Zone,
-]
+# For the PresentationScene import
+ut_zone_class = UT_Origin_Zone
+"""
+# TEST : the cross is always at the application center, even after a scene resize
+# TEST : the prisonner (light blue rect) is not visible inside the window (black border on topright corner)
+# TEST : the corners are still at the application corners after a scene resize
+# TEST : the bottomleft corner cannot be dragged, despite the set_dragable
+# TEST : the topright and bottom right corners can be dragged
+# TEST : the topright and bottom right corners follow the scene resizing even after being moved
+# TEST : if the topright corner is set inside the topleft blue border, the prisonner appears
+# TEST : the prisonner can only be seen trought the window
+# TEST : when the topright corner moves, the prisonner is visually static, even with low fps
+# TEST : the prisonner can be dragged
+# TEST : the prisonner can only be seen trought the window, once again
+# TEST : after the scene width changed, the clock abcissa is still at the center of the application
+# TEST : the clock (light gray surface at the center) can be dragged
+# TEST : if the clock has moved, after a scene resizing, it keeps the same distance from the scene's right
+# TEST : the yellow belt (yellow rects around the clock center) cannot be dragged
+# TEST : the yellow center (yellow rect at the clock center) can be dragged
+# TEST : the yellow belt follow the yellow center everywhere he goes
+# TEST : dragging the yellow center don't cause lag
+# TEST : when you drag one of the twins (brown and green rects at the application top), a RecursiveError is raised
+"""
 
 if __name__ == "__main__":
     from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    for scene in ut_zones:
-        TesterScene(app, scene)
+    TesterScene(app, ut_zone_class)
     app.launch()

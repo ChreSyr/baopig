@@ -1,5 +1,4 @@
 
-
 from baopig import *
 
 
@@ -8,18 +7,16 @@ class UT_ColorChooserDialog_Zone(Zone):
         Zone.__init__(self, *args, **kwargs)
 
         colorchooser = ColorChooserDialog(self.application)
-        text = Text(self, "Color : None", pos=(10, 40))
+        Button(self, "Wich color ?", sticky="top", pos=(0, 10), command=colorchooser.open)
+        text = Text(self, "Color : None", sticky="top", pos=(0, 60))
         colorchooser.signal.ANSWERED.connect(lambda color: text.set_text("Color : " + str(color)), owner=None)
-        b = Button(self, "Wich color ?", sticky="top", command=colorchooser.open)
 
 
-ut_zones = [
-    UT_ColorChooserDialog_Zone,
-]
+# For the PresentationScene import
+ut_zone_class = UT_ColorChooserDialog_Zone
 
 if __name__ == "__main__":
     from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    for scene in ut_zones:
-        TesterScene(app, scene)
+    TesterScene(app, ut_zone_class)
     app.launch()
