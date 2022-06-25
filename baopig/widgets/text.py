@@ -604,7 +604,7 @@ class Text(Zone):
             elif self.align_mode == "right":
                 line.right = self.width - self.padding.right
 
-        self.adapt(self.lines, horizontally=self.max_width is None)
+        self.adapt(self.lines, horizontally=self.max_width is None)  # TODO : all lines have the same length ?
 
         self._lines_pos = []
         for line in self.lines:
@@ -865,7 +865,7 @@ class TextLabel(Text):
 
         self.set_size(width, height)
 
-    def set_size(self, width=None, height=None):
+    def set_size(self, width=None, height=None):  # TODO : rework
 
         if (width is not None) or height is not None:
             if not self.padding.is_null:
@@ -873,13 +873,15 @@ class TextLabel(Text):
                     print(self.padding)
                     raise PermissionError("Cannot define padding and size on a TextLabel")
             if width is not None:
-                plus = (width - self.width) / 2
-                self.padding.left += plus
-                self.padding.right += plus
+                plus = int( (width - self.width) / 2 )
+                self._padding = MarginType(
+                    (self.padding.left + plus, self.padding.top, self.padding.right + plus, self.padding.bottom)
+                )
             if height is not None:
-                plus = (height - self.height) / 2
-                self.padding.top += plus
-                self.padding.bottom += plus
+                plus = int( (height - self.height) / 2 )
+                self._padding = MarginType(
+                    (self.padding.left, self.padding.top + plus, self.padding.right, self.padding.bottom + plus)
+                )
             self._pack()
 
 # TODO : copy a selected text

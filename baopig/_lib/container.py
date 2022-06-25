@@ -455,7 +455,6 @@ class Container(ResizableWidget):
     def pack(self):
         for layer in self.layers:
             layer.pack()
-        self.adapt(self.all_children)
 
     def paint(self, recursive=False, only_containers=True, with_update=True):
 
