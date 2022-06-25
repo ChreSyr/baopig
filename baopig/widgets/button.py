@@ -75,7 +75,7 @@ class AbstractButton(Container, Clickable, Hoverable):
         self.command = command  # non protected field
 
         if self.default_layer is None:
-            self.layers_manager.create_temporary_layer()
+            Layer(self)  # TODO : usefull ?
         self.behind_lines = Layer(self, weight=self.default_layer.weight-1)
         self.above_lines = Layer(self, weight=self.default_layer.weight+1)
 
