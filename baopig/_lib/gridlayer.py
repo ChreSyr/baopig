@@ -30,8 +30,7 @@ class Cell:
         Return a cell's content
         None, a Widget or a list of components (if implemented, but not yet)
         """
-        with self._grid._lock:
-            return self._grid._data[self._row_index][self._col_index]
+        return self._grid._data[self._row_index][self._col_index]
 
     def get_rect(self):
         """
@@ -103,13 +102,13 @@ class Column:
 
         left = self.left
         for comp in self.icomponents:
-            row = self._grid.get_row(comp.row)
-            comp.set_window((left, row.top, w, row.height), follow_movements=True)
+            cell_rect = self.get_cell_rect(comp.row)
+            comp.set_window(cell_rect, follow_movements=True)
             if comp.sticky is not None:
                 comp.origin.unlock()
-                comp.origin.config(pos=getattr(self.get_cell(comp.row).get_rect(), comp.sticky))
+                comp.origin.config(pos=getattr(cell_rect, comp.sticky))
                 comp.origin.lock()
-            if debug_with_assert: assert comp.window == self.get_cell_rect(comp.row)
+            if debug_with_assert: assert comp.window == cell_rect
 
         if not self.is_last:
             self.get_next_col()._update_left(left + w)
@@ -123,6 +122,7 @@ class Column:
             comp.origin.unlock()
             comp.move(dx=dx)
             comp.origin.lock()
+            comp.set_window(self.get_cell_rect(comp.row), follow_movements=True)
 
         if not self.is_last:
             self.get_next_col()._update_left(left + self.width)
@@ -242,11 +242,11 @@ class Row:
 
         top = self.top
         for comp in self.icomponents:
-            col = self._grid.get_col(comp.col)
-            comp.set_window((col.left, top, col.width, h), follow_movements=True)
+            cell_rect = self.get_cell_rect(comp.col)
+            comp.set_window(cell_rect, follow_movements=True)
             if comp.sticky is not None:
                 comp.origin.unlock()
-                comp.origin.config(pos=getattr(self.get_cell(comp.col).get_rect(), comp.sticky))
+                comp.origin.config(pos=getattr(cell_rect, comp.sticky))
                 comp.origin.lock()
 
         if not self.is_last:
@@ -261,6 +261,7 @@ class Row:
             comp.origin.unlock()
             comp.move(dy=dy)
             comp.origin.lock()
+            comp.set_window(self.get_cell_rect(comp.col), follow_movements=True)  # TODO : why follow_movements=True ?
 
         if not self.is_last:
             self.get_next_row()._update_top(top + self.height)
@@ -542,9 +543,13 @@ class GridLayer(Layer):
         assert self._data[comp.row][comp.col] is comp
         self._data[comp.row][comp.col] = None  # TODO : remove connections from add() method
 
-    def get_cell(self, row, col):
+    def get_cell(self, row, col):  # TODO : private
 
         return self.get_col(col).get_cell(row)
+
+    def get_data(self, row, col):
+
+        return self._data[row][col]
 
     def get_col(self, col_index):
         """
