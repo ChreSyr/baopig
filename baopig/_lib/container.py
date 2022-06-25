@@ -46,12 +46,14 @@ class Container(ResizableWidget):
     STYLE.create(
         background_color=(0, 0, 0, 0),  # transparent by default
         background_image=None,
+        border_color="theme-color-border",
         border_width=0,
         children_margins=0,
         padding=0,
     )
     STYLE.set_type("background_color", Color)
-    STYLE.set_type("border_width", MarginType)
+    STYLE.set_type("border_color", Color)
+    STYLE.set_type("border_width", int)
     STYLE.set_type("children_margins", MarginType)
     STYLE.set_type("padding", MarginType)
 
@@ -152,15 +154,17 @@ class Container(ResizableWidget):
 
         # Box attributes
         self._children_margins = self.style["children_margins"]
-        self._border = self.style["border_width"]
+        self._border_color = self.style["border_color"]
+        self._border_width = self.style["border_width"]
         self._padding = self.style["padding"]
         self.background_layer = None
         self._background_ref = lambda: None
 
         # BACKGROUND
         background_color = self.style["background_color"]
-        if background_color is None: background_color = (0, 0, 0, 0)
-        self._background_color = Color(background_color)
+        if background_color is None: raise PermissionError  # background_color = (0, 0, 0, 0)
+        if not isinstance(background_color, Color): raise PermissionError  # background_color = (0, 0, 0, 0)
+        self._background_color = background_color
         surf = pygame.Surface(size, pygame.SRCALPHA)
 
         ResizableWidget.__init__(self, parent, surface=surf, **options)
@@ -181,13 +185,14 @@ class Container(ResizableWidget):
 
     # Box attributes
     background = property(lambda self: self._background_ref())
-    border = property(lambda self: self._border)
+    border_color = property(lambda self: self._border_color)
+    border_width = property(lambda self: self._border_width)
     border_rect = property(lambda self: self.rect)
     content_rect = property(lambda self: BoxRect(self.padding_rect, self.padding))
     children_margins = property(lambda self: self._children_margins)
     childrenmargins_rect = property(lambda self: BoxRect(self.rect, self.children_margins, out=True))
     padding = property(lambda self: self._padding)
-    padding_rect = property(lambda self: BoxRect(self.rect, self.border))
+    padding_rect = property(lambda self: self.rect)  # NOTE : border does not influence padding
 
     def _add_child(self, child):
         self._children._add(child)
@@ -225,6 +230,8 @@ class Container(ResizableWidget):
             self._rect_to_update = None
 
             self.surface.fill(self.background_color)
+            if self._border_width:
+                pygame.draw.rect(self.surface, self._border_color, (0, 0) + self.size, self._border_width * 2 - 1)
 
             for layer in self.layers:
                 for child in layer.visible:
@@ -324,6 +331,8 @@ class Container(ResizableWidget):
             reinitialiser afin de ne pas superposer la transparence
             """
             self.surface.fill(self.background_color, rect)
+            if self._border_width:
+                pygame.draw.rect(self.surface, self._border_color, (0, 0) + self.size, self._border_width * 2 - 1)
 
             for layer in self.layers:
                 for child in layer.visible:
