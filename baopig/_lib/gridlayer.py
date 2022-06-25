@@ -558,19 +558,19 @@ class GridLayer(Layer):
         """
         return self._rows[row_index]
 
-    def pack(self):
+    def pack_TO_REWORK(self, *args, **kwargs):  # TODO
         """
         Remove all empty rows and columns
         """
-        super().pack(key, horizontal, adapt)
+        super().pack(*args, **kwargs)
         for row in tuple(self.rows):
             if row.is_empty():
-                self._data.pop(row.row_index)
+                self._data.pop(row._row_index)
                 self.rows.remove(row)
         for col in tuple(self.cols):
             if col.is_empty():
                 for data_row in self._data:
-                    data_row.pop(col.col_index)
+                    data_row.pop(col._col_index)
                 self.cols.remove(col)
 
     def set_col_width(self, width):

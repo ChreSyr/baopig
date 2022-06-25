@@ -376,13 +376,14 @@ class Container(ResizableWidget):
             (self.rect.left + rect[0], self.rect.top + rect[1]) + tuple(rect[2:])
         )
 
-    def adapt(self, children, vertically=True, horizontally=True):
+    def adapt(self, children_list=None, vertically=True, horizontally=True):
         """
-        Resize in order to contain every widget in children
-        Only use padding.right and padding.bottom, because it is not supposed to move children
+        Resize in order to contain every widget in children_list
+        Only use padding.right and padding.bottom, because it is not supposed to move children_list
         """
 
-        list = tuple(children)
+        if children_list is None: children_list = self.all_children
+        list = tuple(children_list)
         self.resize(
             (max(comp.right for comp in list)+self.padding.right
              if list else self.padding.left + self.padding.right) if horizontally else self.w,
@@ -461,9 +462,11 @@ class Container(ResizableWidget):
             child.kill()
         super().kill()
 
-    def pack(self):
+    def pack(self, *args, adapt=False, **kwargs):
         for layer in self.layers:
-            layer.pack()
+            layer.pack(*args, **kwargs)
+        if adapt:
+            self.adapt(self.awake_children)
 
     def paint(self, recursive=False, only_containers=True, with_update=True):
 
@@ -561,4 +564,3 @@ class Container(ResizableWidget):
         child._memory.need_start_animation = None
 
         child.signal.WAKE.emit()
-
