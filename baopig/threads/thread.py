@@ -13,8 +13,6 @@ class ExtraThread(threading.Thread):
         self._stop_event = threading.Event()
         self._stop_event.set()
 
-        threading.Thread.start(self)
-
     def __str__(self):
 
         return self.name
@@ -49,6 +47,7 @@ class ExtraThread(threading.Thread):
 
     def start(self):
 
+        threading.Thread.start(self)
         self._stop_event.clear()
 
     def stop(self):

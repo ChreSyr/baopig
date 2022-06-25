@@ -11,7 +11,7 @@ from baopig.pybao import WeakTypedList
 from baopig._debug import debug_global_fps
 from baopig.io import LOGGER, mouse, keyboard
 from .style import HasStyle, Theme, StyleClass
-from .widget import Widget, paint_lock
+from .widget import Widget
 from .runable import _runables_manager
 from .utilities import *
 from .scene import Scene
@@ -242,7 +242,7 @@ class Application(HasStyle):
     def _update_display(self):
         """Updates display mode and size"""
 
-        if self.is_launched:  # TODO : remove condition ?
+        if self.is_launched:
 
             # self._is_fullscreen_TO_REMOVE = self.focused_scene.size == self.max_resolution
 
@@ -267,6 +267,7 @@ class Application(HasStyle):
 
             self._current_mode = mode
             self._current_size = size
+        else: raise PermissionError  # TODO : remove
 
     def exit(self, reason=None):
 
@@ -337,13 +338,13 @@ class Application(HasStyle):
         self._focused_scene = None  # whitout this line, scene.open() does nothing, because it thinks it's already open
         scene.open()
         assert self.focused_scene is scene
+
+        pygame.display.set_mode(self.size, self.default_mode)  # prevents a threading lag with painter.start()
         self.painter.start()
 
         pygame.scrap.init()  # clipboard uses
-
         events = pygame.event.get()  # ignore events that took place during the app's load
         mouse._pos = pygame.mouse.get_pos()
-
         self._run()
 
     def open(self, scene):
