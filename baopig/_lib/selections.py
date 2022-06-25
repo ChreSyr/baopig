@@ -8,6 +8,7 @@ from .utilities import Linkable, paint_lock
 from .layer import Layer
 from .shapes import Rectangle
 from .container import Container
+# TODO : solve : selection error, there seems to be a problem with abs_hitbox or selection_rect
 
 
 class Selectable:

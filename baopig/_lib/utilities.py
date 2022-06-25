@@ -95,6 +95,7 @@ class Color(pygame.Color):
 
 
 class MarginType:
+    # Once it is created, it can never change
 
     def __init__(self, margin):
 
@@ -113,15 +114,19 @@ class MarginType:
             else:
                 assert l == 4, f"Wrong value for margin type : {margin}"
 
-        self.left = margin[0]
-        self.top = margin[1]
-        self.right = margin[2]
-        self.bottom = margin[3]
+        self._left = margin[0]
+        self._top = margin[1]
+        self._right = margin[2]
+        self._bottom = margin[3]
 
     def __repr__(self):
         return f"MarginType(left={self.left}, top={self.top}, right={self.right}, bottom={self.bottom})"
 
+    bottom = property(lambda self: self._bottom)
     is_null = property(lambda self: self.left == self.top == self.right == self.bottom == 0)
+    left = property(lambda self: self._left)
+    right = property(lambda self: self._right)
+    top = property(lambda self: self._top)
 
 
 class Enablable:

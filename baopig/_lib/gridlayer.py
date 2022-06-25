@@ -1,13 +1,17 @@
 
 
-import threading
 import pygame
 from baopig.pybao.objectutilities import TypedList
+from .utilities import MarginType
 from .widget import debug_with_assert
 from .layer import Layer
 
 
-# TODO : many widgets in one cell ?
+# TODO : multiple widgets in one cell ?
+# TODO : Layer.pack(horizontal=False, contents_margins, padding)
+# TODO : HGridLayer(contents_margins, padding)
+# TODO : VGridLayer(contents_margins, padding)
+# TODO : MarginType(0, owner=...)  so if margin.left = "10%", margin.left = margin.owner.origin.ref.w / 10
 
 
 class Cell:
@@ -350,12 +354,17 @@ class GridLayer(Layer):
     WARNING : manipulating a grid with multi-threading might cause issues
     """
 
-    def __init__(self, *args, nbcols=None, nbrows=None, col_width=None, row_height=None, **kwargs):
+    def __init__(self, *args, nbcols=None, nbrows=None, col_width=None, row_height=None,
+                 children_margins=None, **kwargs):
 
         Layer.__init__(self, *args, **kwargs)
 
+        if children_margins is None: children_margins = MarginType(0)
+        elif not isinstance(children_margins, MarginType): children_margins = MarginType(children_margins)
+
         if nbcols is not None: assert isinstance(nbcols, int) and nbcols > 0
         if nbrows is not None: assert isinstance(nbrows, int) and nbrows > 0
+        assert isinstance(children_margins, MarginType)
 
         self._layer = self
         self._nbcols = None
@@ -366,6 +375,8 @@ class GridLayer(Layer):
         self._data = [[None]]  # shared ressource initialized with one row and one column
         self._cols = TypedList(Column)
         self._rows = TypedList(Row)
+
+        self.children_margins = children_margins
 
         Row(self, 0)
         Column(self, 0)
@@ -551,6 +562,7 @@ class GridLayer(Layer):
         """
         Remove all empty rows and columns
         """
+        super().pack(key, horizontal, adapt)
         for row in tuple(self.rows):
             if row.is_empty():
                 self._data.pop(row.row_index)

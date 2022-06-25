@@ -14,7 +14,7 @@ class Layer(Communicative):
     to stand behind a layer with weight 6. The default weight is 2.
     """
 
-    def __init__(self, container, *filter, name=None, level=None, weight=None, margin=None,
+    def __init__(self, container, *filter, name=None, level=None, weight=None, padding=None, children_margins=None,
                  default_sortkey=None, sort_by_pos=False, touchable=True, maxlen=None, adaptable=False):
         """
         :param container: the Container who owns the layer
@@ -22,7 +22,8 @@ class Layer(Communicative):
         :param filter: a class or list of class from wich every layer's component must herit
         :param level: inside the container's layers : lowest behind greatest in front, default to MAINGROUND
         :param weight: inside the layer's level : lowest behind greatest in front, default to 2
-        :param margin: space between 2 widget's borders
+        :param padding: space between the widgets and the container. If None, set to the container's padding
+        :param children_margins: space between 2 widgets. If None, set to the container's children_margins
         :param default_sortkey: default key fo layer.sort(). if set, at each append, the layer will be sorted
         :param sort_by_pos: if set, the default sortkey will be a function who sort components by y then x
         :param touchable: components of non-touchable layer are not hoverable
@@ -31,10 +32,12 @@ class Layer(Communicative):
 
         if name is None: name = "UnnamedLayer{}".format(len(container.layers))
         if not filter: filter = [Widget]
-        if weight is None: weight = 2
-        if margin is None: margin = MarginType(0)
-        elif isinstance(margin, int): margin = MarginType(margin)
         if level is None: level = container.layers_manager.DEFAULT_LEVEL
+        if weight is None: weight = 2
+        if padding is None: padding = container.padding  # Same object
+        else: padding = MarginType(padding)
+        if children_margins is None: children_margins = container.children_margins  # Same object
+        else: children_margins = MarginType(children_margins)
         if sort_by_pos:
             assert default_sortkey is None
             default_sortkey = lambda c: (c.top, c.left)
@@ -42,11 +45,12 @@ class Layer(Communicative):
         for filter_class in filter: assert issubclass(filter_class, Widget), filter_class
         assert isinstance(name, str), name
         assert name not in container.layers, name
-        assert isinstance(margin, MarginType)
+        assert level in container.layers_manager.levels, level
+        assert isinstance(weight, (int, float)), weight
+        assert isinstance(padding, MarginType), padding
+        assert isinstance(children_margins, MarginType), children_margins
         if default_sortkey is not None: assert callable(default_sortkey), default_sortkey
         if maxlen is not None: assert isinstance(maxlen, int), maxlen
-        assert isinstance(weight, (int, float)), weight
-        assert level in container.layers_manager.levels, level
 
         Communicative.__init__(self)
 
@@ -57,14 +61,15 @@ class Layer(Communicative):
         self._container = container
         self._filter = filter
         self._name = name
-        self.margin = margin  # TODO : philosophy - Should a layer manage the margin ?
+        self._level = level
+        self._weight = weight
+        self._padding = padding
+        self._children_margins = children_margins
         self.default_sortkey = default_sortkey  # don't need protection
         self._layer_index = None  # defined by container.layers
         self._layers_manager = container.layers_manager
         self._maxlen = maxlen
         self._touchable = bool(touchable)
-        self._level = level
-        self._weight = weight
 
         self.layers_manager._add_layer(self)
 
@@ -169,34 +174,35 @@ class Layer(Communicative):
         self._comps.insert(index, comp)
         self.container._warn_change(comp.hitbox)
 
-    def pack(self, key=None, horizontal=False, adapt=False):
+    def pack(self, key=None, axis="vertical", children_margins=None, padding=None):
         """
         Place children on one row or one column, sorted by key (default : pos)
-        If horizontal is False, they will be placed vertically
-        If adapt is True, the container's sizes will try to adapt to the layer's
-        children, including the margin
+        axis can either be horizontal or vertical
         """
+        if children_margins is None: children_margins = self._children_margins
+        if padding is None: padding = self._padding
+        if not isinstance(children_margins, MarginType): children_margins = MarginType(children_margins)
+        if not isinstance(padding, MarginType): padding = MarginType(padding)
         if key is None: key = lambda o: (o.top, o.left)
 
         sorted_children = sorted(self, key=key)
 
-        if horizontal:
-            left = self.margin.left
+        if axis == "horizontal":
+            left = padding.left
             for comp in sorted_children:
                 if comp.has_locked.origin:
                     raise PermissionError("Cannot pack a layer who contains locked children")
-                comp.topleft = (left, self.margin.top)
-                left = comp.right + self.margin.left
+                comp.topleft = (left, padding.top)
+                left = comp.right + children_margins.left
+        elif axis == "vertical":
+            top = padding.top
+            for comp in sorted_children:
+                if comp.has_locked.origin:
+                    raise PermissionError("Cannot pack a layer who contains locked children")
+                comp.topleft = (padding.left, top)
+                top = comp.bottom + children_margins.top
         else:
-            top = self.margin.top
-            for comp in sorted_children:
-                if comp.has_locked.origin:
-                    raise PermissionError("Cannot pack a layer who contains locked children")
-                comp.topleft = (self.margin.left, top)
-                top = comp.bottom + self.margin.top
-
-        if adapt:
-            self.container.adapt(self, padding=self.margin)
+            raise ValueError(f"axis must be either 'horizontal' or 'vertical', not {axis}")
 
     def remove(self, comp):
         """

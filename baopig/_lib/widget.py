@@ -155,9 +155,6 @@ class _Origin:
     def config(self, pos=None, location=None, reference_comp=None, reference_location=None,
                from_hitbox=None, locked=None):
 
-        old_pos = self.pos if self._asked_pos else None
-        old_location = self.location
-
         if locked is False:
             self.owner.has_locked.origin = False
 
@@ -169,14 +166,16 @@ class _Origin:
 
         if reference_comp is not None:
             assert isinstance(reference_comp, Widget)
-            for signal in (self.reference.signal.MOTION, self.reference.signal.RESIZE):
-                try:
-                    signal.disconnect(self._weak_update_owner_pos)
-                except ValueError: pass
-            if self._has_adaptable_size:
-                try:
-                    self.reference.signal.RESIZE.disconnect(self.owner._update_size)
-                except ValueError: pass
+            try:
+                for signal in (self.reference.signal.MOTION, self.reference.signal.RESIZE):
+                    try:
+                        signal.disconnect(self._weak_update_owner_pos)
+                    except ValueError: pass  # first config, signal isn't connect yet
+                if self._has_adaptable_size:
+                    try:
+                        self.reference.signal.RESIZE.disconnect(self.owner._update_size)
+                    except ValueError: pass  # first config, signal isn't connect yet
+            except AttributeError: pass  # old reference got killed, self.reference = None
             self._reference_ref = reference_comp.get_weakref()
             self.reference.signal.RESIZE.connect(self._weak_update_owner_pos, owner=self.owner)
             if self.reference != self.owner.parent:

@@ -604,7 +604,7 @@ class Text(Zone):
             elif self.align_mode == "right":
                 line.right = self.width - self.padding.right
 
-        self.adapt(self.lines, padding=self.padding, horizontally=self.max_width is None)
+        self.adapt(self.lines, horizontally=self.max_width is None)
 
         self._lines_pos = []
         for line in self.lines:

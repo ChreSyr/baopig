@@ -6,6 +6,30 @@ from .utilities import *
 from .widget import Widget
 from .resizable import ResizableWidget
 from .layersmanager import LayersManager
+from .layer import Layer
+from .image import Image
+
+
+class BoxRect(pygame.Rect):
+
+    def __init__(self, rect, margin, out=False):
+
+        if out:
+            pygame.Rect.__init__(
+                self,
+                rect.left - margin.left,
+                rect.top - margin.top,
+                rect.width + margin.left + margin.right,
+                rect.height + margin.top + margin.bottom
+            )
+        else:
+            pygame.Rect.__init__(
+                self,
+                rect.left + margin.left,
+                rect.top + margin.top,
+                rect.width - margin.left - margin.right,
+                rect.height - margin.top - margin.bottom
+            )
 
 
 class Container(ResizableWidget):
@@ -20,9 +44,19 @@ class Container(ResizableWidget):
 
     STYLE = ResizableWidget.STYLE.substyle()
     STYLE.create(
-        background_color = (0, 0, 0, 0),  # transparent by default
+        background_color=(0, 0, 0, 0),  # transparent by default
+        background_image=None,
+        border_width=0,
+        children_margins=0,
+        padding=0,
     )
     STYLE.set_type("background_color", Color)
+    STYLE.set_type("border_width", MarginType)
+    STYLE.set_type("children_margins", MarginType)
+    STYLE.set_type("padding", MarginType)
+
+    # NOTE : if width or height is defined in style, and a background_image is set,
+    # the width and height values will be ignored
 
     def __init__(self, parent, size=None, **options):
         """can be size=(50, 45) or width=50, height=45"""
@@ -116,6 +150,13 @@ class Container(ResizableWidget):
         self._rect_to_update = None
         self._requests = PackedFunctions()  # using PackedFunctions allow to set an owner for a request
 
+        # Box attributes
+        self._children_margins = self.style["children_margins"]
+        self._border = self.style["border_width"]
+        self._padding = self.style["padding"]
+        self.background_layer = None
+        self._background_ref = lambda: None
+
         # BACKGROUND
         background_color = self.style["background_color"]
         if background_color is None: background_color = (0, 0, 0, 0)
@@ -126,12 +167,27 @@ class Container(ResizableWidget):
 
         if self.is_hidden:
             self.set_dirty(1)
+        background_image = self.style["background_image"]
+        if background_image is not None:
+            self.set_background_image(background_image)
+
+        self.signal.RESIZE.connect(self.handle_resize, owner=None)
 
     all_children = property(lambda self: self._children.awake.union(self._children.asleep))
     asleep_children = property(lambda self: self._children.asleep)
     awake_children = property(lambda self: self._children.awake)
     background_color = property(lambda self: self._background_color)
     default_layer = property(lambda self: self.layers_manager.default_layer)
+
+    # Box attributes
+    background = property(lambda self: self._background_ref())
+    border = property(lambda self: self._border)
+    border_rect = property(lambda self: self.rect)
+    content_rect = property(lambda self: BoxRect(self.padding_rect, self.padding))
+    children_margins = property(lambda self: self._children_margins)
+    childrenmargins_rect = property(lambda self: BoxRect(self.rect, self.children_margins, out=True))
+    padding = property(lambda self: self._padding)
+    padding_rect = property(lambda self: BoxRect(self.rect, self.border))
 
     def _add_child(self, child):
         self._children._add(child)
@@ -311,19 +367,18 @@ class Container(ResizableWidget):
             (self.rect.left + rect[0], self.rect.top + rect[1]) + tuple(rect[2:])
         )
 
-    def adapt(self, children, padding=0, vertically=True, horizontally=True):  # TODO : re padding, use Container.padding
+    def adapt(self, children, vertically=True, horizontally=True):
         """
         Resize in order to contain every widget in children
         Only use padding.right and padding.bottom, because it is not supposed to move children
         """
 
         list = tuple(children)
-        padding = MarginType(padding)
         self.resize(
-            (max(comp.right for comp in list)+padding.right
-             if list else padding.right) if horizontally else self.w,
-            (max(comp.bottom for comp in list)+padding.bottom
-             if list else padding.bottom) if vertically else self.h
+            (max(comp.right for comp in list)+self.padding.right
+             if list else self.padding.left + self.padding.right) if horizontally else self.w,
+            (max(comp.bottom for comp in list)+self.padding.bottom
+             if list else self.padding.top + self.padding.bottom) if vertically else self.h
         )
 
     def asleep_child(self, child):
@@ -377,10 +432,15 @@ class Container(ResizableWidget):
         self._requests()
         self._requests.clear()
 
-    def fit(self, layer):
+    def fit(self, layer):  # TODO
 
         assert layer in self.layers
         self.resize(max(c.right for c in layer), max(c.bottom for c in layer))
+
+    def handle_resize(self):
+
+        if self.background is not None:
+            self.background.resize(*self.size)
 
     def has_layer(self, layer_name):
         return layer_name in (layer.name for layer in self.layers)
@@ -391,6 +451,11 @@ class Container(ResizableWidget):
         for child in tuple(self.all_children):
             child.kill()
         super().kill()
+
+    def pack(self):
+        for layer in self.layers:
+            layer.pack()
+        self.adapt(self.all_children)
 
     def paint(self, recursive=False, only_containers=True, with_update=True):
 
@@ -433,6 +498,33 @@ class Container(ResizableWidget):
 
         self._background_color = Color(*args, **kwargs)
         self.send_paint_request()
+
+    def set_background_image(self, surf, background_adapt=True):
+        """
+        If background_adapt is True, the surf adapts to the zone's size
+        Else, the zone's size adapts to the background_image
+        """
+        if surf is None:
+            if self.background is not None:
+                with paint_lock:
+                    self.background.kill()
+            return
+        if background_adapt and surf.get_size() != self.size:
+            surf = pygame.transform.scale(surf, self.size)
+        if self.background_layer is None:
+            self.background_layer = Layer(self, Image, name="background_layer", level=self.layers_manager.BACKGROUND)
+        with paint_lock:
+            if self.background is not None:
+                self.background.kill()
+                assert self.background is None
+            self._background_ref = Image(self, surf, pos=(0, 0), layer=self.background_layer).get_weakref()
+            if background_adapt is False:
+                self.resize(*self.background.size)
+
+            def handle_background_kill(weakref):
+                if weakref is self._background_ref:
+                    self._background_ref = lambda: None
+            self.background.signal.KILL.connect(handle_background_kill, owner=self)
 
     def set_surface(self, surface):
 

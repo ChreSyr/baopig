@@ -14,7 +14,6 @@ from .gridlayer     import GridLayer
 from .layersmanager import LayersManager
 from .container     import Container
 from .scrollable    import Scrollable, ScrollableByMouse
-from .box           import Box
 from .zone          import Zone, SubZone
 from .selections    import Selectable, Selector
 from .scene         import Scene

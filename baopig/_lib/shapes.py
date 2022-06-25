@@ -221,7 +221,8 @@ class Highlighter(Widget):
                 target = None
 
             if target is not None:
-                self.target.signal.RESIZE.disconnect(self.config)
+                try: self.target.signal.RESIZE.disconnect(self.config)
+                except AttributeError: pass  # self.target = None
                 self._target_ref = target.get_weakref()
                 self.target.signal.RESIZE.connect(self.config, owner=self)
                 w = self.width if width is None else width

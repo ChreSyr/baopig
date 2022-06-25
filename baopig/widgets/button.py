@@ -2,7 +2,7 @@
 import pygame
 from baopig.io import keyboard
 from baopig._lib import Clickable, Layer
-from baopig._lib import Sail, Image, Box, Hoverable
+from baopig._lib import Sail, Image, Container, Hoverable
 from .text import Text
 
 
@@ -37,7 +37,7 @@ class ButtonText(Text):  # TODO : das is das ?
             self.font.config(height=self.font.height - 1)  # changing the font will automatically update the text
 
 
-class AbstractButton(Box, Clickable, Hoverable):
+class AbstractButton(Container, Clickable, Hoverable):
     """
     Abstract button
 
@@ -48,7 +48,7 @@ class AbstractButton(Box, Clickable, Hoverable):
     - hover
     """
 
-    STYLE = Box.STYLE.substyle()
+    STYLE = Container.STYLE.substyle()
     STYLE.modify(
         width=100,
         height=35,
@@ -68,12 +68,7 @@ class AbstractButton(Box, Clickable, Hoverable):
 
         assert callable(command), "command must be callable"
 
-        Box.__init__(
-            self,
-            parent=parent,
-            name=name,
-            **options
-        )
+        Container.__init__(self, parent=parent, name=name, **options)
         Hoverable.__init__(self)
         Clickable.__init__(self, catching_errors=self.style["catching_errors"])
 

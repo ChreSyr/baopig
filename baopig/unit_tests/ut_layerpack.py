@@ -11,7 +11,9 @@ class UT_LayerPack_Zone(Zone, Focusable):
         Focusable.__init__(self)
 
         self.handle_defocus()  # Set a new background color
-        self.package = Layer(self, name="package_layer", margin=10)
+        self.package = Layer(self, name="package_layer")
+        def pack_package():
+            self.package.pack(padding=10, children_margins=5)
         Layer(self, name="safe_layer")
 
         t = Text(self, "Click on the gray zone, then use your keyboard\n"
@@ -21,7 +23,7 @@ class UT_LayerPack_Zone(Zone, Focusable):
                        "Maj + SPACE : Delete the oldest zone",
                  pos=(0, 0), pos_location="topright", pos_ref_location="topright",
                  layer="safe_layer")
-        b = Button(self, "PACK", pos=t.bottomleft, command=self.package.pack, layer="safe_layer")
+        b = Button(self, "PACK", pos=t.bottomleft, command=pack_package, layer="safe_layer")
 
     def handle_defocus(self):
 
@@ -44,14 +46,17 @@ class UT_LayerPack_Zone(Zone, Focusable):
             gc.collect()
             LOGGER.info("Garbage collected")
         elif key == keyboard.a:
-            zone = Zone(self, name="zone", background_color="green4",
+            zone = Zone(self, name="zone", background_color="green4", padding=3, children_margins=3,
                         pos=(random.randint(0, 200), random.randint(0, 200)))
             Rectangle(parent=zone, color=(255, 255, 0), size=(zone.w, 10), pos=(0, 0), name="Cobaye")
-            Text(zone, "1")
-            Text(zone, "2")
-            Text(zone, "3")
+            Text(zone, f"padding:{zone.padding}", max_width=200)
+            Text(zone, f"children_margins:{zone.children_margins}", max_width=200)
+            Text(zone, f"This zone's layer's length : {len(self.package)}")
+            Text(zone, " ")
+            Text(zone, " ")
             Button(zone, "REMOVE", command=zone.kill)
-            zone.default_layer.pack(adapt=True)
+            zone.default_layer.pack()
+            zone.adapt(zone.default_layer)
 
 
 # For the PresentationScene import

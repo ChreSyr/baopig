@@ -1,14 +1,13 @@
 
 
 import pygame
-from baopig._debug import debug_screen_updates, debug_with_assert
-from baopig.io.logging import LOGGER
-from baopig._lib import Box, Layer, paint_lock, Widget, Size
+from baopig._debug import debug_with_assert
+from baopig._lib import Container, paint_lock, Widget
 
 
-class Zone(Box):  # TODO : BoxModel
+class Zone(Container):
 
-    STYLE = Box.STYLE.substyle()
+    STYLE = Container.STYLE.substyle()
     STYLE.modify(
         width=100,
         height=100,
