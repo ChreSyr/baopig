@@ -164,7 +164,7 @@ class _Origin:
         if location is not None:
             self._location = WidgetLocation(location)
 
-        if reference_comp is not None:
+        if reference_comp is not None and reference_comp is not self.reference:
             assert isinstance(reference_comp, Widget)
             try:
                 for signal in (self.reference.signal.MOTION, self.reference.signal.RESIZE):
@@ -192,6 +192,7 @@ class _Origin:
         if pos is not None:
             assert _Origin.accept(pos), f"Wrong position value : {pos} (see documentation above)"
             self._asked_pos = pos
+            print(self._asked_pos)
 
         self.owner.move_at(self.pos, self.location)
 
@@ -898,7 +899,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
             self._row = row
         self._sticky = None
         if "sticky" in options:
-            self._sticky = options.pop("sticky")
+            self._sticky = WidgetLocation(options.pop("sticky"))
             self.style.modify(
                 pos_location = self._sticky,
                 pos_ref_location = self._sticky
