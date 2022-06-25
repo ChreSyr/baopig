@@ -763,7 +763,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
     STYLE.set_type("pos_location", WidgetLocation)
     STYLE.set_type("pos_ref_location", WidgetLocation)
 
-    def __init__(self, parent, surface, pos=None, origin=None, layer=None, name=None, row=None, col=None, **options):
+    def __init__(self, parent, surface, pos=None, layer=None, name=None, row=None, col=None, **options):
 
         if name is None: name = "NoName"
         if isinstance(layer, str): layer = parent.layers_manager.get_layer(layer)
@@ -922,7 +922,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         if "layer_level" in options:
             assert layer is None, "Cannot define a layer AND a layer_level"
             layer_level = options.pop("layer_level")
-        if layer is None:
+        if layer is None and parent is not self:
             layer = parent.layers_manager.find_layer_for(self, layer_level)
         self._layer = layer
         # if col is not None:  # or col and row are at None, or they both are defined

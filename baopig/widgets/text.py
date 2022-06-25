@@ -35,14 +35,14 @@ def set_indicator(self, text=None, get_text=None, indicator=None, location="top"
             self.parent, get_text,
             font_color=(255, 255, 255), font_height=15,
             pos=pos, pos_location=loc_opposite, pos_ref=self, pos_ref_location=location,
-            background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False,
+            background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False, layer_level=2,
         )
     else:
         self._indicator = Text(
             self.parent, text,
             font_color=(255, 255, 255), font_height=15,
             pos=pos, pos_location=loc_opposite, pos_ref=self, pos_ref_location=location,
-            background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False,
+            background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False, layer_level=2,
         )
     self._indicator.origin.config(from_hitbox=True)
     if self.layer.accept(self._indicator):

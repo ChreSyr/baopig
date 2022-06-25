@@ -10,14 +10,13 @@ class PresentationScene(Scene):
 
         Scene.__init__(self, app)
 
-        GridLayer(self)
-
-        Text(self, text="", row=len(self.default_layer))
-        Text(self, text=f"Welcome to baopig version {version}", row=len(self.default_layer))
-        Text(self, text="You can look for the tutorial or experiment unit tests", row=len(self.default_layer))
+        Text(self, text="")
+        Text(self, text=f"Welcome to baopig version {version}")
+        Text(self, text="You can look for the tutorial or experiment unit tests")
         Button(self, text="Unit Tests", command=PrefilledFunction(app.open, "UTMenu_Scene"),
                row=len(self.default_layer))
-        Button(self, text="Tutorial", row=len(self.default_layer))
+        Button(self, text="Tutorial")
+        self.pack()
         UTMenu_Scene(app)
 
 
@@ -27,7 +26,6 @@ class UTMenu_Scene(Scene):
 
         Scene.__init__(self, app)
 
-        # l = MenuLayer(self)  # TODO
         GridLayer(self)
 
         Text(self, text="", row=0)

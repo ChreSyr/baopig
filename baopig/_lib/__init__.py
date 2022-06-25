@@ -9,7 +9,7 @@ from .resizable     import ResizableWidget
 from .animatedwidget import AnimatedWidget
 from .image         import *
 from .shapes        import *
-from .layer         import Layer, TemporaryLayer
+from .layer         import Layer
 from .gridlayer     import GridLayer
 from .layersmanager import LayersManager
 from .container     import Container

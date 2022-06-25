@@ -20,13 +20,13 @@ class Rectangle(ResizableWidget):
 
     STYLE = ResizableWidget.STYLE.substyle()
     STYLE.modify(
-        width = 30,
-        height = 30,
+        width=30,
+        height=30,
     )
     STYLE.create(
-        color = "theme-color-content",
-        border_color = "theme-color-border",
-        border_width = 0,
+        color="theme-color-content",
+        border_color="theme-color-border",
+        border_width=0,
     )
     STYLE.set_type("color", Color)
     STYLE.set_type("border_color", Color)

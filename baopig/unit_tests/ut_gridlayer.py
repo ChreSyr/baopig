@@ -71,13 +71,13 @@ class UT_GridLayer_Zone(Zone):
         def toggle_col_size(col_index):
             col = grid.get_col(col_index)
             if col.is_adaptable:  col.set_width(40)
-            elif col.width == 40: col.set_width(20)
+            elif col.get_width() == 40: col.set_width(20)
             else:                 col.set_width(None)
             if col.is_adaptable:  col[-1].kill()
         def toggle_row_size(row_index):
             row = grid.get_row(row_index)
             if row.is_adaptable:   row.set_height(40)
-            elif row.height == 40: row.set_height(20)
+            elif row.get_height() == 40: row.set_height(20)
             else:                  row.set_height(None)
             if row.is_adaptable:   row[-1].kill()
         def add_rect():
