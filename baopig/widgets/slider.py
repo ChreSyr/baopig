@@ -143,12 +143,9 @@ class Slider(Container, Linkable, Hoverable):
             get_indicator_text = lambda: self.val
             if title:
                 if printed_title:
-                    self.title = Text(
-                        self, title,
-                        color=(96, 96, 96), font_height=int((self.bar.height - self.bar.border_width*2) * .9), bold=True,
-                        sticky="center", touchable=False
-                    )
-                get_indicator_text = lambda: title + f" : {self.val}"
+                    self.title = Text(self, title, sticky="center", touchable=False, font_color=(96, 96, 96),
+                                      font_height=int((self.bar.height - self.bar.border_width*2) * .9), font_bold=True)
+                get_indicator_text = lambda: f"{title} : {self.val}"
             self.set_indicator(get_text=get_indicator_text)
 
     axis = property(lambda self: self._axis)
