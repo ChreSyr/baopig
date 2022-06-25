@@ -97,13 +97,15 @@ class Layer(Communicative):
             self.__class__.__name__, self.name, self._layer_index, self._filter, self.touchable,
             self.level, self.weight, self._comps)
 
-    is_adaptable = property(lambda self: self._is_adaptable)
+    children_margins = property(lambda self: self._children_margins)
     container = property(lambda self: self._container)
+    is_adaptable = property(lambda self: self._is_adaptable)
     layer_index = property(lambda self: self._layer_index)
     layers_manager = property(lambda self: self._layers_manager)
     level = property(lambda self: self._level)
     maxlen = property(lambda self: self._maxlen)
     name = property(lambda self: self._name)
+    padding = property(lambda self: self._padding)
     touchable = property(lambda self: self._touchable)
     weight = property(lambda self: self._weight)
 
@@ -174,32 +176,31 @@ class Layer(Communicative):
         self._comps.insert(index, comp)
         self.container._warn_change(comp.hitbox)
 
-    def pack(self, key=None, axis="vertical", children_margins=None, padding=None):
+    def pack(self, key=None, axis="vertical", children_margins=None, padding=None, start_pos=(0, 0)):  # TODO : location
         """
         Place children on one row or one column, sorted by key (default : pos)
         axis can either be horizontal or vertical
         """
+        if key is None: key = lambda o: (o.top, o.left)
         if children_margins is None: children_margins = self._children_margins
         if padding is None: padding = self._padding
         if not isinstance(children_margins, MarginType): children_margins = MarginType(children_margins)
         if not isinstance(padding, MarginType): padding = MarginType(padding)
-        if key is None: key = lambda o: (o.top, o.left)
 
         sorted_children = sorted(self, key=key)
 
+        left, top = padding.left + start_pos[0], padding.top + start_pos[1]
         if axis == "horizontal":
-            left = padding.left
             for comp in sorted_children:
                 if comp.has_locked.origin:
                     raise PermissionError("Cannot pack a layer who contains locked children")
-                comp.topleft = (left, padding.top)
+                comp.topleft = (left, top)
                 left = comp.right + children_margins.left
         elif axis == "vertical":
-            top = padding.top
             for comp in sorted_children:
                 if comp.has_locked.origin:
                     raise PermissionError("Cannot pack a layer who contains locked children")
-                comp.topleft = (padding.left, top)
+                comp.topleft = (left, top)
                 top = comp.bottom + children_margins.top
         else:
             raise ValueError(f"axis must be either 'horizontal' or 'vertical', not {axis}")
@@ -239,22 +240,3 @@ class Layer(Communicative):
         if key is None:  # No sort key defined
             return
         self._comps.sort(key=key)
-
-
-class TemporaryLayer(Layer):
-    """
-    A TemporaryLayer will kill itself when its last component is removed
-    """
-
-    def __init__(self, *args, **kwargs):
-
-        Layer.__init__(self, *args, **kwargs)
-
-    def remove(self, comp):
-
-        super().remove(comp)
-        if len(self._comps) == 0:
-            for comp in self.container.asleep_children:
-                if comp.layer is self:
-                    return
-            self.kill()
