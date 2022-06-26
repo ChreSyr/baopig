@@ -88,30 +88,35 @@ class UT_Origin_Zone(Zone):
         c2 = Rectangle(self, color=(0, 0, 0), size=(20, 6),
                        pos=(0, 0), pos_location="center", pos_ref_location="center")
 
+    def load_sections(self):
+        self.parent.add_section(
+            title="Selector",
+            tests=[
+                "the cross is always at the texting zone center, even after a resize",
+                "the topright and midtop corners can be dragged",
+                "the topright and midtop corners follow the testing zone resizing even after being moved",
+                "a prisonner can only be seen trought its window",
+                "the first prisonner (light blue rect) is not visible outside the window (black border)",
+                "if the topright corner is set inside the topleft border, a prisonner appears at corner's center",
+                "if the midtop corner is set inside the topleft border, a prisonner appears at border'center",
+                "when the midtop corner moves, the prisonner is visually static, even with low fps",
+                "the first prisonner can be dragged",
+                "the first prisonner can only be seen trought the window, once again",
+                "the clock (light gray surface at the center) can be dragged",
+                "after the scene width changed, the clock abcissa is still at the center of the application",
+                "if the clock has moved, after a scene resizing, it keeps the same distance from the scene's right",
+                "the belt (rects around the clock center) cannot be dragged",
+                "the yellow center (yellow rect at the clock center) can be dragged",
+                "the belt follow the yellow center everywhere he goes",
+                "dragging the yellow center don't cause lag",
+                "the twins (brown and green rects at the application top) move together",
+                "the twins child (rect between the twins) is moved by the twins but it doesn't move them",
+            ]
+        )
+
 
 # For the PresentationScene import
 ut_zone_class = UT_Origin_Zone
-"""
-# TEST : the cross is always at the application center, even after a scene resize
-# TEST : the prisonner (light blue rect) is not visible inside the window (black border on topright corner)
-# TEST : the corners are still at the application corners after a scene resize
-# TEST : the bottomleft corner cannot be dragged, despite the set_dragable
-# TEST : the topright and bottom right corners can be dragged
-# TEST : the topright and bottom right corners follow the scene resizing even after being moved
-# TEST : if the topright corner is set inside the topleft blue border, the prisonner appears
-# TEST : the prisonner can only be seen trought the window
-# TEST : when the topright corner moves, the prisonner is visually static, even with low fps
-# TEST : the prisonner can be dragged
-# TEST : the prisonner can only be seen trought the window, once again
-# TEST : after the scene width changed, the clock abcissa is still at the center of the application
-# TEST : the clock (light gray surface at the center) can be dragged
-# TEST : if the clock has moved, after a scene resizing, it keeps the same distance from the scene's right
-# TEST : the yellow belt (yellow rects around the clock center) cannot be dragged
-# TEST : the yellow center (yellow rect at the clock center) can be dragged
-# TEST : the yellow belt follow the yellow center everywhere he goes
-# TEST : dragging the yellow center don't cause lag
-# TEST : when you drag one of the twins (brown and green rects at the application top), a RecursiveError is raised
-"""
 
 if __name__ == "__main__":
     from baopig.unit_tests.testerscene import TesterScene

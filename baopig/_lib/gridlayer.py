@@ -7,9 +7,6 @@ from .widget import debug_with_assert
 from .layer import Layer
 
 
-# TODO : multiple widgets in one cell ?
-
-
 class RowOrCol:
 
     def __init__(self, grid, index):
@@ -63,7 +60,7 @@ class Column(RowOrCol):
         if self.is_first: self._left = grid.padding.left
         else: self._left = self.get_previous_col().right + grid.children_margins.left
 
-        grid._cols.append(self)  # TODO : insert ?
+        grid._cols.append(self)
 
     def __iter__(self):
 
@@ -188,16 +185,6 @@ class Row(RowOrCol):
 
         for comp in self.icomponents:
             self._grid._update_comp(comp)
-
-        # h = self.get_height()
-        # top = self.top
-        # for comp in self.icomponents:
-        #     cell_rect = self.get_cell_rect(comp.col)
-        #     comp.set_window(cell_rect)
-        #     if comp.sticky is not None:
-        #         comp.origin.unlock()
-        #         comp.origin.config(pos=getattr(cell_rect, comp.sticky))
-        #         comp.origin.lock()
 
         if not self.is_last:
             self.get_next_row()._update_top(self.top + self.get_height() + self._grid.children_margins.top)
@@ -331,7 +318,7 @@ class GridLayer(Layer):
         comp.set_window(cell_rect)
         comp.origin.unlock()
         if comp.sticky is not None:
-            comp.origin.config(pos=getattr(pygame.Rect(cell_rect), comp.sticky), locked=True)
+            comp.origin.config(pos=getattr(pygame.Rect(cell_rect), comp.sticky), location=comp.sticky, locked=True)
         else:
             comp.origin.config(pos=cell_rect[:2], locked=True)
 
@@ -350,8 +337,6 @@ class GridLayer(Layer):
         return super().accept(comp)
 
     def add(self, comp):
-
-        # TODO : solve : sticky positions are not updated when the grid is resized
 
         if (comp.col is None) or (comp.row is None):
             raise PermissionError(
@@ -435,7 +420,9 @@ class GridLayer(Layer):
         if row.is_adaptable:
             old_row_height = row.get_height()
 
-        self._data[comp.row][comp.col] = None  # TODO : remove connections from add() method
+        comp.signal.RESIZE.disconnect(self._update_size)
+        comp.signal.KILL.disconnect(self._update_size)
+        self._data[comp.row][comp.col] = None
 
         if col.is_adaptable and (old_col_width != col.get_width()):
             col._update_width()
@@ -462,23 +449,24 @@ class GridLayer(Layer):
         """
         return self._rows[row_index]
 
-    def pack(self, **kwargs):
+    def pack(self, start_pos=(0, 0), **kwargs):
         """
-        Updates padding and children_margins
+        Updates padding and children_margins, not col.width & row.height
         """
         if kwargs:
-            raise PermissionError("GridLayer.pack() doesn't support parameters")
+            raise PermissionError("GridLayer.pack() only supports 'start_pos' parameters")
 
         with paint_lock:
+
             for col in self._cols:
                 if col.is_first:
-                    col._left = self.padding.left
+                    col._left = self.padding.left + start_pos[0]
                 else:
                     col._left = col.get_previous_col().right + self.children_margins.left
 
             for row in self._rows:
                 if row.is_first:
-                    row._top = self.padding.top
+                    row._top = self.padding.top + start_pos[1]
                 else:
                     row._top = row.get_previous_row().bottom + self.children_margins.top
 
@@ -503,12 +491,7 @@ class GridLayer(Layer):
         if nbcols is not None:
             nbnew = nbcols - self.nbcols
             if nbnew < 0:
-            # Delete extra columns
-                if debug_with_assert: assert nbnew > 0, "A grid must have at least 1 column"
-                for i in range(nbcols, self.nbcols):
-                    if not self._cols[i].is_empty():
-                        raise PermissionError("Cannot reduce nbcols, at least one extra column contains something")
-                    self._cols[i].kill()  # TODO : implement
+                raise PermissionError("Cannot reduce nbcols")
             elif nbnew > 0:
             # Create new columns
                 for row in self._data:
@@ -526,12 +509,7 @@ class GridLayer(Layer):
         if nbrows is not None:
             nbnew = nbrows - self.nbrows
             if nbrows < 0:
-            # Delete extra columns
-                if debug_with_assert: assert nbrows > 0, "A grid must have at least 1 row"
-                for i in range(nbrows, self.nbrows):
-                    if not self._rows[i].is_empty():
-                        raise PermissionError("Cannot reduce nbrows, at least one row to delete contains something")
-                    self._rows[i].kill()  # TODO : implement
+                raise PermissionError("Cannot reduce nbrows")
             elif nbnew > 0:
             # Create new rows
                 for i in range(self.nbrows, nbrows):
@@ -548,7 +526,7 @@ class GridLayer(Layer):
             row.set_height(height)
         self._row_height = height
 
-    def swap(self, widget1, widget2):  # TODO : use pack()
+    def swap(self, widget1, widget2):
 
         assert widget1 in self
         assert widget2 in self

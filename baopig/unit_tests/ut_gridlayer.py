@@ -2,36 +2,20 @@
 from baopig import *
 
 
-# ------ TESTS TO ENFORCE ------
-# TEST 01 : Any component from a GridLayer require 'row' and 'col' attributes
-# TEST 02 : Can't define 'pos' and 'origin' attributes of components who will be stored in a grid
-# TEST 03 : Default behavior is to create rows and columns automatically
-# TEST 04 : When the nbrows is set, we can't add a component who would like to go outside, same for nbcols
-# TEST 05 : A row without defined height adapt to its components, 0 if empty, same for columns
-# TEST 06 : We can set a default size for rows and columns
-# TEST 07 : A component's hitbox is always inside its cell -> the cell defines the window
-# TEST 08 : We can resize a row without any visual bug inside the row, same for columns -> the window is updated
-# TEST 09 : Resizing a row moves the rows located below, same for columns
-# TEST 10 : Components in a grid can't manage their position themself (non-dragable)
-
-# ------ TESTS TO APPLY ------
-# TODO : write unit tests with the removable rects
-
-# TODO : rethink : can a component located in a grid move itself (via Dragable for example)
-
 class UT_GridLayer_Zone(Zone):
 
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
 
-        Layer(self, name="zones_layer", adaptable=False)  # TODO : test adaptable
-        z1 = Zone(self, size=(self.w-20, 130), background_color=(150, 150, 150), pos=(10, 10))
-        z2 = Zone(self, size=(self.w-20, 130), background_color=(150, 150, 150),
-                  pos=(0, 10), pos_ref=z1, pos_ref_location="bottomleft")
-        z3 = Zone(self, size=(self.w-20, 400), background_color=(150, 150, 150),
-                  pos=(0, 10), pos_ref=z2, pos_ref_location="bottomleft")
+        Layer(self, name="zones_layer", children_margins=10)
+        z1 = Zone(self, size=("100%", 130), background_color=(150, 150, 150))
+        z2 = Zone(self, size=("100%", 130), background_color=(150, 150, 150))
+        z3 = Zone(self, size=("100%", 155), background_color=(150, 150, 150))
+        z4 = Zone(self, size=("100%", 120), background_color=(150, 150, 150))
+        self.default_layer.pack()
         z3.set_style_for(Button, padding=2)
 
+        # Z1
         z1.grid = GridLayer(z1, name="grid_layer", row_height=40, col_width=100)
         assert z1.layers_manager.default_layer == z1.grid
         for row in range(2):
@@ -39,7 +23,8 @@ class UT_GridLayer_Zone(Zone):
                 text = "row:{}\ncol:{}".format(row, col)
                 Text(z1, text, row=row, col=col, name=text)
 
-        z2.grid = GridLayer(z2, name="grid_layer")  # TODO : solve : some text disappear when selected, warn_change problem
+        # Z2
+        z2.grid = GridLayer(z2, name="grid_layer")
         for row in range(3):
             for col in range(5):
                 text = "row:{}\ncol:{}".format(row, col)
@@ -55,7 +40,8 @@ class UT_GridLayer_Zone(Zone):
         r = DragableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30), col=8, row=2)
         Button(z2, "Update sizes", command=z2.grid._update_size, col=0, row=3)
 
-        grid = GridLayer(z3, name="grid_layer", nbrows=10, nbcols=10)
+        # Z3
+        grid = GridLayer(z3, nbrows=5, nbcols=10)
         class RemovableRect(Rectangle, Linkable):
             def __init__(self, *args, **kwargs):
                 Rectangle.__init__(self, *args, **kwargs)
@@ -91,7 +77,7 @@ class UT_GridLayer_Zone(Zone):
                             Button(z3, "TOG", row=row, col=col, size=(30, 30), catching_errors=True,
                                    command=PrefilledFunction(toggle_row_size, row))
                         else:
-                            RemovableRect(z3, color=random_color(), size=(30, 30), col=col, row=row)
+                            RemovableRect(z3, color=random_color(), size=(30, 30), col=col, row=row, sticky="center")
         Button(z3, "ADD", row=0, col=0, command=add_rect, width=30, height=30)
         def fix():
             if grid.cols_are_adaptable:
@@ -102,9 +88,45 @@ class UT_GridLayer_Zone(Zone):
                 grid.set_col_width(None)
         Button(z3, "FIX", row=0, col=1, command=fix)
 
-        # self.handle_event[mouse.LEFTBUTTON_DOWN].add(print)
-        # self.handle_event[mouse.DRAG].add(print)
-        # self.handle_event[mouse.RELEASEDRAG].add(print)
+        # Z4
+        grid4 = GridLayer(z4, Rectangle, nbrows=4, nbcols=10, row_height=30, col_width=30)
+        for row in range(grid4.nbrows):
+            for col in range(grid4.nbcols):
+                Rectangle(z4, color=(130, 49, 128), row=row, col=col, size=(16, 16), sticky="topright")
+
+        buttons_layer = GridLayer(z4, nbrows=3, nbcols=3)
+        def click():
+            from baopig._lib.widget import WidgetLocation
+            for w in grid4:
+                w._sticky = WidgetLocation(mouse.hovered_comp.text_widget.text)
+            grid4.pack()
+        Button(z4, row=0, col=0, command=click, text="topleft")
+        Button(z4, row=1, col=0, command=click, text="midleft")
+        Button(z4, row=2, col=0, command=click, text="bottomleft")
+        Button(z4, row=0, col=1, command=click, text="midtop")
+        Button(z4, row=1, col=1, command=click, text="center")
+        Button(z4, row=2, col=1, command=click, text="midbottom")
+        Button(z4, row=0, col=2, command=click, text="topright")
+        Button(z4, row=1, col=2, command=click, text="midright")
+        Button(z4, row=2, col=2, command=click, text="bottomright")
+        buttons_layer.pack(start_pos=(320, 8))
+
+    def load_sections(self):
+        self.parent.add_section(
+            title="Selector",
+            tests=[
+                "Any component from a GridLayer requires 'row' and 'col' attributes",
+                "Can't define 'pos' attribute of components who will be stored in a grid",
+                "Default behavior is to create rows and columns automatically",
+                "When the nbrows is set, we can't add a component who would like to go outside, same for nbcols",
+                "A row without defined height adapts to its components, 0 if empty, same for columns",
+                "We can set a default size for rows and columns",
+                "A component's hitbox is always inside its cell -> the cell defines the window",
+                "We can resize a row without any visual bug inside the row, same for columns -> the window is updated",
+                "Resizing a row moves the rows located below, same for columns",
+                "Components in a grid can't manage their position themselves (non-dragable)",
+            ]
+        )
 
 
 # For the PresentationScene import

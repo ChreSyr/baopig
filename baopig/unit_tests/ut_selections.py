@@ -131,32 +131,6 @@ class UT_Selections_Zone(UT_Selector):
 
 # For the PresentationScene import
 ut_zone_class = UT_Selections_Zone
-"""# ------ TESTS TO ACHIEVE ------
-
-# --- SECTION 1 : Selector ---
-# TEST 01 : A Selector can be focused
-# TEST 02 : When receive Ctrl + A, calls the 'select_all' method
-# TEST 03 : The default implementation of 'select_all' selects all selectable children
-# TEST 04 : When receive link_motion, it creates a SelectionRect
-# TEST 05 : When receive Ctrl + C, calls the 'copy' method
-# TEST 06 : The default implementation of 'copy' collects data from selected Selectables, join into a string and send it to the clipboard
-# TEST 07 : When receive Ctrl + X, calls the 'cut' method (no default implementation)
-# TEST 08 : When receive Ctrl + V, calls the 'paste' method (no default implementation)
-# TEST 09 : The call of 'disable_selecting' will deactivate the selection ability
-
-# ------ SECTION 2 : Selectable ------
-# TEST 01 : A Selectable's selector is the youngest Selector in Selectable's family tree
-# TEST 02 : For each selection rect movement, if it collide with a selectable, it calls the 'select' method
-# TEST 03 : At the time selection rect don't collide with a selectable anymore, 'unselect' is called
-
-# ----- SECTION 3 : The selection rectangle -----
-# TEST 01 : A drag on a focused Selector create a selection rect
-# TEST 02 : A released drag will hide the selection rect
-# TEST 03 : The selection rect can be configured throught passing a subclass of SelectionRect in the Selector constructor
-# TEST 04 : The visibility of the selection rect can be edited -> set_selectionrect_visibility
-# TEST 05 : When setting an end position for the selection rect, a temporary visibility can be given in argument
-# TEST 06 : The selection rect is always fitting inside its parent"""
-
 
 if __name__ == "__main__":
     from baopig.unit_tests.testerscene import TesterScene

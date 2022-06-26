@@ -28,7 +28,7 @@ class Layer(Communicative):
         :param sort_by_pos: if set, the default sortkey will be a function who sort components by y then x
         :param touchable: components of non-touchable layer are not hoverable
         :param maxlen: the maximum numbers of components the layer can contain
-        """
+        """  # TODO : start_pos
 
         if name is None: name = "UnnamedLayer{}".format(len(container.layers))
         if not filter: filter = [Widget]
@@ -176,10 +176,11 @@ class Layer(Communicative):
         self._comps.insert(index, comp)
         self.container._warn_change(comp.hitbox)
 
-    def pack(self, key=None, axis="vertical", children_margins=None, padding=None, start_pos=(0, 0)):  # TODO : location
+    def pack(self, key=None, axis="vertical", children_margins=None, padding=None, start_pos=(0, 0)):
         """
         Place children on one row or one column, sorted by key (default : pos)
         axis can either be horizontal or vertical
+        NOTE : if motivated, can add 'sticky' param, which places the packed children from a corner or the center
         """
         if key is None: key = lambda o: (o.top, o.left)
         if children_margins is None: children_margins = self._children_margins
@@ -212,7 +213,7 @@ class Layer(Communicative):
         """
         self._comps.remove(comp)
 
-        if self.is_adaptable:  # TODO : test to adapt a Scene at (0, 0)
+        if self.is_adaptable:
             self.container.adapt(self)
 
     def set_filter(self, filter):

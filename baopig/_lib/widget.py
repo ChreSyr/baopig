@@ -192,7 +192,6 @@ class _Origin:
         if pos is not None:
             assert _Origin.accept(pos), f"Wrong position value : {pos} (see documentation above)"
             self._asked_pos = pos
-            print(self._asked_pos)
 
         self.owner.move_at(self.pos, self.location)
 

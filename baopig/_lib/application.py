@@ -267,7 +267,6 @@ class Application(HasStyle):
 
             self._current_mode = mode
             self._current_size = size
-        else: raise PermissionError  # TODO : remove
 
     def exit(self, reason=None):
 
