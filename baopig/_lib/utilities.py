@@ -276,11 +276,27 @@ class Focusable(Enablable):
 
     def handle_keydown(self, key):
         """Stuff to do when a key is pressed"""
-        # Default code :
-        # Checks if the keydown asks for swap focus
-        # TODO : should we say that the TAB has to focus the next (other method connected to KEYDOWN) or let an override ?
-        if key == keyboard.TAB:
+
+        if keyboard.mod.ctrl:
+            if key in (pygame.K_a, pygame.K_c, pygame.K_v, pygame.K_x):
+                if not hasattr(self, "_selection_rect_ref"):  # if not isinstance(self, Selector)
+                    parent = self.parent
+                    while not hasattr(parent, "_selection_rect_ref"):  # not infinite since Scene is a Selector
+                        parent = parent.parent
+                    parent.handle_keydown(key)  # parent is now the closest Selector parent
+
+        elif key == pygame.K_TAB:
+            # TODO : depending on the OS, cmd or ctrl
+            if keyboard.mod.ctrl:  # Ctrl + TAB -> focus the previous Focusable inside this Selector
+                if key == pygame.K_TAB:
+                    self.focus_antecedant()
+            else:  # TAB -> focus the next Focusable inside this Selector
+                self.focus_next()
+        elif key in (pygame.K_RIGHT, pygame.K_DOWN):
             self.focus_next()
+        elif key in (pygame.K_LEFT, pygame.K_UP):
+            self.focus_antecedant()
+
 
     def handle_keyup(self, key):
         """Stuff to do when a key is released"""
@@ -347,10 +363,23 @@ class Clickable(Linkable, Validable):
         Linkable.__init__(self)
         Validable.__init__(self, catching_errors=catching_errors)
 
-        def unlink():
-            if self.collidemouse():
-                self.validate()
-        self.signal.UNLINK.connect(unlink, owner=self)
+        # def unlink():
+        #     if self.collidemouse():
+        #         self.validate()
+        # self.signal.UNLINK.connect(unlink, owner=self)
+
+    def handle_keydown(self, key):
+
+        if key == pygame.K_RETURN:
+            self.validate()
+
+        else:
+            super().handle_keydown(key)
+
+    def handle_unlink(self):
+
+        if self.collidemouse():
+            self.validate()
 
 
 class Dragable(Linkable):

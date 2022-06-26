@@ -2,7 +2,7 @@
 from .logging import LOGGER
 
 
-class _ClipBoard:
+class _ClipBoard:  # TODO : remove ?
     def __init__(self):
         self._data = {}
 

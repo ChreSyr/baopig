@@ -8,28 +8,6 @@ from .zone import Zone, Widget
 from .selections import Selector
 
 
-def decorator_open(scene, open):
-    functools.wraps(open)
-    def wrapped_func(*args, **kwargs):
-        app = scene.application
-        if app.focused_scene is scene: return
-
-        with paint_lock:
-            scene.pre_open()
-            if app.focused_scene:
-                app.focused_scene._close()
-            app._focused_scene = scene
-            app._update_display()
-            scene.container_open()
-            res = open(*args, **kwargs)
-            scene.paint(recursive=True)
-
-        LOGGER.debug("Open scene : {}".format(scene))
-        # scene.signal.OPEN.emit()
-        return res
-    return wrapped_func
-
-
 class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
     """
     A Scene is like a page in an application. It can be the menu, the parameters page...

@@ -140,8 +140,9 @@ class AbstractButton(Container, Clickable, Hoverable):
                 ).get_weakref()
             self.link_sail.hide()
             self.signal.LINK.connect(self.link_sail.show, owner=self.link_sail)
+            self.signal.VALIDATE.connect(self.link_sail.show, owner=self.link_sail)  # For RETURN validation
             self.signal.UNLINK.connect(self.link_sail.hide, owner=self.link_sail)
-            self.link_sail.swap_layer(self.behind_lines)
+            self.link_sail.swap_layer(self.behind_lines)  # TODO : layer=self.behind_lines
 
         self._disable_sail_ref = Sail(  # TODO : same as hover, focus and link
             parent=self,
@@ -184,22 +185,9 @@ class AbstractButton(Container, Clickable, Hoverable):
         self.hover_sail.show()
         assert not self.hover_sail.is_visible
 
-    def handle_keydown(self, key):
-
-        if key is keyboard.RETURN:
-            self.link_sail.show()
-            self.validate()
-        elif key is keyboard.TAB:
-            self.focus_next()
-        elif key in (keyboard.RIGHT, keyboard.DOWN):
-            self.focus_next()
-        elif key in (keyboard.LEFT, keyboard.UP):
-            self.focus_antecedant()
-        # TODO : arrows can swap to next focusable
-
     def handle_keyup(self, key):
 
-        if key is keyboard.RETURN:
+        if key == pygame.K_RETURN:  #TODO
             self.link_sail.hide()
 
     def handle_validate(self):

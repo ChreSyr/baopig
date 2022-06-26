@@ -1,7 +1,8 @@
 
 
+import pygame
 from baopig._lib import Validable, LOGGER
-from .lineedit import LineEdit, keyboard
+from .lineedit import LineEdit
 
 
 class Entry(LineEdit, Validable):
@@ -41,13 +42,11 @@ class Entry(LineEdit, Validable):
 
     def handle_keydown(self, key):
 
-        if key is keyboard.RETURN:
+        if key == pygame.K_RETURN:
             if self.accept(self.text):
-                self.handle_validate()
-        elif key is keyboard.TAB:
-            self.focus_next()
+                self.validate()
         else:
-            self.cursor.handle_keydown(key)
+            super().handle_keydown(key)
 
     def handle_validate(self):
 

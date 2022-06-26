@@ -194,31 +194,14 @@ class Selector(Linkable):
         self._selectionrect_visibility = True
         self.selectionrect_layer = None
 
-        self.signal.KEYDOWN.connect(self._handle_keydown, owner=self)
         self.signal.DEFOCUS.connect(self.close_selection, owner=self)
         self.signal.LINK.connect(self.close_selection, owner=self)  # only usefull at link while focused
 
     is_selecting = property(lambda self: self._selection_rect_ref() is not None)
     selection_rect = property(lambda self: self._selection_rect_ref())
 
-    def _handle_keydown(self, key):
-
-        if keyboard.mod.cmd:
-            if key is pygame.K_a:
-            # Cmd + a -> select all
-                self.select_all()
-            elif key is pygame.K_c:
-            # Cmd + c -> copy selected data
-                if self.is_selecting:
-                    clipboard.put(self.get_selected_data())  # TODO : fix get_selected_data
-            elif key is pygame.K_v:
-            # Cmd + v -> paste clipboard data
-                self.paste(clipboard.get(str) if clipboard.contains(str) else '')
-            elif key is pygame.K_x:
-            # Cmd + x -> copy and cut selected data
-                if self.is_selecting:
-                    clipboard.put(self.get_selected_data())
-                    self.del_selected_data()
+    def del_selection_data(self):
+        """This method is called when the user press Ctrl + X"""
 
     def close_selection(self):
 
@@ -229,19 +212,6 @@ class Selector(Linkable):
             selectable._is_selected = False
             selectable.unselect()
             selectable.handle_unselect()
-
-    def copy(self):
-        """
-        Copy the selected data in clipboard
-        """
-        data = self.get_selected_data()
-        if data:
-            clipboard.put(data)
-
-    def cut(self):
-        """
-        To be overriden
-        """
 
     def enable_selecting(self, can_select=True):
         """
@@ -273,13 +243,41 @@ class Selector(Linkable):
         for selectable in self.selectables:
             selectable.check_select(self.selection_rect)
 
-    def get_selected_data(self):
+    def get_selection_data(self):
 
         if not self.is_selecting: return None
         selected = tuple(s for s in self.selectables if s.is_selected)
         if not selected: return
         sorted_selected = sorted(selected, key=lambda o: (o.abs.top, o.abs.left))
         return '\n'.join(str(s.get_selected_data()) for s in sorted_selected)
+
+    def handle_keydown(self, key):
+
+        super().handle_keydown(key)  # TAB and arrows management
+
+        if keyboard.mod.ctrl:  # TODO : depending on the OS, cmd or ctrl
+
+            if key == pygame.K_a:  # Ctrl + a -> select all
+                self.select_all()
+
+            elif key == pygame.K_c:  # Cmd + c -> copy selected data
+                selected_data = self.get_selection_data()
+                if selected_data:
+                    pygame.scrap.put(pygame.SCRAP_TEXT, str.encode(selected_data))
+
+            elif key == pygame.K_v:  # Cmd + v -> paste clipboard data
+                bytes = pygame.scrap.get(pygame.SCRAP_TEXT)
+                if bytes is not None:
+                    text = bytes.decode()
+                    text = str.replace(text, '\0', '')  # removes null characters
+                    text = str.replace(text, '\r', '')  # removes carriage return characters
+                    self.paste(text)
+
+            elif key == pygame.K_x:  # Cmd + x -> copy and cut selected data
+                selected_data = self.get_selection_data()
+                if selected_data:
+                    pygame.scrap.put(pygame.SCRAP_TEXT, str.encode(selected_data))
+                    self.del_selection_data()
 
     def handle_link_motion(self, link_motion_event):
         with paint_lock:
@@ -288,14 +286,7 @@ class Selector(Linkable):
             self.end_selection(link_motion_event.pos)
 
     def paste(self, data):
-        """
-        This method is called when the user press Cmd + V
-        data is the string content of the clipboard
-        If the clipboard don't contains string data, then data is ''
-        If you want to acces to other types of clipboard data, try :
-        if clipboard.contains(type):
-            data = clipboard.get(type)
-        """
+        """This method is called when the user press Ctrl + V"""
 
     def select_all(self):
 

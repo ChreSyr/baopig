@@ -123,7 +123,7 @@ class Application(HasStyle):
                             raise Exception("Made for debugging")
                         self.toggle_debugging()
                     # Cmd + f -> toggle debug fps
-                    elif event.key is keyboard.f:
+                    elif event.key == pygame.K_f:
                         self._debug_fps = not self._debug_fps
                         if not self._debug_fps:
                             self.set_caption(self._caption)
@@ -133,27 +133,27 @@ class Application(HasStyle):
                         gc.collect()
                         LOGGER.info("Garbage collected")
                     # Cmd + u -> application freeze
-                    elif event.key == keyboard.u:
+                    elif event.key == pygame.K_u:
                         def u_is_pressed():
                             for event in pygame.event.get():
-                                if event.type == keyboard.KEYDOWN:
-                                    if event.key == keyboard.F6:
+                                if event.type == pygame.KEYDOWN:
+                                    if event.key == pygame.K_F6:
                                         self.exit("Pressed F6")
-                                    elif event.key == keyboard.u:
+                                    elif event.key == pygame.K_u:
                                         return True
-                                    elif event.key == keyboard.ESCAPE:  # quit fullscreen or exit
+                                    elif event.key == pygame.K_ESCAPE:  # quit fullscreen or exit
                                         if self.is_fullscreen:
                                             self.exit_fullscreen()
                                         else:
                                             self.exit("pressed ESCAPE")
-                                    elif event.key == keyboard.F5:  # fullscreen
+                                    elif event.key == pygame.K_F5:  # fullscreen
                                         self.focused_scene.toggle_fullscreen()
-                                    elif event.key == keyboard.F4:  # minimize
+                                    elif event.key == pygame.K_F4:  # minimize
                                         self.iconify()
-                                    elif event.key == keyboard.F3:  # refresh
+                                    elif event.key == pygame.K_F3:  # refresh
                                         self.refresh()
                                         LOGGER.info("Display refreshed")
-                                    elif event.key == keyboard.F2:  # screenshot TODO : A faire avec un clic droit
+                                    elif event.key == pygame.K_F2:  # screenshot TODO : A faire avec un clic droit
                                         self.painter.screenshot()
                                         LOGGER.info("Screenchot !")
                             return False
@@ -339,6 +339,7 @@ class Application(HasStyle):
         assert self.focused_scene is scene
 
         pygame.display.set_mode(self.size, self.default_mode)  # prevents a threading lag with painter.start()
+        self.focused_scene._focus(self.focused_scene)
         self.painter.start()
 
         pygame.scrap.init()  # clipboard uses

@@ -40,12 +40,7 @@ class TextEdit(Text, Selector):
         if text == '': return False
         return True
 
-    def cut(self):
-
-        self.copy()
-        self.del_selected_data()
-
-    def del_selected_data(self):
+    def del_selection_data(self):
 
         if not self.is_selecting: return
         cursor_index = self.find_index(char_index=self.line_selections[0].index_start,
@@ -87,6 +82,9 @@ class TextEdit(Text, Selector):
 
     def handle_keydown(self, key):
 
+        if keyboard.mod.ctrl:  # TODO : cmd or ctrl, depending on the OS
+            if key in (pygame.K_a, pygame.K_c, pygame.K_v, pygame.K_x):
+                return super().handle_keydown(key)
         self.cursor.handle_keydown(key)
 
     def handle_link(self):
@@ -317,18 +315,14 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         if keyboard.mod.ctrl:  # TODO : cmd or ctrl, depending on the OS
             # Maj + Cmd + ...
             if keyboard.mod.maj:
-                if key == keyboard.z:
+                if key == pygame.K_z:
                     self.redo()
                 return
             elif keyboard.mod.cmd or keyboard.mod.alt:
                 return
-            elif key == keyboard.c:
-                selected_data = self.parent.get_selected_data()
-                if selected_data:
-                    scrap.put(SCRAP_TEXT, str.encode(selected_data))
-            elif key == keyboard.d:
+            elif key == pygame.K_d:
             # Duplicate
-                selected_data = self.parent.get_selected_data()
+                selected_data = self.parent.get_selection_data()
                 if selected_data == '':
                     selected_data = self.line.real_text
                     self.line.insert(0, selected_data)
@@ -336,36 +330,24 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
                     self.parent.close_selection()
                     self.line.insert(self.char_index, selected_data)
                 self.config(text_index=self.text_index + len(selected_data))
-            elif key == keyboard.r:
+            elif key == pygame.K_r:
             # Execute
                 try:
                     exec(self.parent.text)
                 except Exception as e:
                     LOGGER.warning("CommandError: "+str(e))
-            elif key == keyboard.v:
-                bytes = scrap.get(SCRAP_TEXT)
-                if bytes is not None:
-                    text = bytes.decode()
-                    if text[-1] == "\0":  # removes a null character
-                        text = text[:-1]
-                    self.write(text)
-            elif key == keyboard.x:
-                selected_data = self.parent.get_selected_data()
-                if selected_data:
-                    scrap.put(SCRAP_TEXT, str.encode(selected_data))
-                    self.parent.del_selected_data()
-            elif key == keyboard.z:
+            elif key == pygame.K_z:
                 self.undo()
-            elif key in (keyboard.LEFT, keyboard.HOME):
+            elif key in (pygame.K_LEFT, pygame.K_HOME):
                 self.config(self.parent.find_index(line_index=self.line_index, char_index=0), selecting=keyboard.mod.maj)
-            elif key in (keyboard.RIGHT, keyboard.END):
+            elif key in (pygame.K_RIGHT, pygame.K_END):
                 self.config(self.parent.find_index(line_index=self.line_index, char_index=len(self.line.text)), selecting=keyboard.mod.maj)
-            elif key == keyboard.UP:
+            elif key == pygame.K_UP:
                 if self.line_index > 0:
                     self.config(line_index=0,
                                 char_index=self.parent.lines[0].find_index(self.rect.left),
                                 selecting=keyboard.mod.maj)
-            elif key == keyboard.DOWN:
+            elif key == pygame.K_DOWN:
                 if self.line_index < len(self.parent.lines)-1:
                     self.config(line_index=len(self.parent.lines)-1,
                                 char_index=self.parent.lines[len(self.parent.lines)-1].find_index(self.rect.left),
@@ -375,71 +357,71 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         # Cursor movement
         if 272 < key < 282 and key != 277:  # TODO : update (doesn't work with pygame v2)
 
-            if key in (keyboard.LEFT, keyboard.RIGHT):
+            if key in (pygame.K_LEFT, pygame.K_RIGHT):
 
                 if keyboard.mod.alt:  # go to word side
-                    if key == keyboard.LEFT:
+                    if key == pygame.K_LEFT:
                         if self.char_index == 0: return
                         self.config(text_index=self.text_index - 1, selecting=keyboard.mod.maj)
                         while self.char_index > 0 and \
                                 (self.line.text[self.char_index-1] != ' ' or self.line.text[self.char_index] == ' '):
                             self.config(text_index=self.text_index - 1, selecting=keyboard.mod.maj)
-                    elif key == keyboard.RIGHT:
+                    elif key == pygame.K_RIGHT:
                         if self.char_index == len(self.line.text): return
                         self.config(text_index=self.text_index + 1, selecting=keyboard.mod.maj)
                         while self.char_index < len(self.line.text) and \
                                 (self.line.text[self.char_index-1] != ' ' or self.line.text[self.char_index] == ' '):
                             self.config(text_index=self.text_index + 1, selecting=keyboard.mod.maj)
                 elif (not keyboard.mod.maj) and self.parent.is_selecting:
-                    if key == keyboard.LEFT:
+                    if key == pygame.K_LEFT:
                         self.config(line_index=self.parent.line_selections[0].line_index,
                                     char_index=self.parent.line_selections[0].index_start)
-                    elif key == keyboard.RIGHT:
+                    elif key == pygame.K_RIGHT:
                         self.config(line_index=self.parent.line_selections[-1].line_index,
                                     char_index=self.parent.line_selections[-1].index_end)
-                elif key == keyboard.LEFT:
+                elif key == pygame.K_LEFT:
                     self.config(char_index=self.char_index-1,
                                 selecting=keyboard.mod.maj)
                     # self.config(text_index=self.text_index - 1, selecting=keyboard.mod.maj)
-                elif key == keyboard.RIGHT:
+                elif key == pygame.K_RIGHT:
                     self.config(char_index=self.char_index+1,
                                 selecting=keyboard.mod.maj)
                     # self.config(text_index=self.text_index + 1, selecting=keyboard.mod.maj)
 
-            elif key in (keyboard.HOME, keyboard.END):
-                if key == keyboard.HOME:  # Fn + K_LEFT
+            elif key in (pygame.K_HOME, pygame.K_END):
+                if key == pygame.K_HOME:  # Fn + K_LEFT
                     self.config(self.parent.find_index(line_index=self.line_index, char_index=0), selecting=keyboard.mod.maj)
-                elif key == keyboard.END:  # Fn + K_RIGHT
+                elif key == pygame.K_END:  # Fn + K_RIGHT
                     self.config(self.parent.find_index(line_index=self.line_index, char_index=len(self.line.text)), selecting=keyboard.mod.maj)
 
-            elif key in (keyboard.UP, keyboard.DOWN):
-                if key == keyboard.UP:
+            elif key in (pygame.K_UP, pygame.K_DOWN):
+                if key == pygame.K_UP:
                     if self.line_index > 0:
                         self.config(line_index=self.line_index-1,
                                     char_index=self.parent.lines[self.line_index-1].find_index(self.rect.left),
                                     selecting=keyboard.mod.maj)
-                if key == keyboard.DOWN:
+                if key == pygame.K_DOWN:
                     if self.line_index < len(self.parent.lines)-1:
                         self.config(line_index=self.line_index+1,
                                     char_index=self.parent.lines[self.line_index+1].find_index(self.rect.left),
                                     selecting=keyboard.mod.maj)
 
-            elif key in (keyboard.PAGEUP, keyboard.PAGEDOWN):
-                if key == keyboard.PAGEUP:
+            elif key in (pygame.K_PAGEUP, pygame.K_PAGEDOWN):
+                if key == pygame.K_PAGEUP:
                     if self.line_index > 0:
                         self.config(line_index=0,
                                     char_index=self.parent.lines[0].find_index(self.rect.left),
                                     selecting=keyboard.mod.maj)
-                if key == keyboard.PAGEDOWN:
+                if key == pygame.K_PAGEDOWN:
                     if self.line_index < len(self.parent.lines)-1:
                         self.config(line_index=len(self.parent.lines)-1,
                                     char_index=self.parent.lines[len(self.parent.lines)-1].find_index(self.rect.left),
                                     selecting=keyboard.mod.maj)
 
         # Suppression
-        elif key == keyboard.BACKSPACE:
+        elif key == pygame.K_BACKSPACE:
             if self.parent.is_selecting:
-                self.parent.del_selected_data()
+                self.parent.del_selection_data()
             elif self.line_index > 0 or self.char_index > 0:
                 if self.char_index > 0:
                     self.line.pop(self.char_index-1)
@@ -449,9 +431,9 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
                 self.config(text_index=self.text_index - 1)
                 assert self.text_index == old - 1
 
-        elif key == keyboard.DELETE:
+        elif key == pygame.K_DELETE:
             if self.parent.is_selecting:
-                self.parent.del_selected_data()
+                self.parent.del_selection_data()
             if self.line.end == '\v' and self.char_index == len(self.line.text):
                 if self.line_index < len(self.parent.lines) - 1:
                     self.parent.lines[self.line_index + 1].pop(0)
@@ -461,19 +443,19 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
                         char_index=self.char_index)  # we want to stay at 0, text_index might send the cursor at the
                                                      # end of the previous line if it is a cutted line
 
-        elif key == keyboard.ESCAPE:
+        elif key == pygame.K_ESCAPE:
             self.parent.defocus()
 
-        elif keyboard.F1 <= key <= keyboard.F15:
+        elif pygame.K_F1 <= key <= pygame.K_F15:
             return
 
         # Write
         else:
             assert keyboard.last_event.key == key
             unicode = keyboard.last_event.unicode
-            if key == keyboard.RETURN:
+            if key == pygame.K_RETURN:
                 unicode = '\n'
-            elif key == keyboard.TAB:
+            elif key == pygame.K_TAB:
                 unicode = '    '
             self.write(unicode)
 
@@ -484,7 +466,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
             if self.parent.accept(text):
 
                 if self.parent.is_selecting:
-                    self.parent.del_selected_data()
+                    self.parent.del_selection_data()
 
                 self.line.insert(self.char_index, string)
                 self.config(text_index=self.text_index + len(string))

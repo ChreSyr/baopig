@@ -1,5 +1,6 @@
 
-from .textedit import TextEdit, keyboard
+import pygame
+from .textedit import TextEdit
 
 
 class LineEdit(TextEdit):
@@ -15,5 +16,7 @@ class LineEdit(TextEdit):
 
     def handle_keydown(self, key):
 
-        if key != keyboard.RETURN:
+        if key == pygame.K_RETURN:
+            self.defocus()
+        else:
             self.cursor.handle_keydown(key)
