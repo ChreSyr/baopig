@@ -53,7 +53,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         self._size_before_fullscreen = None
         self._focused_comp_ref = lambda: None
 
-        self.enable_selecting()
+        # self.enable_selecting()
 
     def __str__(self):
 

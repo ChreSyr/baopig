@@ -40,7 +40,7 @@ class Selectable:
             selector = selector.parent
         self._selector_ref = selector.get_weakref()
 
-        if hasattr(self.selector, "selectables"):  # selector might not have been initialized
+        if hasattr(self.selector, "selectables"):  # selector might not have been initialized  # TODO : still True ?
             self.selector.selectables.add(self)
 
         self.signal.NEW_SURF.connect(self.unselect, owner=self)
@@ -180,7 +180,7 @@ class Selector(Linkable):
             selected = property(get_selected)
         self.selectables = Selectables()
 
-        self._can_select = False
+        self._can_select = True
         self._selection_rect_ref = lambda: None
         self._selection_rect_class = SelectionRectClass
         self._selectionrect_visibility = True
@@ -206,7 +206,7 @@ class Selector(Linkable):
 
     def enable_selecting(self, can_select=True):
         """
-        Completely delete the ability to make selections in a Selector
+        Define the ability to make selections in a Selector
         """
 
         if bool(can_select) == self._can_select: return
@@ -236,10 +236,14 @@ class Selector(Linkable):
 
     def get_selection_data(self):
 
-        if not self.is_selecting: return None
-        selected = tuple(s for s in self.selectables if s.is_selected)
-        if not selected: return
+        if not self.is_selecting:
+            return
+        selected = tuple(self.selectables.selected)
+        if not selected:
+            return  # happens when the selection_rect didn't select anything
         sorted_selected = sorted(selected, key=lambda o: (o.abs.top, o.abs.left))
+        for s in sorted_selected:
+            print(s, s.is_selected)
         return '\n'.join(str(s.get_selected_data()) for s in sorted_selected)
 
     def handle_keydown(self, key):
@@ -254,6 +258,7 @@ class Selector(Linkable):
             elif key == pygame.K_c:  # Cmd + c -> copy selected data
                 selected_data = self.get_selection_data()
                 if selected_data:
+                    print(f"COPY :\n---------\n{selected_data}\n---------")
                     pygame.scrap.put(pygame.SCRAP_TEXT, str.encode(selected_data))
 
             elif key == pygame.K_v:  # Cmd + v -> paste clipboard data

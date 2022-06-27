@@ -278,7 +278,7 @@ class _Line(ResizableWidget):
                 self.__class__(
                     parent=self.parent,
                     text=self.text[self.text.index('\n')+1:],
-                    line_index=self.line_index + .5
+                    line_index=self.line_index + .00001
                 )
                 self._text = self.text[:self.text.index('\n')]
 
@@ -299,11 +299,10 @@ class _Line(ResizableWidget):
                         end = self.text[index_end]
                         sep = ' ' if end == ' ' else '\v'  # else, the word is of type 'smth-'
                         if end == ' ': index_newline_start += 1
-                    LineClass = _SelectableLine if isinstance(self, Selectable) else _Line
                     self.__class__(
                         parent=self.parent,
                         text=self.text[index_newline_start:],
-                        line_index=self.line_index + .5,  # the line will correct itself
+                        line_index=self.line_index + .00001,  # the line will correct itself
                     )
                     self._end = sep
                     self._text = self.text[0:index_end]
@@ -383,7 +382,7 @@ class _SelectableLine(_Line):
         assert self.is_alive
         collide_rect = (self.selector.abs.left, self.abs.top, self.selector.abs.w, self.abs.h)
 
-        if selection_rect.rect.colliderect(collide_rect):
+        if selection_rect.abs_rect.colliderect(collide_rect):
             self._is_selected = True
             self.select()
         else:
@@ -571,13 +570,14 @@ class _SelectableText(Selectable):
         for line in self.lines:
             line.check_select(selection_rect)
         self._is_selected = True in tuple((line.is_selected for line in self.lines))
+        print(self, self.is_selected)
 
     def get_selected_data(self):
-        data = ""
         if self.is_selected:
+            data = ""
             for line in self.lines:
                 data += line.get_selected_data()
-        return data
+            return data
 
     def unselect(self):
         if self.is_selected:

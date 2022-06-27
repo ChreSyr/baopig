@@ -44,7 +44,7 @@ class UT_Selector(Zone, Selector):
 
         Zone.__init__(self, *args, **kwargs)
         Selector.__init__(self)
-        self.enable_selecting(True)
+        # self.enable_selecting(True)
 
 
 class UT_Selections_Zone(UT_Selector):

@@ -10,6 +10,78 @@ from .text import Text, _LineSelection
 # TODO : solve arrows
 # TODO : presentation text when nothing is in the text ?
 
+class _TextEditSelector(Selector):
+    """
+    Abstract class for components who need to handle when they are linked
+    and then, while the mouse is still pressed, to handle the mouse drag in
+    order to simulate a rect from the link origin to the link position and
+    select every Selectable object who collide with this rect
+    """
+
+    def __init__(self):
+
+        Selector.__init__(self)
+
+        self._can_select = True
+        self._selectionrect_visibility = False
+        self.selectionrect_layer = Layer(self, self._selection_rect_class, name="selectionrect_layer",
+                                         level=self.layers_manager.FOREGROUND, maxlen=1, touchable=False)
+
+        self.selector.selectables.remove(self)  # remove this Text from the Selector parent
+        self._selector_ref = self.get_weakref()  # make this Text its own Selector
+        self.selector.selectables.add(self)
+        # self.signal.DEFOCUS.connect(self.close_selection, owner=self)
+        # self.signal.LINK.connect(self.close_selection, owner=self)  # only usefull at link while focused
+
+    # is_selecting = property(lambda self: self._selection_rect_ref() is not None)
+    # selection_rect = property(lambda self: self._selection_rect_ref())
+
+    def close_selection(self):
+
+        if not self.is_selecting: return
+        self.selection_rect.kill()
+        if not self.is_selected: return
+        self.unselect()
+        self._is_selected = False
+
+    def end_selection(self, abs_pos, *args, **kwargs):  # ignore visible param
+        """
+        :param abs_pos: An absolute position -> relative to the scene
+        """
+
+        assert self._can_select
+        assert self.selection_rect is not None
+        if abs_pos == self.selection_rect.end: return
+        self.selection_rect.set_end((abs_pos[0], abs_pos[1]))
+        Text.check_select(self, self.selection_rect)
+
+        pos = (self.selection_rect.end[0] - self.abs.left, self.selection_rect.end[1] - self.abs.top)
+        line_index, char_index = self.find_indexes(pos=pos)
+        if line_index != self.cursor.line_index or char_index != self.cursor.char_index:
+            self.cursor.config(line_index=line_index, char_index=char_index, selecting="done")
+
+    def get_selection_data(self):
+
+        return Text.get_selected_data(self)  # TODO
+
+    def select_all(self):
+
+        if self.is_selecting:
+            self.close_selection()
+        self.start_selection(self.abs.topleft)
+        self.end_selection(self.abs.bottomright)
+
+    def start_selection(self, abs_pos):
+        """
+        A selection_rect can only be started once
+        :param abs_pos: An absolute position -> relative to the scene
+        """
+        if not self._can_select: return
+        if self.selection_rect is not None:
+            raise PermissionError("A selection must be closed before creating a new one")
+        self._selection_rect_class(self, abs_pos, abs_pos)
+
+
 class TextEdit(Text, Selector):
 
     STYLE = Text.STYLE.substyle()
@@ -29,10 +101,14 @@ class TextEdit(Text, Selector):
         Text.__init__(self, parent=parent, text=text, max_width=self.style["width"], selectable=True, **kwargs)
         Selector.__init__(self)
 
-        self.enable_selecting(True)
+        # self.enable_selecting(True)
+        self.set_selectionrect_visibility(False)
+        self.selector.selectables.remove(self)  # remove this Text from the Selector parent
+        self._selector_ref = self.get_weakref()  # make this Text its own Selector
+        self.selector.selectables.add(self)
+
         self._cursor_ref = lambda: None
         self.cursors_layer = Layer(self, Cursor, name="cursors_layer", touchable=False)
-        self.set_selectionrect_visibility(False)
 
     cursor = property(lambda self: self._cursor_ref())
 
@@ -42,42 +118,35 @@ class TextEdit(Text, Selector):
 
     def del_selection_data(self):
 
-        if not self.is_selecting: return
+        if not self.is_selected: return
         cursor_index = self.find_index(char_index=self.line_selections[0].index_start,
                                        line_index=self.line_selections[0].line.line_index)
         assert self.is_selecting
-        selected_comps = tuple(self.selectables.selected)
-        if selected_comps:
+        selected_lines = tuple(line for line in self.lines if line.is_selected)
+        if selected_lines:
             if self.cursor is not None:
                 self.cursor.save()
-            for line in selected_comps:
+            for line in selected_lines:
                 line._text = line.text[:line.selection.index_start] + line.text[line.selection.index_end:]
                 line._end = '' if line.selection._is_selecting_line_end else line.end
             line.config()
         self.close_selection()
         self.cursor.config(text_index=cursor_index)
 
-    def end_selection(self, abs_pos, visible=None):
+    def end_selection(self, *args, **kwargs):
 
-        if self.selection_rect.end != abs_pos:
-            super().end_selection(abs_pos, visible)
-            # self.selection_rect.end is one pixel lower and on x axis than abs_pos, so we don't use it in this calculation
-            pos = (self.selection_rect.end[0] - self.abs.left, self.selection_rect.end[1] - self.abs.top)
-            line_index, char_index = self.find_indexes(pos=pos)
-            if line_index != self.cursor.line_index or char_index != self.cursor.char_index:
-                self.cursor.config(line_index=line_index, char_index=char_index, selecting="done")
+        super().end_selection(*args, **kwargs)
+
+        pos = (self.selection_rect.end[0] - self.abs.left, self.selection_rect.end[1] - self.abs.top)
+        line_index, char_index = self.find_indexes(pos=pos)
+        if line_index != self.cursor.line_index or char_index != self.cursor.char_index:
+            self.cursor.config(line_index=line_index, char_index=char_index, selecting="done")
 
     def handle_focus(self):
+
         assert self.cursor is None
-
-        mouse_pos = mouse.get_pos_relative_to(self.parent)
-
-        w = abs(self.rect.left - mouse_pos[0])
-        h = abs(self.rect.top - mouse_pos[1])
-
         line_index = len(self.lines) - 1
         char_index = len(self.lines[-1].text)
-
         Cursor(self, line_index=line_index, char_index=char_index)
 
     def handle_keydown(self, key):
@@ -92,6 +161,8 @@ class TextEdit(Text, Selector):
             self.cursor.config(text_index=self.find_mouse_index())
 
     def paste(self, data):
+
+        print(f"PASTE :\n---------\n{data}\n---------")
 
         self.cursor.write(data)
 
@@ -420,7 +491,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
 
         # Suppression
         elif key == pygame.K_BACKSPACE:
-            if self.parent.is_selecting:
+            if self.parent.is_selected:
                 self.parent.del_selection_data()
             elif self.line_index > 0 or self.char_index > 0:
                 if self.char_index > 0:
@@ -432,7 +503,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
                 assert self.text_index == old - 1
 
         elif key == pygame.K_DELETE:
-            if self.parent.is_selecting:
+            if self.parent.is_selected:
                 self.parent.del_selection_data()
             if self.line.end == '\v' and self.char_index == len(self.line.text):
                 if self.line_index < len(self.parent.lines) - 1:
@@ -465,7 +536,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
             text = self.parent.text[:self.char_index] + string + self.parent.text[self.char_index:]
             if self.parent.accept(text):
 
-                if self.parent.is_selecting:
+                if self.parent.is_selected:
                     self.parent.del_selection_data()
 
                 self.line.insert(self.char_index, string)
