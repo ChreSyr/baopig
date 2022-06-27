@@ -2,7 +2,6 @@
 from baopig import *
 
 
-# TODO : test not focus a disabled button, a hidden button, an asleep button
 class UT_Focusable_Zone(Zone):
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)

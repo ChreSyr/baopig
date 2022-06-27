@@ -1,23 +1,24 @@
 
 import pygame
-from baopig.io import keyboard
 from baopig._lib import Clickable, Layer
 from baopig._lib import Sail, Image, Container, Hoverable
 from .text import Text
 
 
-class ButtonText(Text):  # TODO : das is das ?
+class ButtonText(Text):
 
     STYLE = Text.STYLE.substyle()
     STYLE.modify(
-        align_mode = "left",
+        align_mode="left",
+        pos_location="center",
+        pos_ref_location="center",
     )
 
     def __init__(self, button, text, **options):
 
         assert isinstance(button, AbstractButton)
         assert '\n' not in text
-        self.inherit_style(button, **options)
+        self.inherit_style(button, options=options)
         content_rect = button.content_rect
 
         if content_rect.height < self.style["font_height"]:
@@ -27,7 +28,6 @@ class ButtonText(Text):  # TODO : das is das ?
         Text.__init__(
             self, button,
             text=text,
-            sticky="center",
             selectable=False,
             **options
         )
@@ -203,8 +203,8 @@ class Button(AbstractButton):
 
     STYLE = AbstractButton.STYLE.substyle()
     STYLE.create(
-        text_class = ButtonText,
-        text_style = {},
+        text_class=ButtonText,
+        text_style={},
     )
     STYLE.set_constraint("text_class", lambda val: issubclass(val, ButtonText))
 

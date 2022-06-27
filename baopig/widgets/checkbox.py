@@ -45,14 +45,15 @@ class CheckBox(Button):
     STYLE.modify(
         width=100,
         height=35,
-        background_color = (0, 0, 0, 0),
-        text_style = {"font_height": 15},
-        padding=5
+        background_color=(0, 0, 0, 0),
+        text_style={"font_height": 15, "pos_location":"left", "pos_ref_location":"left"},
+        padding=2,
+        children_margins=10,
     )
     # TODO : rework checkbox's margin padding and this kind of stuff
     STYLE.create(
-        checkmark_class = CheckMark,
-        checkmarkframe_class = CheckMarkFrame
+        checkmark_class=CheckMark,
+        checkmarkframe_class=CheckMarkFrame
     )
 
     def __init__(self, parent, text=None, is_selected=False, **kwargs):
@@ -66,6 +67,8 @@ class CheckBox(Button):
         self._checkmarkframe_ref = CheckMarkFrame(self).get_weakref()
         self._checkmark_ref = CheckMark(self).get_weakref()
 
+        self.text_widget.left = self.checkmarkframe.right + self.children_margins.left
+
         self.checkmark.hide()
 
         # TODO : all of this, rework with better padding and margin management
@@ -73,14 +76,14 @@ class CheckBox(Button):
 
         # Sliding the text to the right
         assert self.w > self.h
-        self.text_widget.center = ((self.w + self.checkmarkframe.right) / 2, self.h / 2)
+        # self.text_widget.center = ((self.w + self.checkmarkframe.right) / 2, self.h / 2)
         area = pygame.Rect(self.content_rect)
         area_end = area.right
         area.left = self.checkmarkframe.right + self.checkmarkframe.left
         area.w = area_end - area.left
         while self.text_widget.w > area.w:
             if self.text_widget.font.height == 2:
-                raise ValueError(f"This text is too long for the text area : {text} (area={rect})")
+                raise ValueError(f"This text is too long for the text area : {text} (area={area})")
             self.text_widget.font.config(height=self.text_widget.font.height - 1)
 
     checkmark = property(lambda self: self._checkmark_ref())

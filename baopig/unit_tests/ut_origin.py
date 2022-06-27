@@ -78,7 +78,7 @@ class UT_Origin_Zone(Zone):
         r2 = DragableRectangle(self, pos=(40, 0), pos_ref=r1, color=(50, 100, 25), size=(30, 30), name="r2")
         r3 = DragableRectangle(self, pos=(0, 40), pos_ref=r2,  color=(100, 50, 25), size=(30, 30), name="r3")
         r4 = DragableRectangle(self, pos=(-40, 0), pos_ref=r3, color=(50, 100, 25), size=(30, 30), name="r4")
-        r1.origin.config(pos=(0, -40), reference_comp=r4)  # TODO : pos_ref
+        r1.origin.config(pos=(0, -40), reference_comp=r4)
         r0 = DragableRectangle(self, pos=("50%", "50%"), pos_ref=r1, color=(75, 75, 25), size=(40, 40))
         r0.move_behind(r1)
 

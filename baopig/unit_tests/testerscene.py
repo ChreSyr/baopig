@@ -7,12 +7,8 @@ class TesterScene(Scene):
 
     def __init__(self, app, ContentZoneClass):
 
-        # TODO : finish to automatically collect every UT_Scene
-        # TODO : button Home
-
         Scene.__init__(self, app, name=str(ContentZoneClass))
         self.sections = []
-        # TODO : automatically pack zones with margin
 
         # Menu
         self.menu_zone = Zone(self, size=(int(self.w / 2) - 15, 35), pos=(10, 10), name="menu")
@@ -20,7 +16,6 @@ class TesterScene(Scene):
         # Section
         self.sections_zone = Zone(self, size=(self.w/2-15, self.h-self.menu_zone.h-20), background_color="lightgray",
                                   pos=(10, self.menu_zone.bottom + 10), name="sections")
-        # TODO : MenuLayer or ColumnLayer, just a Grid with one column
         GridLayer(self.sections_zone, name="sections_layer", col_width=self.sections_zone.w, nbcols=1)
         self.add_section(title="NO TEST SECTION YET", tests=[])
 
@@ -41,7 +36,7 @@ class TesterScene(Scene):
         self.run_tiy = Button(self, "RUN", command=run, sticky="topright", pos_ref=self.menu_zone, visible=False)
 
         # Back & Try_it_yourself buttons
-        GridLayer(self.menu_zone, nbrows=1, col_width=110)  # TODO : margin
+        GridLayer(self.menu_zone, nbrows=1, children_margins=10)
         Button(self.menu_zone, "< BACK", col=0, command=PrefilledFunction(app.open, "UTMenu_Scene"))
         def try_it_yourself():
             if self.try_it_yourself.is_visible:
@@ -52,8 +47,7 @@ class TesterScene(Scene):
                 self.try_it_yourself.show()
                 self.run_tiy.show()
                 self.sections_zone.hide()
-        Button(self.menu_zone, "Try it yourself !", col=1,
-               command=try_it_yourself)
+        Button(self.menu_zone, "Try it yourself !", col=1, command=try_it_yourself)
 
         # Content
         self.content = ContentZoneClass(self, size=(self.w/2-15, self.h - 20), name="content",
@@ -105,9 +99,8 @@ app.launch()"""
              font_height=self.theme.get_style_for(Text)["font_height"] + 2, font_bold=True,
              row=len(self.sections_zone.all_children), max_width=self.sections_zone.w)
         for i, text in enumerate(tests):
-            # TODO : CheckBoxes
-            Text(self.sections_zone, text="TEST {} : ".format(i+1) + text,  # {:0>2} for 01, 02...
-                 row=len(self.sections_zone.all_children), max_width=self.sections_zone.w)
+            CheckBox(self.sections_zone, text="TEST {} : ".format(i+1) + text,  # {:0>2} for 01, 02...
+                     row=len(self.sections_zone.all_children), width=self.sections_zone.w)
         Text(self.sections_zone, "", row=len(self.sections_zone.all_children))
 
     def handle_scene_close(self):

@@ -26,7 +26,6 @@ class UT_Text_Zone(Zone):
             width=hello.width,
         )
 
-        # TODO : hide selection_rect on double clic
         self.set_style_for(Text, font_file="monospace")
         self.set_style_for(Text, font_height=60)
         self.set_style_for(Text, font_color=(0, 100, 0))
@@ -44,14 +43,13 @@ class UT_Text_Zone(Zone):
             font_height=10,
             font_file="Arial Narrow Bold Italic.ttf"
         )
-        text.font.config(height=25)
         text.set_background_color((255, 255, 255, 128))
-        edit = TextEdit(self, text="Green", width=text.width, pos=text.bottomleft)
         text.font.config(color=(10, 50, 30))
+        edit = TextEdit(self, text="Green", width=text.width, pos=text.bottomleft)
 
         self.set_style_for(Text, font_height=20)
         self.set_style_for(Text, font_color=(0, 0, 0))
-        z = Zone(self, pos=edit.bottomleft, size=("90%", "100%"))
+        z = Zone(self, pos=edit.bottomleft, size=("90%", "30%"))
         GridLayer(z)
         for i, file in enumerate((
             "I am written in the default font",
