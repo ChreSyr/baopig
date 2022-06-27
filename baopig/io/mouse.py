@@ -84,7 +84,7 @@ class _Mouse(Communicative):
             button=None,  # numero du bouton
             pos=None)  # position du clic
         historic_size = 3  # Pour le triple-clic
-        self.clic_history = History(object, maxlen=historic_size, seq=[empty_clic] * historic_size)
+        self.clic_history = History(maxlen=historic_size, seq=[empty_clic] * historic_size)
 
         """
         When the mouse is hovering a Text inside a Button inside a Zone inside a Scene,
@@ -141,8 +141,8 @@ class _Mouse(Communicative):
                "".format(self.pos, self.pressed_button, self.last_event)
 
     pos = property(lambda self: self._pos)
-    x = property(lambda self: self._pos[0])  # TODO : allow moving mouse by doing mouse.move(dx, dy)
-    y = property(lambda self: self._pos[1])  #         -> (for joystick control over mouse)
+    x = property(lambda self: self._pos[0])
+    y = property(lambda self: self._pos[1])
 
     application = property(lambda self: self._application)
     scene = property(lambda self: self._application._focused_scene)
@@ -255,13 +255,6 @@ class _Mouse(Communicative):
             comp.signal.UNLINK.emit()
         # While the mouse left button was press, we didn't update hovered_comp
         self.update_hovered_comp()
-
-    def defocus_TBR(self, comp):
-        """
-        Permit to a component to defocus itself
-        """
-        assert self.scene.focused_comp == comp
-        self.scene._focus(None)
 
     def get_pos_relative_to(self, comp):
 

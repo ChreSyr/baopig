@@ -3,7 +3,6 @@
 from baopig.pybao.objectutilities import *
 from baopig._debug import debug_screen_updates
 from .utilities import *
-from .widget import Widget
 from .resizable import ResizableWidget
 from .layersmanager import LayersManager
 from .layer import Layer
@@ -147,7 +146,7 @@ class Container(ResizableWidget):
         self.layers_manager = layersmanager_class(self)
         self.layers = self.layers_manager.layers
 
-        self._children_to_paint = WeakTypedSet(Widget)  # a set cannot have two same occurences
+        self._children_to_paint = WeakSet()  # a set cannot have two same occurences
         self._rects_to_update = None
         self._rect_to_update = None
         self._requests = PackedFunctions()  # using PackedFunctions allow to set an owner for a request

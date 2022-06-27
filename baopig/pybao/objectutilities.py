@@ -88,7 +88,6 @@ class Object:
         return "<{}({})>".format(self.__class__.__name__, str(self.__dict__)[1:-1])
 
 
-# TODO : stop using all TypedThing, too heavy
 class TypedDeque(deque):
     """
     A TypedDeque is a deque who can only contain items of type ItemsClass
@@ -155,8 +154,7 @@ class TypedDeque(deque):
         deque.insert(self, index, p_object)
 
 
-# TODO : stop using all TypedThing, too heavy
-class TypedDict(dict):
+class TypedDict_TBR(dict):
     def __init__(self, KeysClass, ValuesClass, seq={}, **kwargs):
         """
         Create a dict who can only contain keys of type keys_class
@@ -252,7 +250,6 @@ class TypedDict(dict):
             self[k] = v
 
 
-# TODO : stop using all TypedThing, too heavy
 class TypedList(list):
 
     def __init__(self, *ItemsClass, seq=()):
@@ -377,7 +374,7 @@ class TypedSet(set):
                 self.add(item)
 
 
-class History(TypedDeque):
+class History(deque):
     """
     An History is a TypedDeque whith a fixed size
     You can only :
@@ -394,8 +391,8 @@ class History(TypedDeque):
                         oldest element       newest element
     """
 
-    def __init__(self, ItemsClass, maxlen, seq=()):
-        TypedDeque.__init__(self, ItemsClass, seq, maxlen)
+    def __init__(self, maxlen, seq=()):
+        deque.__init__(self, seq, maxlen)
 
     def __delitem__(self, *args, **kwargs):
         raise PermissionError("Cannot use __delitem__ on an History")

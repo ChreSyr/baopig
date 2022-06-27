@@ -1,5 +1,6 @@
 
 
+
 import pygame
 from baopig._lib import Validable, LOGGER
 from .lineedit import LineEdit
@@ -34,7 +35,7 @@ class Entry(LineEdit, Validable):
     def accept(self, text):
 
         try:
-            value = self._entry_type(text)
+            self._entry_type(text)
         except ValueError as e:
             LOGGER.warning(e)
             return False

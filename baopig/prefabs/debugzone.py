@@ -16,7 +16,7 @@ class DebugZone(Zone, Handler_SceneClose):
             layer=scene.debug_layer
         )
 
-        self.set_style_for(Text, font_color="black")
+        self.set_style_for(Text, font_color="black", font_file=None)
 
         self._pointed = None
         self.highlighter = None
@@ -29,7 +29,6 @@ class DebugZone(Zone, Handler_SceneClose):
             name=self.name + " -> debug_zone",
             pos=(5, -5), pos_location="bottomleft", pos_ref_location="bottomleft"
         )
-        # TODO : self.debug_zone.style.font.file = None
 
         presentators_zone = Zone(
             parent=self.debug_zone,
@@ -40,7 +39,7 @@ class DebugZone(Zone, Handler_SceneClose):
         trackers_zone = Zone(
             parent=self.debug_zone,
             pos=(presentators_zone.right, 5),
-            size=(4000, self.debug_zone.h),  # TODO : how to say 'I define the height but not the width ?' or 'width adapts to the cell'
+            size=(4000, self.debug_zone.h),
             name=self.debug_zone.name + " -> trackers_zone"
         )
 
@@ -123,34 +122,12 @@ class DebugZone(Zone, Handler_SceneClose):
                 pos=(0, parent_presentator.top),
                 name="parent_tracker")
 
-            # POINTED TRACKER
-            # pointed_presentator = Text(
-            #     parent=presentators_zone,
-            #     text="Pointed : ",
-            #     pos=(0, parent_presentator.bottom),
-            #     name="pointed_presentator")
-            # DynamicText(
-            #     parent=trackers_zone,
-            #     get_text=lambda: repr(mouse._get_pointed_comp()),
-            #     pos=(0, pointed_presentator.top),
-            #     name="pointed_tracker")
-
-            # TODO : mouse.pointed_comp tracker
-
         self.print_text = Text(
             parent=self.debug_zone,
             text="This text is aimed to debug",
             pos=(5, self.debug_zone.h - 5 - 15),
             name=self.debug_zone.name + " -> print_text"
         )
-
-        # TODO : grid pack with margin
-
-        # def print_pointed_comp(*args):
-        #     if hasattr(mouse.pointed_comp.parent, "text"):
-        #         self.print_(mouse.pointed_comp.parent.text)
-        #     self.print_(repr(mouse.pointed_comp))
-        # self.handle_keydown[keyboard.SPACE].add(print_pointed_comp)
 
         self.parent.signal.RESIZE.connect(self.update, owner=self)
         mouse.signal.MOTION.connect(self.update_pointed_outline, owner=self)

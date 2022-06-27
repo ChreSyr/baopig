@@ -7,12 +7,6 @@ class LineEdit(TextEdit):
     """
     LineEdit is a Text who only contains 1 line
     """
-    # TODO : a lot of reworks and unit tests
-    # TODO : LineEdit.line instead of .lines ?
-
-    # def __init__(self, *args, **kwargs):
-
-    #     TextEdit.__init__(self, *args, **kwargs)
 
     def handle_keydown(self, key):
 
@@ -20,3 +14,10 @@ class LineEdit(TextEdit):
             self.defocus()
         else:
             super().handle_keydown(key)
+
+    def set_text(self, text):
+
+        if '\n' in text:
+            raise PermissionError("A LineEdit cannot contain a backslash")
+        else:
+            super().set_text(text)

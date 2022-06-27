@@ -1,5 +1,4 @@
 
-from baopig.pybao.objectutilities import TypedList
 from .layer import Widget, Layer
 
 
@@ -18,7 +17,7 @@ class LayersManager:
     def __init__(self, container):
 
         self._container = container
-        self._layers = TypedList(Layer)
+        self._layers = []
         self._default_layer = None
         self._touchable_layers = []
 

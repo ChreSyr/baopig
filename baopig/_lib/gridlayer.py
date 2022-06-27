@@ -1,7 +1,6 @@
 
 
 import pygame
-from baopig.pybao.objectutilities import TypedList
 from .utilities import paint_lock
 from .widget import debug_with_assert
 from .layer import Layer
@@ -285,8 +284,8 @@ class GridLayer(Layer):
         self._row_height = row_height
 
         self._data = [[None]]  # shared ressource initialized with one row and one column
-        self._cols = TypedList(Column)
-        self._rows = TypedList(Row)
+        self._cols = []
+        self._rows = []
 
         Row(self, 0)
         Column(self, 0)

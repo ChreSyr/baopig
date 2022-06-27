@@ -8,7 +8,6 @@ from .utilities import Linkable, paint_lock
 from .layer import Layer
 from .shapes import Rectangle
 from .container import Container
-# TODO : solve : selection error, there seems to be a problem with abs_hitbox or selection_rect
 
 
 class Selectable:
@@ -40,8 +39,7 @@ class Selectable:
             selector = selector.parent
         self._selector_ref = selector.get_weakref()
 
-        if hasattr(self.selector, "selectables"):  # selector might not have been initialized  # TODO : still True ?
-            self.selector.selectables.add(self)
+        self.selector.selectables.add(self)
 
         self.signal.NEW_SURF.connect(self.unselect, owner=self)
         self.signal.MOTION.connect(self.unselect, owner=self)
@@ -77,7 +75,6 @@ class Selectable:
         if self.is_selected:
             return self
 
-    # TODO : decorate
     def select(self):
         """
         Called each time the selection rect move and collide with this Selectable
@@ -151,8 +148,6 @@ class Selector(Linkable):
 
     def __init__(self, SelectionRectClass=None):
 
-        # TODO : test : a disabled Selector cannot select
-
         if SelectionRectClass is None: SelectionRectClass = DefaultSelectionRect
 
         assert isinstance(self, Container)
@@ -162,17 +157,10 @@ class Selector(Linkable):
         class Selectables(WeakSet):
             def __init__(selectables):
                 WeakSet.__init__(selectables)
-                def add_selectables(cont):
-                    for comp in cont.all_children:
-                        if hasattr(comp, "all_children"):
-                            add_selectables(comp)
-                        if isinstance(comp, Selectable):
-                            selectables.add(comp)
-                add_selectables(self)
             def add(selectables, comp):
-                if comp not in selectables:
-                    super().add(comp)
-                    comp.signal.KILL.connect(lambda: selectables.remove(comp), owner=self)
+                assert comp not in selectables
+                super().add(comp)
+                comp.signal.KILL.connect(lambda: selectables.remove(comp), owner=self)
             def get_selected(selectables):
                 for comp in selectables:
                     if comp.is_selected:
@@ -215,8 +203,9 @@ class Selector(Linkable):
                                              level=self.layers_manager.FOREGROUND, maxlen=1, touchable=False)
         else:
             self.close_selection()
-            self.selectionrect_layer.kill()
-            self.selectionrect_layer = None
+            if self.selectionrect_layer:
+                self.selectionrect_layer.kill()
+                self.selectionrect_layer = None
 
     def end_selection(self, abs_pos, visible=None):
         """
@@ -247,7 +236,7 @@ class Selector(Linkable):
 
         super().handle_keydown(key)  # TAB and arrows management
 
-        if keyboard.mod.ctrl:  # TODO : depending on the OS, cmd or ctrl
+        if keyboard.mod.ctrl:
 
             if key == pygame.K_a:  # Ctrl + a -> select all
                 self.select_all()

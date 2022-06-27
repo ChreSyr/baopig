@@ -286,7 +286,6 @@ class Focusable(Enablable):
                     parent.handle_keydown(key)  # parent is now the closest Selector parent
 
         elif key == pygame.K_TAB:
-            # TODO : depending on the OS, cmd or ctrl
             if keyboard.mod.ctrl:  # Ctrl + TAB -> focus the previous Focusable inside this Selector
                 if key == pygame.K_TAB:
                     self.focus_antecedant()
@@ -296,7 +295,6 @@ class Focusable(Enablable):
             self.focus_next()
         elif key in (pygame.K_LEFT, pygame.K_UP):
             self.focus_antecedant()
-
 
     def handle_keyup(self, key):
         """Stuff to do when a key is released"""

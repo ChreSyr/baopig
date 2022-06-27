@@ -1,6 +1,5 @@
 
 import time
-from baopig.pybao.objectutilities import TypedList
 from baopig.communicative import Communicative
 from .utilities import present_time
 
@@ -48,7 +47,7 @@ class Stopwatch(Communicative):
         """
         if self.is_running:
             raise PermissionError("You must stop a stopwatch before reset")
-        if self.get_time() is 0:
+        if self.get_time() == 0:
             raise PermissionError("The stopwatch is already reset")
 
         self._start_time = None
@@ -70,7 +69,7 @@ class Stopwatch(Communicative):
         else:
             self._start_time = time.time() - self.get_time()
             self._stop_time = None
-        _running_stopwatches.append(self)
+        _running_stopwatches.add(self)
         self.signal.START.emit()
 
     def stop(self):
@@ -85,5 +84,9 @@ class Stopwatch(Communicative):
         self.signal.STOP.emit()
 
 
-_running_stopwatches = TypedList(Stopwatch)
+class _RunningStopwatches(set):
+    pass
+
+
+_running_stopwatches = _RunningStopwatches
 _running_stopwatches.manager = None

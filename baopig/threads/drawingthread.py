@@ -5,7 +5,7 @@ import os
 import time
 import threading
 import pygame
-from baopig.pybao.objectutilities import PrefilledFunction, History, TypedList, Object
+from baopig.pybao.objectutilities import History, Object
 from baopig._debug import infinite_fps, debug_global_fps
 from baopig.time.timer import RepeatingTimer
 from baopig._lib import paint_lock
@@ -32,7 +32,7 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
                 self.fps_history.append(self.scenes_rendered_during_current_second)
                 self.scenes_rendered_during_current_second = 0
             self.scenes_rendered_during_current_second = 0
-            self.fps_history = History(int, seq=[], maxlen=500)
+            self.fps_history = History(seq=[], maxlen=500)
             self.fps_history_updater = RepeatingTimer(1, _tick_fps)
 
         # The clock is the object who freeze enough the thread in order to have maximum app.required_fps FPS

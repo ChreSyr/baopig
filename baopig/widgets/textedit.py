@@ -1,9 +1,8 @@
 
 
-from pygame import scrap, SCRAP_TEXT
-from baopig.pybao.objectutilities import PrefilledFunction, Object, TypedDeque
+from baopig.pybao.objectutilities import Object, deque
 from baopig._lib import *
-from .text import Text, _LineSelection
+from .text import Text
 
 
 # TODO : LineEntry (with select_all_on_focus and exec_on_defocus)
@@ -151,7 +150,7 @@ class TextEdit(Text, Selector):
 
     def handle_keydown(self, key):
 
-        if keyboard.mod.ctrl:  # TODO : cmd or ctrl, depending on the OS
+        if keyboard.mod.ctrl:
             if key in (pygame.K_a, pygame.K_c, pygame.K_v, pygame.K_x):
                 return super().handle_keydown(key)
         self.cursor.handle_keydown(key)
@@ -189,8 +188,8 @@ class HaveHistory:
             - the selection start and end, if the parent was selecting
         """
         max_item_stored = 50
-        self.history = TypedDeque(Object, maxlen=max_item_stored)
-        self.back_history = TypedDeque(Object, maxlen=max_item_stored)
+        self.history = deque(maxlen=max_item_stored)
+        self.back_history = deque(maxlen=max_item_stored)
 
     def redo(self):
         """
@@ -382,7 +381,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         """
 
         # Cmd + ...
-        if keyboard.mod.ctrl:  # TODO : cmd or ctrl, depending on the OS
+        if keyboard.mod.ctrl:
             # Maj + Cmd + ...
             if keyboard.mod.maj:
                 if key == pygame.K_z:

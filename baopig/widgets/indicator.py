@@ -48,9 +48,6 @@ class Indicator(Text):
 
         widget._indicator = self
         self.origin.config(from_hitbox=True)
-        # if widget.layer.accept(self):
-        #     self.swap_layer(widget.layer)
-        #     self.move_in_front_of(widget)
         widget.signal.HOVER.connect(self.wake, owner=self)
         widget.signal.UNHOVER.connect(self.sleep, owner=self)
         if not widget.is_hovered:
@@ -78,9 +75,6 @@ class DynamicIndicator(DynamicText):
 
         widget._indicator = self
         self.origin.config(from_hitbox=True)
-        # if widget.layer.accept(self):
-        #     self.swap_layer(widget.layer)
-        #     self.move_in_front_of(widget)
         widget.signal.HOVER.connect(self.wake, owner=self)
         widget.signal.UNHOVER.connect(self.sleep, owner=self)
         if not widget.is_hovered:

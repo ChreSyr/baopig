@@ -2,7 +2,7 @@
 
 import time
 import threading
-from baopig.pybao.objectutilities import PackedFunctions, TypedSet, PrefilledFunction
+from baopig.pybao.objectutilities import PrefilledFunction
 from baopig._debug import debug_with_assert
 from baopig.communicative import Communicative
 from .utilities import *
@@ -173,6 +173,10 @@ class SetattrTimer(Timer):
         Timer.__init__(self, delay, setattr, owner, attr, val)
 
 
+class _RunningTimers(set):
+    pass
+
+
 timer_lock = threading.RLock()
-_running_timers = TypedSet(Timer)
+_running_timers = _RunningTimers()
 _running_timers.manager = None

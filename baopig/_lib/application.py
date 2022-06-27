@@ -7,7 +7,7 @@
 import time
 
 import pygame
-from baopig.pybao import WeakTypedList
+from baopig.pybao import WeakList
 from baopig._debug import debug_global_fps
 from baopig.io import LOGGER, mouse, keyboard
 from .style import HasStyle, Theme, StyleClass
@@ -44,7 +44,7 @@ class Application(HasStyle):
         self._current_mode = self._current_size = None
         self._max_resolution = (info.current_w, info.current_h)
         self._is_fullscreen_TO_REMOVE = False
-        self._scenes = WeakTypedList(Scene)
+        self._scenes = WeakList()
         self._focused_scene = None
         self._caption = self.name
         self._painter = None  # To be set in self.launch()

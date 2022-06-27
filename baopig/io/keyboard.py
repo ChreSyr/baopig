@@ -29,7 +29,7 @@ class _Keyboard:
         # self._keys = [0] * 512          # 512 = len(pygame.key.get_pressed())
         self._keys = {}
         self._application = None
-        class Mod:  # todo : update
+        class Mod:
             def __init__(self):
                 self.l_alt = False
                 self.r_alt = False
