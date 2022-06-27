@@ -34,15 +34,3 @@ class Hoverable:
 
     def handle_unhover(self):
         """Stuff to do when the widget is not hovered by mouse anymore"""
-
-    def set_indicator(self, text=None, get_text=None, indicator=None, location="bottom"):
-        """
-        Create a text above the widget when hovered
-
-        :param text:
-        :param get_text:
-        :param indicator:
-        :param location: 'top', 'bottom', 'left' or 'right'
-        """
-        # NOTE : set_indicator function is added in baopig.widgets.Text
-

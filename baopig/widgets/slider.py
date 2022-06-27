@@ -1,8 +1,8 @@
 
 
-import pygame
 from baopig._lib import *
 from .text import Text, DynamicText
+from .indicator import DynamicIndicator
 
 
 class SliderBloc(Rectangle):
@@ -146,7 +146,7 @@ class Slider(Container, Linkable, Hoverable):
                     self.title = Text(self, title, sticky="center", touchable=False, font_color=(96, 96, 96),
                                       font_height=int((self.bar.height - self.bar.border_width*2) * .9), font_bold=True)
                 get_indicator_text = lambda: f"{title} : {self.val}"
-            self.set_indicator(get_text=get_indicator_text)
+            DynamicIndicator(self, get_text=get_indicator_text)
 
     axis = property(lambda self: self._axis)
     defaultval = property(lambda self: self._defaultval)

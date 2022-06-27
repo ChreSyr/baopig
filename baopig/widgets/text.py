@@ -3,57 +3,6 @@ from math import inf as math_inf
 from baopig.font.font import Font
 from baopig._lib import *
 
-# TODO : Indicator(hoverable_widget, location="top", ...)
-def set_indicator(self, text=None, get_text=None, indicator=None, location="top"):
-    """Create a text above the widget when hovered"""
-
-    assert location in ("top", "bottom", "left", "right")
-    if location == "top":
-        loc_opposite = "bottom"
-        pos = (0, -5)
-    elif location == "bottom":
-        loc_opposite = "top"
-        pos = (0, 5)
-    elif location == "left":
-        loc_opposite = "right"
-        pos = (-5, 0)
-    elif location == "right":
-        loc_opposite = "left"
-        pos = (5, 0)
-    else:
-        raise ValueError(f"location most be 'top', 'bottom', 'left' or 'right'. Wrong value : {location}")
-
-    if self._indicator is not None:
-        raise PermissionError("Can only have one indicator")
-    if indicator is not None:
-        self._indicator = indicator
-    elif (text is not None) == (get_text is not None):
-        raise PermissionError("You must only define one of text and get_text")
-
-    elif text is None:
-        self._indicator = DynamicText(
-            self.parent, get_text,
-            font_color=(255, 255, 255), font_height=15,
-            pos=pos, pos_location=loc_opposite, pos_ref=self, pos_ref_location=location,
-            background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False, layer_level=2,
-        )
-    else:
-        self._indicator = Text(
-            self.parent, text,
-            font_color=(255, 255, 255), font_height=15,
-            pos=pos, pos_location=loc_opposite, pos_ref=self, pos_ref_location=location,
-            background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False, layer_level=2,
-        )
-    self._indicator.origin.config(from_hitbox=True)
-    if self.layer.accept(self._indicator):
-        self._indicator.swap_layer(self.layer)
-        self._indicator.move_in_front_of(self)
-    self.signal.HOVER.connect(self._indicator.wake, owner=self._indicator)
-    self.signal.UNHOVER.connect(self._indicator.sleep, owner=self._indicator)
-    if not self.is_hovered:
-        self._indicator.sleep()
-Hoverable.set_indicator = set_indicator
-
 
 class _Line(ResizableWidget):
     """
