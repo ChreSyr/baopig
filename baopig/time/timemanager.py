@@ -3,7 +3,6 @@
 import time
 from baopig.time.stopwatch import _running_stopwatches
 from baopig.time.timer import _running_timers, timer_lock, RepeatingTimer
-from baopig.io.logging import LOGGER
 
 
 class _TimeManager:

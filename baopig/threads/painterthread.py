@@ -27,9 +27,9 @@ class PainterThread(ExtraThread):
         if self.app._debug_averagefps:
             def _tick_fps():
                 # being a deque, it manages its data itself
-                self.fps_history.append(self.scenes_rendered_during_current_second)
-                self.scenes_rendered_during_current_second = 0
-            self.scenes_rendered_during_current_second = 0
+                self.fps_history.append(self.screenupdates_during_current_second)
+                self.screenupdates_during_current_second = 0
+            self.screenupdates_during_current_second = 0
             self.fps_history = History(seq=[], maxlen=500)
             self.fps_history_updater = RepeatingTimer(1, _tick_fps)
 
@@ -42,7 +42,6 @@ class PainterThread(ExtraThread):
         if self.app._debug_averagefps:
             self.fps_history_updater.cancel()
 
-    executable_requests = property(lambda self: self._executable_requests)
     is_recording = property(lambda self: self._is_recording)
     required_fps = property(lambda self: self._required_fps)
 
@@ -89,17 +88,6 @@ class PainterThread(ExtraThread):
         name = time.strftime("%Y.%m.%d-%Hh%M-%S.png", time.localtime())
         print(self.out_directory + name)
         pygame.image.save(screenshot, self.out_directory + name)
-
-    def send_request(self, request):
-        """
-        Method for objects who need that an action is operated by the main thread
-
-        request is a callable object
-        """
-        # TODO : remove
-        assert callable(request), "A callable is required, got {} instead".format(request)
-
-        self.executable_requests.append(request)
 
     def set_fps(self, fps):
 
@@ -148,7 +136,7 @@ class PainterThread(ExtraThread):
 
             # FPS
             if self.app._debug_averagefps:
-                self.scenes_rendered_during_current_second += 1  # TODO
+                self.screenupdates_during_current_second += 1
             # NOTE : Pour mieux tester les FPS, on ne fait pas ticker l'horloge
             if self.required_fps is not None:
                 self.clock.tick(self.required_fps)  # keep the game running slower than the given FPS

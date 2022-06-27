@@ -1,2 +1,2 @@
 
-from .drawingthread import PainterThread
+from .painterthread import PainterThread

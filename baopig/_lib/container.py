@@ -148,7 +148,6 @@ class Container(ResizableWidget):
         self._children_to_paint = WeakSet()  # a set cannot have two same occurences
         self._rects_to_update = None
         self._rect_to_update = None
-        self._requests = PackedFunctions()  # using PackedFunctions allow to set an owner for a request
 
         # Box attributes
         self._children_margins = self.style["children_margins"]
@@ -435,11 +434,6 @@ class Container(ResizableWidget):
         if self.dirty == 0:  # else, paint() is called by parent
             self._update_rect()
 
-    def container_exec_requests(self):  # TODO
-
-        self._requests()
-        self._requests.clear()
-
     def fit(self, layer):  # TODO
 
         assert layer in self.layers
@@ -489,11 +483,6 @@ class Container(ResizableWidget):
         with paint_lock:
             super().set_surface(pygame.Surface((w, h), need_alpha))
             self._flip_without_update()
-
-    def send_request(self, request, owner=None):
-
-        assert callable(request)
-        self._requests.add(request, owner=None)
 
     def set_always_dirty(self):
         """Lock self.dirty to 2, cannot go back"""
