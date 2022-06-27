@@ -69,16 +69,15 @@ class Selectable:
         of the selection_rect, who will often be caused by a mouse link motion
         """
 
-        assert self.get_weakref()._comp is not None
+        assert self.is_alive
         if self.abs_hitbox.colliderect(selection_rect.abs_hitbox):
-            if not self.is_selected: self.handle_select()  # TODO : if not used, remove it ?
             self._is_selected = True
             self.select()
         else:
-            if not self.is_selected: return
+            if not self.is_selected:
+                return
             self._is_selected = False
             self.unselect()
-            self.handle_unselect()
 
     def get_selected_data(self):
 

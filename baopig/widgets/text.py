@@ -365,10 +365,52 @@ class _SelectableLine(_Line, Selectable):
 
     selection = property(lambda self: self._selection_ref())
 
+    def check_select(self, selection_rect):
+        """
+        Method called by the selector each time the selection_rect rect changes
+        The selection_rect has 3 attributes:
+            - start
+            - end
+            - rect (the surface between start and end)
+        These attributes are absolute referenced, wich means they are relative
+        to the application. Start and end attributes reffer to the start and end
+        of the selection_rect, who will often be caused by a mouse link motion
+        """
+
+        assert self.is_alive
+        collide_rect = (self.selector.abs.left, self.abs.top, self.selector.abs.w, self.abs.h)
+
+        if selection_rect.rect.colliderect(collide_rect):
+            self._is_selected = True
+            self.select()
+        else:
+            if not self.is_selected:
+                return
+            self._is_selected = False
+            self.unselect()
+
+    def get_selected_data(self):
+        if self.selection is None:
+            return ''
+        return self.selection.get_data()
+
+    def handle_selector_link(self):
+
+        if mouse.has_triple_clicked:
+            if self.parent.collidemouse() and self.hitbox.top <= mouse.get_pos_relative_to(self.parent)[1] < self.hitbox.bottom:
+                with paint_lock:
+                    self.selector.close_selection()
+                    self.selector.start_selection((self.abs.left, self.abs.top))
+                    self.selector.end_selection((self.abs.right, self.abs.top), visible=False)  # not + 1 so we don't see the selection rect
+                # print("selection :", self.selection.index_start, self.selection.index_end)
+        elif mouse.has_double_clicked:
+            if self.parent.collidemouse() and self.hitbox.top <= mouse.get_pos_relative_to(self.parent)[1] < self.hitbox.bottom:
+                self.select_word(self.find_mouse_index())
+                # print("selection :", self.selection.index_start, self.selection.index_end)
+
     def select(self):
 
         selection = self.selector.selection_rect
-        assert self.abs_hitbox.colliderect(selection.abs_hitbox)
         if self.selection is None and not selection.w and not selection.h:
             return
 
@@ -391,25 +433,6 @@ class _SelectableLine(_Line, Selectable):
 
         start, end = sorted((start, end))
         self.selection.config(start, end, selecting_line_end)
-
-    def get_selected_data(self):
-        if self.selection is None:
-            return ''
-        return self.selection.get_data()
-
-    def handle_selector_link(self):
-
-        if mouse.has_triple_clicked:
-            if self.parent.collidemouse() and self.hitbox.top <= mouse.get_pos_relative_to(self.parent)[1] < self.hitbox.bottom:
-                with paint_lock:
-                    self.selector.close_selection()
-                    self.selector.start_selection((self.abs.left, self.abs.top))
-                    self.selector.end_selection((self.abs.right, self.abs.top), visible=False)  # not + 1 so we don't see the selection rect
-                # print("selection :", self.selection.index_start, self.selection.index_end)
-        elif mouse.has_double_clicked:
-            if self.parent.collidemouse() and self.hitbox.top <= mouse.get_pos_relative_to(self.parent)[1] < self.hitbox.bottom:
-                self.select_word(self.find_mouse_index())
-                # print("selection :", self.selection.index_start, self.selection.index_end)
 
     def select_word(self, index):
         """
