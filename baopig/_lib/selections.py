@@ -1,9 +1,9 @@
 
 
 import pygame
-from baopig.pybao.objectutilities import WeakTypedSet, PackedFunctions
+from baopig.pybao.objectutilities import WeakSet
 from baopig.pybao.issomething import is_point
-from baopig.io import keyboard, clipboard
+from baopig.io import keyboard
 from .utilities import Linkable, paint_lock
 from .layer import Layer
 from .shapes import Rectangle
@@ -24,7 +24,6 @@ class Selectable:
         - A mouse.LEFTCLICK occurs (not double clicks, wheel clicks...)
         - The Selectable size or position changes
 
-    The default reaction is to call handle_select() and handle_unselect()
     You can rewrite the check_select(abs_rect) method for accurate selections (like SelectableText)
     You can rewrite the select() and unselect() methods for specific behaviors (like SelectableText)
 
@@ -40,12 +39,6 @@ class Selectable:
         while not isinstance(selector, Selector):
             selector = selector.parent
         self._selector_ref = selector.get_weakref()
-
-        self.handle_select = PackedFunctions()
-        self.handle_unselect = PackedFunctions()
-
-        # self.handle_select.add(PrefilledFunction(print, "HANDLE SELECT :", self))
-        # self.handle_unselect.add(PrefilledFunction(print, "HANDLE UNSELECT :", self))
 
         if hasattr(self.selector, "selectables"):  # selector might not have been initialized
             self.selector.selectables.add(self)
@@ -166,9 +159,9 @@ class Selector(Linkable):
         assert issubclass(SelectionRectClass, DefaultSelectionRect)
         Linkable.__init__(self)
 
-        class Selectables(WeakTypedSet):
+        class Selectables(WeakSet):
             def __init__(selectables):
-                WeakTypedSet.__init__(selectables, ItemsClass=Selectable)
+                WeakSet.__init__(selectables)
                 def add_selectables(cont):
                     for comp in cont.all_children:
                         if hasattr(comp, "all_children"):
@@ -208,9 +201,8 @@ class Selector(Linkable):
         self.selection_rect.kill()
         for selectable in self.selectables.selected:
             if not selectable.is_selected: continue
-            selectable._is_selected = False
             selectable.unselect()
-            selectable.handle_unselect()
+            selectable._is_selected = False
 
     def enable_selecting(self, can_select=True):
         """

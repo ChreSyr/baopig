@@ -345,7 +345,7 @@ class _Line(ResizableWidget):
             self._chars_pos.append(self.font.get_width(text))
 
 
-class _SelectableLine(_Line, Selectable):
+class _SelectableLine(_Line):
     """
     You are selecting a SelectableLine when :
         - A condition described in Selectable is verified
@@ -355,15 +355,18 @@ class _SelectableLine(_Line, Selectable):
     def __init__(self, *args, **kwargs):
 
         _Line.__init__(self, *args, **kwargs)
-        Selectable.__init__(self)
+        # Selectable.__init__(self)
 
-        def connect():
-            self.connect("handle_selector_link", self.selector.signal.LINK)
-        self.parent.send_request(connect)
+        # def connect():
+        #     self.connect("handle_selector_link", self.selector.signal.LINK)
+        # self.parent.send_request(connect)  # TODO : doesn't work
 
+        self._is_selected = False
         self._selection_ref = lambda: None
 
+    is_selected = property(lambda self: self._is_selected)
     selection = property(lambda self: self._selection_ref())
+    selector = property(lambda self: self._parent.selector)
 
     def check_select(self, selection_rect):
         """
@@ -562,8 +565,29 @@ class _LineSelection(Rectangle):
         self.show()
 
 
+class _SelectableText(Selectable):
+
+    def check_select(self, selection_rect):
+        for line in self.lines:
+            line.check_select(selection_rect)
+        self._is_selected = True in tuple((line.is_selected for line in self.lines))
+
+    def get_selected_data(self):
+        data = ""
+        if self.is_selected:
+            for line in self.lines:
+                data += line.get_selected_data()
+        return data
+
+    def unselect(self):
+        if self.is_selected:
+            for line in self.lines:
+                line.unselect()
+            self._is_selected = False
+
+
 # TODO : Line (text with only one line)
-class Text(Zone):
+class Text(Zone, _SelectableText):
 
     STYLE = Zone.STYLE.substyle()
     STYLE.modify(
@@ -598,6 +622,8 @@ class Text(Zone):
         self.inherit_style(parent, options=kwargs)
 
         Zone.__init__(self, parent, **kwargs)
+        if selectable:
+            _SelectableText.__init__(self)
 
         self._font = Font(self)
         self._max_width = self.style["max_width"]
@@ -923,6 +949,4 @@ class TextLabel(Text):
                     (self.padding.left, self.padding.top + plus, self.padding.right, self.padding.bottom + plus)
                 )
             self._pack()
-
-# TODO : copy a selected text
 
