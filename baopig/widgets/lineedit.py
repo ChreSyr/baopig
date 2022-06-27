@@ -19,4 +19,4 @@ class LineEdit(TextEdit):
         if key == pygame.K_RETURN:
             self.defocus()
         else:
-            self.cursor.handle_keydown(key)
+            super().handle_keydown(key)
