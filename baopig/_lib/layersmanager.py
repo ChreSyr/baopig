@@ -48,11 +48,6 @@ class LayersManager:
         self._sort_layers()
         self._touchable_layers = list(layer for layer in self._layers if layer.touchable)  # this preserv the overlay
 
-        # print("---")
-        # for layer in self:
-        #     print(layer.name)
-        # print("---")
-
     def _remove_layer(self, layer):
         """
         This method should only be called by Layer.kill

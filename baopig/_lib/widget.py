@@ -430,7 +430,6 @@ class HasProtectedHitbox:
         # if old == new: return
         self._move(new[0] - old[0], new[1] - old[1])
 
-        # print("NEW COMPONENT :", repr(self))
 
     # GETTERS ON PROTECTED FIELDS
     margin_TBR =            property(lambda self: self._margin)

@@ -157,12 +157,13 @@ class TextEdit(Text, Selector):
         self.cursor.handle_keydown(key)
 
     def handle_link(self):
-        if not mouse.has_double_clicked:  # else, the cursor follow the selection
+
+        super().handle_link()
+
+        if not mouse.has_double_clicked and not mouse.has_triple_clicked:  # else, the cursor follow the selection
             self.cursor.config(text_index=self.find_mouse_index())
 
     def paste(self, data):
-
-        print(f"PASTE :\n---------\n{data}\n---------")
 
         self.cursor.write(data)
 
@@ -335,8 +336,6 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         self._text_index = fit(text_index, 0, len(self.parent.text))
         self._line_index = fit(line_index, 0, len(self.parent.lines))
         self._char_index = fit(char_index, 0, len(self.line.text))
-
-        # print("Set cursor at :", self.text_index, self.line_index, self.char_index, selecting, save)
 
         if self.char_index == len(self.line.text_with_end):
             LOGGER.warning("Tricky cursor position")

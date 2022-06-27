@@ -9,7 +9,6 @@ class UT_TextEdit_Zone(Zone):
         Zone.__init__(self, *args, **kwargs)
 
         self.zone1 = Zone(self, pos=(10, 10), size=(self.w / 2 - 15, self.h - 20), background_color=(100, 100, 100, 50))
-        # print(self.zone1)
         self.zone2 = Zone(self, pos=(self.zone1.right + 10, 10), size=(self.w / 2 - 15, self.h - 20), background_color=(100, 100, 100, 50))
 
         self.zone1.mirrored = TextEdit(self.zone1, text="0123456789012345", width=40, pos=(10, 10))

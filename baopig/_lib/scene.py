@@ -114,7 +114,6 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
         if old_focused is not None: old_focused.signal.DEFOCUS.emit()
         widget.signal.FOCUS.emit()
-        # print("FOCUS", widget)
 
     def _update_rect(self):
 

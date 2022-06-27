@@ -93,21 +93,11 @@ class InputBox(DynamicLabel, Selector):
         Selector.__init__(self)
         # INFO : InputBox is has stopped running because of static text
 
-        def handle_click():
-            # self.selection.start(self.text_component.find_mouse_index())
-            # if self.cursor.is_asleep:
-            #     self.cursor.wake()
-            # self.cursor.set_index(self.selection.index_end)
-            print("CLICK")
-        # self.handle_click.add(handle_click)
-        # self.handle_drag.add(lambda: self.cursor.set_index(self.selection.index_end))
-
         def handle_focus():
             if self.cursor.is_asleep:
                 index = self.text_component.find_mouse_index() if mouse.button[1] else len(self.text)
                 self.cursor.set_index(index)
             # else, the cursor have been woke up by a click
-            print("FOCUS")
         def handle_defocus():
             self.cursor.sleep()
         def handle_enter():
@@ -186,19 +176,6 @@ class InputBox(DynamicLabel, Selector):
         )
         outline_rect.set_nontouchable()
 
-        """
-        Tentatives de recuperer le presse papier
-
-        pygame.scrap.init()
-        if pygame.scrap.lost ():
-            print("No content from me anymore. The clipboard is used by someone else.")
-        pygame.scrap.put("own_data", "Bonjour")
-        print(pygame.scrap.get("own_data"))
-        types = pygame.scrap.get_types()
-        #for type in types:
-            #print(type, pygame.scrap.get(type))
-        """
-
     have_selection = property(lambda self: self.selection.is_visible)
     presentation_text = property(lambda self: self._presentation_text_ref())
 
@@ -231,7 +208,6 @@ class InputBox(DynamicLabel, Selector):
 
     def handle_KEYDOWN(self, event):
 
-        print("handle_KEYDOWN", event.key, self.is_focused)
         if self.is_focused:
             self.write(event)
 
@@ -360,4 +336,3 @@ class InputBox(DynamicLabel, Selector):
             if self.have_selection: self.del_selected_text()
             self.set_text(self.text[:self.cursor.index] + event.unicode + self.text[self.cursor.index:],
                           cursor_index=self.cursor.index + 1)
-            # print(event)

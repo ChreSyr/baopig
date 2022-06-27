@@ -282,7 +282,6 @@ class TypedList(list):
             raise PermissionError(self.msg_item_type_error.format(item.__class__.__name__))
 
     def accept(self, item):
-        # print("accept", item.__class__.__name__, self.ItemsClass_name, isinstance(item, self.ItemsClass))
         if inspect.isclass(item):
             return issubclass(item, self.ItemsClass)
         return isinstance(item, self.ItemsClass)
@@ -642,11 +641,6 @@ def get_name(obj):
         if v == obj:
             return k
     return None
-
-    """ --- get_name testing ---
-    abc = 3
-    print(get_name(abc))
-    """
 
 
 def debug(func):

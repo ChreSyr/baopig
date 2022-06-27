@@ -341,7 +341,6 @@ class Theme:
     def __repr__(self):
         string = "Theme("
         classes = self.get_set_classes()
-        # print(classes)
         for widget_class in classes:
             style = self.get_style_for(widget_class)
             string += f"\n\t{widget_class.__name__}: {style}"

@@ -187,7 +187,6 @@ class _Mouse(Communicative):
             return
         self._is_hovering_display = True
         self.update_hovered_comp()
-        # print("HOVER APP")
 
     def _release_all(self):
         """
@@ -203,7 +202,6 @@ class _Mouse(Communicative):
             return
         self._hover(None)
         self._is_hovering_display = False
-        # print("UNHOVER APP")
 
     def _hover(self, comp):
 
@@ -220,7 +218,7 @@ class _Mouse(Communicative):
                 assert old_hovered.is_hovered
                 old_hovered._is_hovered = False
             except:
-                print("Hovering error")
+                LOGGER.warning("Hovering error")
 
         self._hovered_comp = comp
 

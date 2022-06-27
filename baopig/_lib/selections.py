@@ -187,7 +187,6 @@ class Selector(Linkable):
         self.selectionrect_layer = None
 
         self.signal.DEFOCUS.connect(self.close_selection, owner=self)
-        self.signal.LINK.connect(self.close_selection, owner=self)  # only usefull at link while focused
 
     is_selecting = property(lambda self: self._selection_rect_ref() is not None)
     selection_rect = property(lambda self: self._selection_rect_ref())
@@ -242,8 +241,6 @@ class Selector(Linkable):
         if not selected:
             return  # happens when the selection_rect didn't select anything
         sorted_selected = sorted(selected, key=lambda o: (o.abs.top, o.abs.left))
-        for s in sorted_selected:
-            print(s, s.is_selected)
         return '\n'.join(str(s.get_selected_data()) for s in sorted_selected)
 
     def handle_keydown(self, key):
@@ -258,7 +255,6 @@ class Selector(Linkable):
             elif key == pygame.K_c:  # Cmd + c -> copy selected data
                 selected_data = self.get_selection_data()
                 if selected_data:
-                    print(f"COPY :\n---------\n{selected_data}\n---------")
                     pygame.scrap.put(pygame.SCRAP_TEXT, str.encode(selected_data))
 
             elif key == pygame.K_v:  # Cmd + v -> paste clipboard data
@@ -274,6 +270,13 @@ class Selector(Linkable):
                 if selected_data:
                     pygame.scrap.put(pygame.SCRAP_TEXT, str.encode(selected_data))
                     self.del_selection_data()
+
+    def handle_link(self):
+
+        self.close_selection()  # only usefull at link while focused
+        for s in self.selectables:
+            if hasattr(s, "handle_selector_link"):
+                s.handle_selector_link()
 
     def handle_link_motion(self, link_motion_event):
         with paint_lock:

@@ -396,20 +396,6 @@ class _SelectableLine(_Line):
             return ''
         return self.selection.get_data()
 
-    def handle_selector_link(self):
-
-        if mouse.has_triple_clicked:
-            if self.parent.collidemouse() and self.hitbox.top <= mouse.get_pos_relative_to(self.parent)[1] < self.hitbox.bottom:
-                with paint_lock:
-                    self.selector.close_selection()
-                    self.selector.start_selection((self.abs.left, self.abs.top))
-                    self.selector.end_selection((self.abs.right, self.abs.top), visible=False)  # not + 1 so we don't see the selection rect
-                # print("selection :", self.selection.index_start, self.selection.index_end)
-        elif mouse.has_double_clicked:
-            if self.parent.collidemouse() and self.hitbox.top <= mouse.get_pos_relative_to(self.parent)[1] < self.hitbox.bottom:
-                self.select_word(self.find_mouse_index())
-                # print("selection :", self.selection.index_start, self.selection.index_end)
-
     def select(self):
 
         selection = self.selector.selection_rect
@@ -570,7 +556,6 @@ class _SelectableText(Selectable):
         for line in self.lines:
             line.check_select(selection_rect)
         self._is_selected = True in tuple((line.is_selected for line in self.lines))
-        print(self, self.is_selected)
 
     def get_selected_data(self):
         if self.is_selected:
@@ -578,6 +563,24 @@ class _SelectableText(Selectable):
             for line in self.lines:
                 data += line.get_selected_data()
             return data
+
+    def handle_selector_link(self):
+
+        if not self.collidemouse():
+            return
+
+        if mouse.has_triple_clicked:
+            for line in self.lines:
+                if line.abs.top <= mouse.y < line.abs.bottom:
+                    with paint_lock:
+                        self.selector.close_selection()
+                        self.selector.start_selection((line.abs.left, line.abs.top))
+                        self.selector.end_selection((line.abs.right, line.abs.top), visible=False)
+                        return
+        elif mouse.has_double_clicked:
+            for line in self.lines:
+                if line.abs.top <= mouse.y < line.abs.bottom:
+                    line.select_word(line.find_mouse_index())
 
     def unselect(self):
         if self.is_selected:
@@ -936,7 +939,6 @@ class TextLabel(Text):
         if (width is not None) or height is not None:
             if not self.padding.is_null:
                 if self.align_mode != "center":
-                    print(self.padding)
                     raise PermissionError("Cannot define padding and size on a TextLabel")
             if width is not None:
                 plus = int( (width - self.width) / 2 )

@@ -146,10 +146,10 @@ class DebugZone(Zone, Handler_SceneClose):
 
         # TODO : grid pack with margin
 
-        def print_pointed_comp(*args):
-            if hasattr(mouse.pointed_comp.parent, "text"):
-                self.print(mouse.pointed_comp.parent.text)
-            # self.print(repr(mouse.pointed_comp))
+        # def print_pointed_comp(*args):
+        #     if hasattr(mouse.pointed_comp.parent, "text"):
+        #         self.print_(mouse.pointed_comp.parent.text)
+        #     self.print_(repr(mouse.pointed_comp))
         # self.handle_keydown[keyboard.SPACE].add(print_pointed_comp)
 
         self.parent.signal.RESIZE.connect(self.update, owner=self)

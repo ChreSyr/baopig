@@ -78,7 +78,6 @@ class PersonalizedLogger(logging.Logger):
         self.open_file_handlers[level] = (1, file_handler)
 
     def add_debug_filehandler(self):
-        # print(self.open_file_handlers)
         if logging.DEBUG not in self.open_file_handlers:
             self.add_filehandler(logging.DEBUG)
 

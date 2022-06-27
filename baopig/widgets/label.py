@@ -300,7 +300,6 @@ class DynamicLabel(AbstractLabel, Runable):
     def run(self):
 
         if self.get_new_text is None:
-            print("USELESS CALL")
             return
         new_text = self.get_new_text()
         if new_text != self.text:
