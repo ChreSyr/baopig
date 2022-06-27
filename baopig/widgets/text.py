@@ -354,11 +354,6 @@ class _SelectableLine(_Line):
     def __init__(self, *args, **kwargs):
 
         _Line.__init__(self, *args, **kwargs)
-        # Selectable.__init__(self)
-
-        # def connect():
-        #     self.connect("handle_selector_link", self.selector.signal.LINK)
-        # self.parent.send_request(connect)  # TODO : doesn't work
 
         self._is_selected = False
         self._selection_ref = lambda: None
@@ -589,7 +584,6 @@ class _SelectableText(Selectable):
             self._is_selected = False
 
 
-# TODO : Line (text with only one line)
 class Text(Zone, _SelectableText):
 
     STYLE = Zone.STYLE.substyle()
@@ -673,7 +667,7 @@ class Text(Zone, _SelectableText):
             elif self.align_mode == "right":
                 line.right = self.width - self.padding.right
 
-        self.adapt(self.lines, horizontally=self.max_width is None)  # TODO : all lines have the same length ?
+        self.adapt(self.lines, horizontally=self.max_width is None)
 
         self._lines_pos = []
         for line in self.lines:
@@ -836,6 +830,10 @@ class Text(Zone, _SelectableText):
     def lock_text(self, locked=True):
 
         self.has_locked.text = locked
+
+    def pack(self, *args, **kwargs):
+
+        raise PermissionError("Should not use this method on a Text")
 
     def set_max_width(self, max_width):
 
