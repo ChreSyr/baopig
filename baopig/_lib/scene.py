@@ -1,6 +1,5 @@
 
 
-from baopig._debug import debug_screen_updates
 from .utilities import *
 from .style import Theme
 from .layer import Layer
@@ -141,8 +140,8 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
                             assert child.surface.get_parent() is self.surface
                             child._flip_without_update()  # overdraw child.hitbox
 
-            if debug_screen_updates:
-                LOGGER.info("update in {} :  {}".format(self, rect))
+            # if self.app.debug_screenupdates:
+            #     LOGGER.info("update in {} :  {}".format(self, rect))
 
             pygame.display.update(rect)
 

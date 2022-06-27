@@ -5,16 +5,10 @@
 import pygame
 from baopig.pybao.issomething import *
 from baopig.pybao.objectutilities import Object
-from baopig._debug import *
 from baopig.io import mouse
 from baopig.communicative import Communicative
 from .utilities import paint_lock, functools
 from .style import HasStyle, StyleClass, Theme
-
-
-if debug_del:
-    _is_alive = True
-    import gc  # garbage collector
 
 
 class MetaPaintLocker(type):
@@ -208,9 +202,6 @@ class _Origin:
             for i, c in enumerate(self._asked_pos):
 
                 if isinstance(c, str):
-                    if debug_with_assert:
-                        if not c.endswith('%'):
-                            raise ValueError(f"Uncorrect coordinate : {c}")
                     c = self.reference.hitbox.size[i] * int(c[:-1]) / 100
 
                 pos.append(int(c))
@@ -233,9 +224,6 @@ class _Origin:
             for i, c in enumerate(self._asked_pos):
 
                 if isinstance(c, str):
-                    if debug_with_assert:
-                        if not c.endswith('%'):
-                            raise ValueError(f"Uncorrect coordinate : {c}")
                     c = self.reference.rect.size[i] * int(c[:-1]) / 100
 
                 pos.append(int(c))
@@ -494,23 +482,10 @@ class HasProtectedHitbox:
             else:
                 pygame.Rect.__setattr__(self.hitbox, "topleft", self.topleft)
                 pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs.topleft)
-                if debug_with_assert: assert self.auto_hitbox.topleft == (0, 0), self.auto_hitbox
-
-            if debug_with_assert:
-                try:
-                    if self.window:
-                        assert self.hitbox == self.rect.clip(self.window),\
-                            "window={}, follow={}, rect={}, hitbox={}" \
-                            "".format(self.window, self.window.follow_movements, self.rect, self.hitbox)
-                    assert self.abs_hitbox.topleft == (self.parent.abs.left + self.hitbox.left, self.parent.abs.top + self.hitbox.top)
-                    assert self.auto_hitbox.topleft == (self.hitbox.left - self.rect.left, self.hitbox.top - self.rect.top)
-                except AssertionError as e:
-                    raise e
 
             self.signal.MOTION.emit(dx, dy)
 
             # We reset the asked_pos after the MOTION in order to allow cycles of origin referecing
-            if debug_with_assert: assert not self.has_locked.origin
             self.origin._reset_asked_pos()
 
             if self.is_visible:
@@ -587,7 +562,6 @@ class HasProtectedHitbox:
             if key in ("x", "centerx", "left", "right"):
                 self._move(value - old, 0)
             else:
-                if debug_with_assert: assert key in ("y", "centery", "top", "bottom")
                 self._move(0, value - old)
 
         else:
@@ -631,18 +605,11 @@ class HasProtectedHitbox:
             if old_size != self.size:
                 self.signal.RESIZE.emit(old_size)
 
-            if debug_with_assert:
-                assert self.abs_hitbox.left == self.parent.abs.left + self.hitbox.left
-                assert self.abs_hitbox.top == self.parent.abs.top + self.hitbox.top
         else:
             self._window = None
 
         self.signal.NEW_WINDOW.emit()
         self.parent._warn_change(self.rect)  # rect is to cover all possibilities
-
-        if debug_with_assert and window is not None:
-            assert self.hitbox == self.rect.clip(self.window),\
-                "window={}, rect={}, hitbox={}".format(self.window, self.rect, self.hitbox)
 
     # TODO : rework
     def config_margin(self, margin=None, left=None, top=None, right=None, bottom=None):
@@ -931,9 +898,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         HasProtectedHitbox.__init__(self)
         self.parent._add_child(self)
 
-        if debug_new:
-            print("NEW COMPONENT :", self)
-
         if "touchable" in options:
             if options["touchable"] is False:
                 self.set_nontouchable()
@@ -950,13 +914,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
                 return res
             return wrapped_func
         self.paint = paint_decorator(self, self.paint)
-
-    def __del__(self):
-
-        if debug_del:
-            print("DELETE :", self)
-            global _is_alive
-            _is_alive = False
 
     def __repr__(self):
         """
@@ -1050,35 +1007,14 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         if not self.is_alive: return
         with paint_lock:
             try:
-                if debug_with_assert:
-                    if self.is_awake:
-                        assert self in self.parent.awake_children
-                    else:
-                        assert self in self.parent.asleep_children
                 self.parent._remove_child(self)
                 self.disconnect()
                 self.signal.KILL.emit(self._weakref)
                 self._weakref._comp = None
-                if debug_with_assert: assert self not in self.parent.all_children
             except Exception as e:
                 raise e
 
-        if debug_kill:
-            print("KILL :", self)
-
-        if debug_del:
-            global _is_alive
-            _is_alive = True
-            # import sys
-            # warn_msg = "This component is not entirely deleted : {} (dependencies : {})"\
-            #                    "".format(self, sys.getrefcount(self))
         del self
-        if debug_del:
-            if _is_alive:
-                gc.collect()
-                # if _is_alive:
-                #     LOGGER.warning(warn_msg)
-            _is_alive = True
 
     def lock_visibility(self, locked=True):
 
@@ -1087,12 +1023,10 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
 
     def move_behind(self, comp):
 
-        if debug_with_assert: assert comp is not self
         self.layer.move_comp1_behind_comp2(comp1=self, comp2=comp)
 
     def move_in_front_of(self, comp):
 
-        if debug_with_assert: assert comp is not self
         self.layer.move_comp1_in_front_of_comp2(comp1=self, comp2=comp)
 
     def paint(self):
@@ -1129,7 +1063,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         0 means that it is not dirty and therefor not repainted again
         """
 
-        if debug_with_assert: assert dirty in (0, 1, 2)
         self.parent._dirty_child(self, dirty)
 
     def set_visibility(self, visible):

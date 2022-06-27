@@ -1,7 +1,6 @@
 
 
 from baopig.pybao.objectutilities import *
-from baopig._debug import debug_screen_updates
 from .utilities import *
 from .resizable import ResizableWidget
 from .layersmanager import LayersManager
@@ -249,8 +248,8 @@ class Container(ResizableWidget):
                         assert child.surface.get_parent() is self.surface
                         child._flip_without_update()  # overdraw child.hitbox
 
-            if debug_screen_updates:
-                LOGGER.info("update in {} :  {}".format(self, self.auto))
+            # if self.app.debug_screenupdates:
+            #     LOGGER.info("update in {} :  {}".format(self, self.auto))
 
     def _find_place_for(self, child):
 
@@ -352,8 +351,8 @@ class Container(ResizableWidget):
                             assert child.surface.get_parent() is self.surface
                             child._flip_without_update()  # overdraw child.hitbox
 
-            if debug_screen_updates:
-                LOGGER.info("update in {} :  {}".format(self, rect))
+            # if self.app.debug_screenupdates:
+            #     LOGGER.info("update in {} :  {}".format(self, rect))
 
             self._warn_parent(rect)
 

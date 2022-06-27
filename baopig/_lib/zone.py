@@ -1,7 +1,6 @@
 
 
 import pygame
-from baopig._debug import debug_with_assert
 from baopig._lib import Container, paint_lock, Widget
 
 
@@ -45,7 +44,6 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
         except ValueError:
             assert not self.parent.auto.contains(self.rect)
             raise PermissionError("A SubZone must fit inside its parent")
-        if debug_with_assert: assert self.surface.get_parent() is self.parent.surface
 
         self.parent.signal.NEW_SURF.connect(self._update_subsurface, owner=self)
         self.signal.MOTION.connect(self._update_subsurface, owner=self)
@@ -59,7 +57,6 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
                 assert not self.parent.auto.contains(self.rect)
                 Widget.set_surface(self, self.parent.surface.subsurface(
                     pygame.Rect(self.rect).clip(self.parent.auto)))  # resize the subzone
-            if debug_with_assert: assert self.surface.get_parent() is self.parent.surface
 
     def _flip(self):
         """Update all the surface"""
@@ -77,7 +74,6 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
                 self.parent.parent._warn_change(
                     (self.parent.left + self.hitbox.left, self.parent.top + self.hitbox.top) + tuple(self.hitbox.size)
                 )
-            if debug_with_assert: assert self.surface.get_parent() is self.parent.surface
 
     def _warn_parent(self, rect):
         """Request updates at rects referenced by self"""
@@ -89,7 +85,6 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
             pygame.display.update(rect)
         else:
             self.parent._warn_parent(rect)
-        if debug_with_assert: assert self.surface.get_parent() is self.parent.surface
 
     def resize(self, w, h):
 

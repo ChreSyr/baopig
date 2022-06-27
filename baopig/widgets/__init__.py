@@ -3,7 +3,7 @@ from .scrollablezone import ScrollableZone, ScrollSlider
 from .text          import DynamicText, Text
 from .textedit      import TextEdit
 from .lineedit      import LineEdit
-from .entry         import Entry  # TODO : remove ? is it abstract ?
+from .entry         import Entry
 from .numentry      import NumEntry
 from .button        import Button, ButtonText
 from .checkbox      import CheckBox

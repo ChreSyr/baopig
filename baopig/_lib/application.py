@@ -1,21 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-## BiblioButton is expressively dedicated to BiblioApplication
-# TODO : remove all assertion with debug_with_assert
-
 import time
 
-import pygame
 from baopig.pybao import WeakList
-from baopig._debug import debug_global_fps
-from baopig.io import LOGGER, mouse, keyboard
 from .style import HasStyle, Theme, StyleClass
 from .widget import Widget
 from .runable import _runables_manager
 from .utilities import *
-from .scene import Scene
-from baopig.io import clipboard
 
 
 class Application(HasStyle):
@@ -38,7 +30,6 @@ class Application(HasStyle):
         self._is_launched = False
         self._is_running = False
         self._fps = None
-        self._debug_fps = False
         self._default_mode = mode
         self._default_size = pygame.display.list_modes()[2] if size is None else size
         self._current_mode = self._current_size = None
@@ -50,6 +41,10 @@ class Application(HasStyle):
         self._painter = None  # To be set in self.launch()
         self._time_manager = None  # To be set in self.launch()
         self._runables_manager = _runables_manager
+
+        # debug attributes
+        self._debug_averagefps = False
+        self._debug_launchtime = False
 
         mouse._application = self
         keyboard._application = self
@@ -122,11 +117,6 @@ class Application(HasStyle):
                             c = self.focused_scene.all_children
                             raise Exception("Made for debugging")
                         self.toggle_debugging()
-                    # Cmd + f -> toggle debug fps
-                    elif event.key == pygame.K_f:
-                        self._debug_fps = not self._debug_fps
-                        if not self._debug_fps:
-                            self.set_caption(self._caption)
                     # Cmd + g -> collect garbage
                     elif event.key == pygame.K_g:
                         import gc
@@ -227,7 +217,7 @@ class Application(HasStyle):
             else:
                 raise e
 
-        if debug_global_fps:
+        if self._debug_averagefps:
             fps_history = self.painter.fps_history
             if len(fps_history) > 0:
                 fps_moy = sum(fps_history) / len(fps_history)
@@ -267,6 +257,18 @@ class Application(HasStyle):
 
             self._current_mode = mode
             self._current_size = size
+
+    def set_debug(self, **kwargs):
+        """
+        arguments must be True or False
+        keywords must be from this list :
+            averagefps, launchtime
+        """
+
+        for kw, arg in kwargs.items():
+            if arg is not None:
+                assert hasattr(self, "_debug_" + kw)
+                self.__setattr__("_debug_" + kw, arg)
 
     def exit(self, reason=None):
 
@@ -328,8 +330,8 @@ class Application(HasStyle):
 
         from baopig.time.timemanager import time_manager
         self._time_manager = time_manager
-        from baopig.threads import DrawingThread
-        self._painter = DrawingThread(self)
+        from baopig.threads import PainterThread
+        self._painter = PainterThread(self)
         self.painter.set_fps(self._fps)
 
         assert self.focused_scene is not None

@@ -2,7 +2,6 @@
 
 import pygame
 from .utilities import paint_lock
-from .widget import debug_with_assert
 from .layer import Layer
 
 
@@ -51,7 +50,6 @@ class Column(RowOrCol):
 
     def __init__(self, grid, index):
 
-        if debug_with_assert: assert index == len(grid._cols)  # maybe not, if col inserted, but not implemented yet
 
         RowOrCol.__init__(self, grid, index)
 
@@ -148,7 +146,6 @@ class Row(RowOrCol):
     """
     def __init__(self, grid, index):
 
-        if debug_with_assert: assert index == len(grid._rows)  # maybe not, if row inserted, but not implemented yet
 
         RowOrCol.__init__(self, grid, index)
 
@@ -292,13 +289,6 @@ class GridLayer(Layer):
         if nbcols: self.set_nbcols(nbcols)
         if nbrows: self.set_nbrows(nbrows)
 
-        if debug_with_assert:
-            try:
-                assert self.nbcols == len(self._data[0]) == len(self.cols)
-                assert self.nbrows == len(self._data) == len(self.rows)
-            except AssertionError as e:
-                raise e
-
     def __str__(self):
         return "{}(nbrows={}, nbcols={})".format(self.__class__.__name__, self.nbrows, self.nbcols)
 
@@ -353,8 +343,6 @@ class GridLayer(Layer):
                 raise PermissionError("Cannot insert {} at positon : row={}, col={}, because {} is already there"
                                       "".format(comp, comp.row, comp.col, self._data[comp.row][comp.col]))
 
-            if debug_with_assert: assert not comp.has_locked.origin, "This should be checked in Widget.__init__()"
-
             row = self.rows[comp.row]
             col = self.cols[comp.col]
             new_h = row.is_adaptable and comp.height > row.get_height()
@@ -377,10 +365,6 @@ class GridLayer(Layer):
 
             if comp.window is None:
                 comp.set_window(row.get_cell_rect(comp.col))
-
-            if debug_with_assert: assert comp.window is not None, comp
-            if debug_with_assert: assert self.nbcols == len(self._data[0]) == len(self.cols)
-            if debug_with_assert: assert self.nbrows == len(self._data) == len(self.rows)
 
             # don't need owner because, if the grid is killed,
             # it means the container is killed, so the comp is also killed

@@ -6,13 +6,12 @@ import time
 import threading
 import pygame
 from baopig.pybao.objectutilities import History, Object
-from baopig._debug import infinite_fps, debug_global_fps
 from baopig.time.timer import RepeatingTimer
 from baopig._lib import paint_lock
 from .thread import ExtraThread, LOGGER
 
 
-class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
+class PainterThread(ExtraThread):
 
     def __init__(self, app):
 
@@ -25,8 +24,7 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
 
         self._required_fps = None
 
-        # TODO : debug_global_fps (it is a little consuming)
-        if debug_global_fps:
+        if self.app._debug_averagefps:
             def _tick_fps():
                 # being a deque, it manages its data itself
                 self.fps_history.append(self.scenes_rendered_during_current_second)
@@ -41,7 +39,7 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
 
     def __del__(self):
 
-        if debug_global_fps:
+        if self.app._debug_averagefps:
             self.fps_history_updater.cancel()
 
     executable_requests = property(lambda self: self._executable_requests)
@@ -71,7 +69,7 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
 
         :return:
         """
-        if debug_global_fps:
+        if self.app._debug_averagefps:
             if len(self.fps_history) > 0:
                 return self.fps_history[-1]
             else:
@@ -81,7 +79,7 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
 
     def init(self):
 
-        if debug_global_fps:
+        if self.app._debug_averagefps:
             self.fps_history_updater.start()
 
     def screenshot(self):
@@ -111,7 +109,7 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
     def stop(self):
 
         super().stop()
-        if debug_global_fps:
+        if self.app._debug_averagefps:
             self.fps_history_updater.cancel()
 
     def start_recording(self, only_at_change=False):
@@ -137,7 +135,7 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
             self._paint()
 
             # launch time
-            if self.app.launch_time is not None:
+            if self.app._debug_launchtime and self.app.launch_time is not None:
                 import time
                 LOGGER.info("{} launched in {} seconds".format(self.app.name, time.time() - self.app.launch_time))
                 self.app.launch_time = None
@@ -149,13 +147,11 @@ class DrawingThread(ExtraThread):  # TODO : rename as _PainterThread
                     self.record_index += 1
 
             # FPS
-            if debug_global_fps:
-                self.scenes_rendered_during_current_second += 1
+            if self.app._debug_averagefps:
+                self.scenes_rendered_during_current_second += 1  # TODO
             # NOTE : Pour mieux tester les FPS, on ne fait pas ticker l'horloge
-            if infinite_fps is False and self.required_fps is not None:
+            if self.required_fps is not None:
                 self.clock.tick(self.required_fps)  # keep the game running slower than the given FPS
-            if self.app._debug_fps:
-                print(f"fps : {self.fps_history[-1]}")
             self._can_draw.clear()
 
         except pygame.error as e:

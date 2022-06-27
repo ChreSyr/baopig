@@ -10,6 +10,8 @@ class PresentationScene(Scene):
 
         Scene.__init__(self, app)
 
+        app.set_debug(averagefps=True, launchtime=True)
+
         Text(self, text="")
         Text(self, text=f"Welcome to baopig version {version}")
         Text(self, text="You can look for the tutorial or experiment unit tests")

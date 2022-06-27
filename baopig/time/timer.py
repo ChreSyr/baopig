@@ -3,7 +3,6 @@
 import time
 import threading
 from baopig.pybao.objectutilities import PrefilledFunction
-from baopig._debug import debug_with_assert
 from baopig.communicative import Communicative
 from .utilities import *
 
@@ -87,7 +86,6 @@ class Timer(Communicative):
         if self._pause_time is None:
             return
 
-        if debug_with_assert: assert self not in _running_timers
         with timer_lock:
             self._start_time = self._start_time + (time.time() - self._pause_time)
             self._end_time = self._start_time + self.interval
