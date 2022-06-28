@@ -92,12 +92,10 @@ class TextEdit(Text, Selector):
     def __init__(self, parent, text=None, **kwargs):
 
         if text is None: text = ""
-        if "max_width" in kwargs:
-            raise PermissionError("Use width instead of max_width")
 
         self.inherit_style(parent, **kwargs)
 
-        Text.__init__(self, parent=parent, text=text, max_width=self.style["width"], selectable=True, **kwargs)
+        Text.__init__(self, parent=parent, text=text, selectable=True, **kwargs)
         Selector.__init__(self)
 
         # self.enable_selecting(True)
@@ -300,7 +298,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         Place the cursor at line n° line_index and before the character n° char_index, count from 0
         If text_index is given instead of line_index and char_index, we use parent.find_indexes
 
-        If char_index is at the end of a cutted line (a line too big for the text max_width), then
+        If char_index is at the end of a cutted line (a line too big for the text width), then
         the cursor can either be on the end of the line or at the start of the next line, it is
         algorithmically the same. So the object who config the cursor will decide where to place the
         cursor. It can give a float value for text_index (like 5.4) wich mean "Hey, if the cursor is

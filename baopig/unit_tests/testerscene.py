@@ -83,7 +83,7 @@ app.launch()"""
         window = pygame.Rect(self.try_it_yourself.code.rect)
         window.height = self.try_it_yourself.bottom - 400
         self.try_it_yourself.code.set_window(window)
-        self.try_it_yourself.console = Text(self.try_it_yourself, max_width=self.try_it_yourself.w,
+        self.try_it_yourself.console = Text(self.try_it_yourself, width=self.try_it_yourself.w,
                                             font_file="monospace", pos=(0, window.bottom + 10),
                                             background_color=(211, 189, 189))
 
@@ -97,7 +97,7 @@ app.launch()"""
         self.sections.append([title, tests])
         Text(self.sections_zone, "--- SECTION {} : {} ---".format(len(self.sections), title),
              font_height=self.theme.get_style_for(Text)["font_height"] + 2, font_bold=True,
-             row=len(self.sections_zone.all_children), max_width=self.sections_zone.w)
+             row=len(self.sections_zone.all_children), width=self.sections_zone.w)
         for i, text in enumerate(tests):
             CheckBox(self.sections_zone, text="TEST {} : ".format(i+1) + text,  # {:0>2} for 01, 02...
                      row=len(self.sections_zone.all_children), width=self.sections_zone.w)
