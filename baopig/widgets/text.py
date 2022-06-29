@@ -4,11 +4,11 @@ from baopig.font.font import Font
 from baopig._lib import *
 
 
-class _Line(ResizableWidget):
+class _Line(Widget):
     """
     A Line is a component who only have text on its surface
-    It have a transparent background
-    It have an end string who is the separator between this line and the next one
+    It has a transparent background
+    It has an end string who is the separator between this line and the next one
 
     The aspects who might evolve :
         - the text
@@ -42,12 +42,8 @@ class _Line(ResizableWidget):
         assert isinstance(parent, Text)
 
         self._line_index = line_index
-        ResizableWidget.__init__(self,  # TODO : Widget ?
-                                 parent=parent,
-                                 surface=pygame.Surface((parent.w, parent.font.height), pygame.SRCALPHA),
-                                 layer=parent.lines,
-                                 name=f"{self.__class__.__name__[1:]}({text})",
-                                 )
+        Widget.__init__(self, parent=parent, surface=pygame.Surface((parent.w, parent.font.height), pygame.SRCALPHA),
+                        layer=parent.lines, name=f"{self.__class__.__name__[1:]}({text})")
 
         self.__text = ""
         self.__end = ''
@@ -313,7 +309,7 @@ class _SelectableLine(_Line):
         """
 
         assert self.is_alive
-        collide_rect = (self.selector.abs.left, self.abs.top, self.selector.abs.w, self.abs.h)
+        collide_rect = (self.parent.abs.left, self.abs.top, self.parent.abs.w, self.abs.h)
 
         if selection_rect.abs_rect.colliderect(collide_rect):
             self._is_selected = True
@@ -341,13 +337,16 @@ class _SelectableLine(_Line):
         selecting_line_end = False
         if self.abs.top <= selection.start[1] < self.abs.bottom:
             start = self.find_index(selection.start[0] - self.abs.left)
-        elif selection.start[1] < self.abs.top: start = 0
+        elif selection.start[1] < self.abs.top:
+            start = 0
         else:
             start = len(self.text)
             if self is not self.parent.lines[-1]: selecting_line_end = True
+
         if self.abs.top <= selection.end[1] < self.abs.bottom:
             end = self.find_index(selection.end[0] - self.abs.left)
-        elif selection.end[1] < self.abs.top: end = 0
+        elif selection.end[1] < self.abs.top:
+            end = 0
         else:
             end = len(self.text)
             if self is not self.parent.lines[-1]: selecting_line_end = True
@@ -462,7 +461,7 @@ class _LineSelection(Rectangle):
             assert self.line is not self.parent.lines[-1]
 
         if self._is_selecting_line_end:
-            self.resize_width(self.line.width -
+            self.resize_width(self.line.parent.width -  # parent because it goes all the way long, further than line.w
                               self.line.find_pixel(self.index_start))
         else:
             self.resize_width(abs(self.line.find_pixel(self.index_end) -
@@ -820,22 +819,6 @@ class Text(Zone, _SelectableText):
             if self._height_is_adaptable:
                 self._height_is_adaptable = False
             self.set_text(self.get_text())
-
-
-
-    def set_max_width(self, max_width):
-
-        raise PermissionError
-
-        assert isinstance(max_width, int)
-        assert max_width > 0
-        if self._min_width > max_width:
-            raise PermissionError(f"The max_width is too little : {max_width}")
-        self._max_width = max_width
-        self.lock_width(False)
-        self.resize_width(self.max_width)
-        self.lock_width(True)
-        self.set_text(self.get_text())
 
     def set_text(self, text):
 

@@ -152,11 +152,11 @@ class Dialog(Scene):
 
         app = self.application
         self.hovered_scene = app.focused_scene
-        background = app.focused_scene.surface.copy()
+        background_image = app.focused_scene.surface.copy()
         sail = pygame.Surface(app.size, pygame.SRCALPHA)
         sail.fill((0, 0, 0, 100))
-        background.blit(sail, (0, 0))
-        self.set_background_image(background)
+        background_image.blit(sail, (0, 0))
+        self.set_background_image(background_image)
 
     def handle_scene_open(self):
         self._focus(self.frame.buttons_zone.default_layer[self.default_choice_index])

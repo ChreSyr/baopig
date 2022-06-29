@@ -340,6 +340,8 @@ class GridLayer(Layer):
                 self._nbrows = None
 
             if self._data[comp.row][comp.col] is not None:
+                stucker = self._data[comp.row][comp.col]
+                test = stucker == comp
                 raise PermissionError("Cannot insert {} at positon : row={}, col={}, because {} is already there"
                                       "".format(comp, comp.row, comp.col, self._data[comp.row][comp.col]))
 

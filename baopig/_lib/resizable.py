@@ -12,8 +12,8 @@ class ResizableWidget(Widget):
 
     STYLE = Widget.STYLE.substyle()
     STYLE.create(
-        width = None,  # must be filled
-        height = None,  # must be filled
+        width=None,  # must be filled
+        height=None,  # must be filled
     )
 
     def _update_size(self):

@@ -329,7 +329,8 @@ class _Mouse(Communicative):
                     return first_focusable_in_family_tree(widget.parent)
 
                 # Le focus passe avant le link parce que Linkable est une sous-class de Focusable
-                focused = first_focusable_in_family_tree(self._get_pointed_comp())
+                pointed = self._get_pointed_comp()
+                focused = first_focusable_in_family_tree(pointed)
                 self.scene._focus(focused)
                 if hasattr(focused, "is_linked"):
                     self._link(focused)

@@ -75,10 +75,6 @@ class _Origin:
         if self.reference != owner.parent:
             self.reference.signal.MOTION.connect(self._weak_update_owner_pos, owner=self.owner)
         self._reference_location = owner.style["pos_ref_location"]
-        try:
-            assert self._reference_location != "top"
-        except AssertionError:
-            raise AssertionError
 
     def __str__(self):
         return "Origin(asked_pos={}, location={}, reference={}, reference_location={}, from_hitbox={}, " \
@@ -373,7 +369,6 @@ class HasProtectedHitbox:
         NOTE : an hitbox cannot move and be resized in the same time
         """
         self.create_signal("MOTION")
-        self.create_signal("NEW_WINDOW")
 
         """
         A margin is a defined rectangle around the component's surface
@@ -409,13 +404,8 @@ class HasProtectedHitbox:
         # This will initialize the rects and hiboxes
         self._origin = _Origin(owner=self)
 
-
-        # self.move_at(self.origin.pos, self.origin.location)
-
         new = self.origin.pos
         old = getattr(self.rect, self.origin.location)
-        # Rewrite a part of the move_at() method so we can skip this line
-        # if old == new: return
         self._move(new[0] - old[0], new[1] - old[1])
 
 
@@ -494,14 +484,14 @@ class HasProtectedHitbox:
     def _update_from_parent_movement(self):
 
         # Note : paint_lock is hold by the parent
-        new_pos = self.origin.pos
-        old_pos = getattr(self.rect, self.origin.location)
+        old_pos = self.origin.pos
+        new_pos = getattr(self.rect, self.origin.location)
         if self.has_locked.origin:
             self.origin.unlock()
-            self._move(dx=new_pos[0]-old_pos[0], dy=new_pos[1]-old_pos[1])
+            self._move(dx=old_pos[0]-new_pos[0], dy=old_pos[1]-new_pos[1])
             self.origin.lock()
         else:
-            self._move(dx=new_pos[0]-old_pos[0], dy=new_pos[1]-old_pos[1])
+            self._move(dx=old_pos[0]-new_pos[0], dy=old_pos[1]-new_pos[1])
 
     def can_be_resized_at(self, size):
 
@@ -608,7 +598,6 @@ class HasProtectedHitbox:
         else:
             self._window = None
 
-        self.signal.NEW_WINDOW.emit()
         self.parent._warn_change(self.rect)  # rect is to cover all possibilities
 
     # TODO : rework
@@ -955,10 +944,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
         Abstract method
         """
         raise PermissionError("The copy() method has not been overriden")
-
-    def depend_on_TBR(self, comp):
-        # TODO : remove
-        comp.signal.KILL.connect(self.kill, owner=self)
 
     def get_weakref(self, callback=None):
         """

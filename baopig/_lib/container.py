@@ -1,11 +1,11 @@
 
 
 from baopig.pybao.objectutilities import *
-from .utilities import *
-from .resizable import ResizableWidget
-from .layersmanager import LayersManager
-from .layer import Layer
 from .image import Image
+from .layer import Layer
+from .layersmanager import LayersManager
+from .resizable import ResizableWidget
+from .utilities import *
 
 
 class BoxRect(pygame.Rect):
@@ -67,7 +67,7 @@ class Container(ResizableWidget):
             self.style.modify(width=size[0], height=size[1])
         size = self.get_asked_size()
 
-        class ChildrenList(set):
+        class ChildrenList:
             """
             Class for an ordered list of children
 
@@ -79,7 +79,6 @@ class Container(ResizableWidget):
             """
 
             def __init__(children):
-                set.__init__(children)
 
                 children.asleep = set()
                 children.awake = set()
@@ -130,10 +129,10 @@ class Container(ResizableWidget):
                     if child.is_visible:
                         self._warn_change(child.hitbox)
 
-            def add(children):
+            def add(children, **kwargs):
                 raise PermissionError
 
-            def remove(children):
+            def remove(children, **kwargs):
                 raise PermissionError
         self._children = ChildrenList()
 
@@ -165,12 +164,12 @@ class Container(ResizableWidget):
         # BACKGROUND
         self._background_color = self.style["background_color"]
         self.background_layer = None
-        self._background_ref = lambda: None  # TODO
+        self._background_image_ref = lambda: None
         background_image = self.style["background_image"]
         if background_image is not None:
             self.set_background_image(background_image)
 
-        self.signal.RESIZE.connect(self.handle_resize, owner=None)  # TODO : already connected
+        self.signal.RESIZE.connect(self.handle_resize, owner=None)
 
     all_children = property(lambda self: self._children.awake.union(self._children.asleep))
     asleep_children = property(lambda self: self._children.asleep)
@@ -187,11 +186,44 @@ class Container(ResizableWidget):
     border_rect = property(lambda self: self.auto_rect)
     content_rect = property(lambda self: self._content_rect)
     # -
-    background = property(lambda self: self._background_ref())
+    background_image = property(lambda self: self._background_image_ref())
     border_color = property(lambda self: self._border_color)
 
     def _add_child(self, child):
         self._children._add(child)
+
+    def _container_close(self):
+
+        for cont in self._children.containers:
+            cont._container_close()
+        for child in tuple(self._children.handlers_sceneclose):  # tuple prevent from in-loop killed handlers_sceneclose
+            child.handle_scene_close()
+
+    def _container_open(self):
+
+        for cont in self._children.containers:
+            cont._container_open()
+        for child in self._children.handlers_sceneopen:
+            child.handle_scene_open()
+
+    def _container_paint(self):
+
+        for cont in self._children.containers:
+            cont._container_paint()
+
+        if self._children_to_paint:
+            for child in tuple(self._children_to_paint):
+                if child.is_visible:
+                    child.paint()
+                    if child._dirty == 1:
+                        child._dirty = 0
+                        self._children_to_paint.remove(child)
+                    # LOGGER.debug("Painting {} from container {}".format(child, self))
+
+        if self.dirty == 0:  # else, paint() is called by parent
+            rect = self._update_rect()
+            if rect:
+                self._warn_parent(rect)
 
     def _dirty_child(self, child, dirty):
         """
@@ -222,19 +254,13 @@ class Container(ResizableWidget):
         self._rect_to_update = pygame.Rect(self.auto)
         self._update_rect()
 
-    def _find_place_for(self, child):
-
-        if child.layer is None:
-            self.layers_manager.set_layer_for(child)
-        return child.layer._find_place_for(child)
-
     def _move(self, dx, dy):
 
         with paint_lock:
             super()._move(dx, dy)
             for tup in tuple(self.awake_children), tuple(self.asleep_children):
                 for child in tup:
-                    child._update_from_parent_movement()  # TODO : signal.MOTION ?
+                    child._update_from_parent_movement()
 
     def _remove_child(self, child):
         self._children._remove(child)
@@ -272,7 +298,7 @@ class Container(ResizableWidget):
                                      :     :
         child1 :                ------------------------------
                                      :     :
-        background :        --------------------------------------  <- background is filled with background_color
+        background :        --------------------------------------  <- self.surface is filled with background_color
                                      :     :
                                      :     :
                                      :     :
@@ -357,21 +383,7 @@ class Container(ResizableWidget):
         self._children._add(child)
         child.signal.ASLEEP.emit()
 
-    def container_close(self):  # TODO : private
-
-        for cont in self._children.containers:
-            cont.container_close()
-        for child in tuple(self._children.handlers_sceneclose):  # tuple prevent from in-loop killed handlers_sceneclose
-            child.handle_scene_close()
-
-    def container_open(self):
-
-        for cont in self._children.containers:
-            cont.container_open()
-        for child in self._children.handlers_sceneopen:
-            child.handle_scene_open()
-
-    def container_paint(self):
+    def container_paint_TBR(self):
 
         for cont in self._children.containers:
             cont.container_paint()
@@ -390,15 +402,10 @@ class Container(ResizableWidget):
             if rect:
                 self._warn_parent(rect)
 
-    def fit(self, layer):  # TODO
-
-        assert layer in self.layers
-        self.resize(max(c.right for c in layer), max(c.bottom for c in layer))
-
     def handle_resize(self):
 
-        if self.background is not None:
-            self.background.resize(*self.size)
+        if self.background_image is not None:
+            self.background_image.resize(*self.size)
         self._content_rect = BoxRect(self.auto_rect, self.padding)
 
     def has_layer(self, layer_name):
@@ -460,30 +467,30 @@ class Container(ResizableWidget):
         Else, the zone's size adapts to the background_image
         """
         if surf is None:
-            if self.background is not None:
+            if self.background_image is not None:
                 with paint_lock:
-                    self.background.kill()
+                    self.background_image.kill()
             return
         if background_adapt and surf.get_size() != self.size:
             surf = pygame.transform.scale(surf, self.size)
         if self.background_layer is None:
             self.background_layer = Layer(self, Image, name="background_layer", level=self.layers_manager.BACKGROUND)
         with paint_lock:
-            if self.background is not None:
-                self.background.kill()
-                assert self.background is None
-            self._background_ref = Image(self, surf, pos=(0, 0), layer=self.background_layer).get_weakref()
+            if self.background_image is not None:
+                self.background_image.kill()
+                assert self.background_image is None
+            self._background_image_ref = Image(self, surf, pos=(0, 0), layer=self.background_layer).get_weakref()
             if background_adapt is False:
-                self.resize(*self.background.size)
-
-            def handle_background_kill(weakref):
-                if weakref is self._background_ref:
-                    self._background_ref = lambda: None
-            self.background.signal.KILL.connect(handle_background_kill, owner=self)
+                self.resize(*self.background_image.size)
 
     def set_surface(self, surface):
 
         raise PermissionError("A Container manage its surface itself (it is the addition of its child surfaces)")
+
+    def set_window(self, *args, **kwargs):
+
+        super().set_window(*args, **kwargs)
+        self._rect_to_update = pygame.Rect(self.auto)
 
     def wake_child(self, child):
 

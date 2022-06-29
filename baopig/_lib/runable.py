@@ -117,8 +117,6 @@ class Runable(Communicative):
     Its 'run' method is called at each application loop
     """
 
-    # TODO : application.runables instead of parent.children.runables, don't depend on Widget
-    # -> if widget, asleep will not run
     def __init__(self, start=False):
 
         _runables_manager.add(self)

@@ -80,7 +80,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
     def _close(self):
 
         if self.application.focused_scene is not self: return
-        self.container_close()
+        self._container_close()
         self.handle_scene_close()
         Widget.set_surface(self, pygame.Surface(self.size))  # not pygame.display anymore
         self._focus(None)
@@ -154,7 +154,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             if scene_to_close:
                 scene_to_close._close()
             app._update_display()
-            self.container_open()
+            self._container_open()
             self.handle_scene_open()
             self.paint(recursive=True)
 

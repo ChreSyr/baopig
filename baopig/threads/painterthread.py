@@ -50,7 +50,7 @@ class PainterThread(ExtraThread):
         # Updating then drawing
         with paint_lock:
             try:
-                self.app.focused_scene.container_paint()
+                self.app.focused_scene._container_paint()
             except Exception as e:
                 LOGGER.exception(e)
 

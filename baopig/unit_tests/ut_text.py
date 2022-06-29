@@ -12,8 +12,6 @@ class UT_Text_Zone(Zone):
         z3 = Zone(self, size=("100%", 155), background_color=(150, 150, 150), padding=5)
         z4 = Zone(self, size=("100%", 120), background_color=(150, 150, 150), children_margins=5, padding=5)
         z5 = Zone(self, size=("100%", 120), background_color=(150, 150, 150), children_margins=5, padding=5)
-        # Button(self, "l1\nl2\nl3")  # TODO : UT_Button_Zone
-        # Button(self, "-----------l1-----------")
         self.default_layer.pack()
 
         # Z1
