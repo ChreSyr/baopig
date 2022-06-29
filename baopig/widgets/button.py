@@ -55,7 +55,7 @@ class AbstractButton(Container, Clickable, Hoverable):
         width=100,
         height=35,
         background_color="theme-color-content",
-        padding=5,
+        padding=10,
     )
     STYLE.create(
         catching_errors=False,
@@ -209,6 +209,8 @@ class Button(AbstractButton):
         text_style={},
     )
     STYLE.set_constraint("text_class", lambda val: issubclass(val, ButtonText))
+
+    text = property(lambda self: self.text_widget.text)
 
     def __init__(self, parent, text=None,
                  command=None, background_color=None, **kwargs):

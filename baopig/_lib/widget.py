@@ -373,7 +373,6 @@ class HasProtectedHitbox:
         NOTE : an hitbox cannot move and be resized in the same time
         """
         self.create_signal("MOTION")
-        self.create_signal("NEW_WINDOW")
 
         """
         A margin is a defined rectangle around the component's surface
@@ -608,7 +607,6 @@ class HasProtectedHitbox:
         else:
             self._window = None
 
-        self.signal.NEW_WINDOW.emit()
         self.parent._warn_change(self.rect)  # rect is to cover all possibilities
 
     # TODO : rework

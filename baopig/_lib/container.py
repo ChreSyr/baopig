@@ -187,7 +187,7 @@ class Container(ResizableWidget):
     border_rect = property(lambda self: self.auto_rect)
     content_rect = property(lambda self: self._content_rect)
     # -
-    background = property(lambda self: self._background_ref())
+    background_image = property(lambda self: self._background_ref())
     border_color = property(lambda self: self._border_color)
 
     def _add_child(self, child):
@@ -272,7 +272,7 @@ class Container(ResizableWidget):
                                      :     :
         child1 :                ------------------------------
                                      :     :
-        background :        --------------------------------------  <- background is filled with background_color
+        background :        --------------------------------------  <- self.surface is filled with background_color
                                      :     :
                                      :     :
                                      :     :
@@ -397,8 +397,8 @@ class Container(ResizableWidget):
 
     def handle_resize(self):
 
-        if self.background is not None:
-            self.background.resize(*self.size)
+        if self.background_image is not None:
+            self.background_image.resize(*self.size)
         self._content_rect = BoxRect(self.auto_rect, self.padding)
 
     def has_layer(self, layer_name):
@@ -460,30 +460,35 @@ class Container(ResizableWidget):
         Else, the zone's size adapts to the background_image
         """
         if surf is None:
-            if self.background is not None:
+            if self.background_image is not None:
                 with paint_lock:
-                    self.background.kill()
+                    self.background_image.kill()
             return
         if background_adapt and surf.get_size() != self.size:
             surf = pygame.transform.scale(surf, self.size)
         if self.background_layer is None:
             self.background_layer = Layer(self, Image, name="background_layer", level=self.layers_manager.BACKGROUND)
         with paint_lock:
-            if self.background is not None:
-                self.background.kill()
-                assert self.background is None
+            if self.background_image is not None:
+                self.background_image.kill()
+                assert self.background_image is None
             self._background_ref = Image(self, surf, pos=(0, 0), layer=self.background_layer).get_weakref()
             if background_adapt is False:
-                self.resize(*self.background.size)
+                self.resize(*self.background_image.size)
 
             def handle_background_kill(weakref):
                 if weakref is self._background_ref:
                     self._background_ref = lambda: None
-            self.background.signal.KILL.connect(handle_background_kill, owner=self)
+            self.background_image.signal.KILL.connect(handle_background_kill, owner=self)
 
     def set_surface(self, surface):
 
         raise PermissionError("A Container manage its surface itself (it is the addition of its child surfaces)")
+
+    def set_window(self, *args, **kwargs):
+
+        super().set_window(*args, **kwargs)
+        self._rect_to_update = pygame.Rect(self.auto)
 
     def wake_child(self, child):
 

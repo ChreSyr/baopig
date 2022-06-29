@@ -195,14 +195,20 @@ class Layer(Communicative):
             for comp in sorted_children:
                 if comp.has_locked.origin:
                     raise PermissionError("Cannot pack a layer who contains locked children")
-                comp.topleft = (left, top)
-                left = comp.right + children_margins.left
+                if comp.window is not None:
+                    comp.topleft = (left - comp.window[0], top - comp.window[1])
+                else:
+                    comp.topleft = (left, top)
+                left = comp.hitbox.right + children_margins.left
         elif axis == "vertical":
             for comp in sorted_children:
                 if comp.has_locked.origin:
                     raise PermissionError("Cannot pack a layer who contains locked children")
-                comp.topleft = (left, top)
-                top = comp.bottom + children_margins.top
+                if comp.window is not None:
+                    comp.topleft = (left - comp.window[0], top - comp.window[1])
+                else:
+                    comp.topleft = (left, top)
+                top = comp.hitbox.bottom + children_margins.top
         else:
             raise ValueError(f"axis must be either 'horizontal' or 'vertical', not {axis}")
 

@@ -11,11 +11,11 @@ class TesterScene(Scene):
         self.sections = []
 
         # Menu
-        self.menu_zone = Zone(self, size=(int(self.w / 2) - 15, 35), pos=(10, 10), name="menu")
+        self.menu_zone = Zone(self, size=("50%", 35), pos=(0, 10), name="menu")
 
         # Section
-        self.sections_zone = Zone(self, size=(self.w/2-15, self.h-self.menu_zone.h-20), background_color="lightgray",
-                                  pos=(10, self.menu_zone.bottom + 10), name="sections")
+        self.sections_zone = Zone(self, size=("50%", self.h-self.menu_zone.h-20), background_color="lightgray",
+                                  pos=(0, self.menu_zone.bottom + 10), name="sections")
         GridLayer(self.sections_zone, name="sections_layer", col_width=self.sections_zone.w, nbcols=1)
         self.add_section(title="NO TEST SECTION YET", tests=[])
 
@@ -50,8 +50,8 @@ class TesterScene(Scene):
         Button(self.menu_zone, "Try it yourself !", col=1, command=try_it_yourself)
 
         # Content
-        self.content = ContentZoneClass(self, size=(self.w/2-15, self.h - 20), name="content",
-                      pos=(-10, 10), sticky="topright")
+        self.content = ContentZoneClass(self, size=("50%", self.h - 20), name="content",
+                      pos=(0, 10), sticky="topright")
         if hasattr(self.content, "load_sections"):
             self.content.load_sections()
 
@@ -75,17 +75,20 @@ app = Application(size=(700, 700))
 main_zone = {self.content.__class__.__name__}(Scene(app), size=("90%", "90%"), sticky="center")
 app.launch()"""
 
-        self.try_it_yourself = Zone(self, size=(self.w/2-15, self.h-20),
-                                    pos=(10, self.menu_zone.bottom + 10), name="try_it_yourself")
-        self.try_it_yourself.hide()
-        self.try_it_yourself.code = TextEdit(self.try_it_yourself, text=code, width=self.try_it_yourself.w,
+        self.try_it_yourself = Zone(self, size=("50%", self.h-20), children_margins=10,
+                                    pos=(0, self.menu_zone.bottom + 10), name="try_it_yourself")
+        self.try_it_yourself.code = TextEdit(self.try_it_yourself, text=code, width="100%",
                                              font_file="monospace")
-        window = pygame.Rect(self.try_it_yourself.code.rect)
-        window.height = self.try_it_yourself.bottom - 400
-        self.try_it_yourself.code.set_window(window)
-        self.try_it_yourself.console = Text(self.try_it_yourself, width=self.try_it_yourself.w,
-                                            font_file="monospace", pos=(0, window.bottom + 10),
-                                            background_color=(211, 189, 189))
+        self.try_it_yourself.console = Text(self.try_it_yourself, width="100%",
+                                            font_file="monospace", background_color=(211, 189, 189))
+        def update():
+            window = pygame.Rect(self.try_it_yourself.code.rect)
+            window.height = 550
+            self.try_it_yourself.code.set_window(window)
+            self.try_it_yourself.pack()
+        update()
+        self.signal.RESIZE.connect(update, owner=None)
+        self.try_it_yourself.hide()
 
     def add_section(self, title, tests):
 
