@@ -1,4 +1,3 @@
-
 """
 Here is a few fonts availible on my computer
 
@@ -179,9 +178,10 @@ Here is a few fonts availible on my computer
 /System/Library/Fonts/ZapfDingbats.ttf
 """
 
-
 import glob
+
 import pygame
+
 from baopig.io import LOGGER
 
 
@@ -198,20 +198,28 @@ class Font:
         self._owner_wkref = (lambda: None) if owner is None else owner.get_weakref()
 
         if owner is not None:
-            if file is None: file = owner.style["font_file"]
-            if height is None: height = owner.style["font_height"]
-            if color is None: color = owner.style["font_color"]
-            if bold is None: bold = owner.style["font_bold"]
-            if italic is None: italic = owner.style["font_italic"]
-            if underline is None: underline = owner.style["font_underline"]
+            if file is None:
+                file = owner.style["font_file"]
+            if height is None:
+                height = owner.style["font_height"]
+            if color is None:
+                color = owner.style["font_color"]
+            if bold is None:
+                bold = owner.style["font_bold"]
+            if italic is None:
+                italic = owner.style["font_italic"]
+            if underline is None:
+                underline = owner.style["font_underline"]
 
         assert file is None or isinstance(file, str)
 
-        self.config(file=file, height=height, color=color, bold=bold, italic=italic, underline=underline, update_owner=False)
+        self.config(file=file, height=height, color=color, bold=bold, italic=italic, underline=underline,
+                    update_owner=False)
 
     def __str__(self):
 
         return f"Font(height:{self.height}, ascent:{self._ascent}, file={self.file})"
+
     __repr__ = __str__
 
     color = property(lambda self: self._color)
@@ -247,7 +255,6 @@ class Font:
             assert height > 1, "A font height must be higher than 1"
             self._height = height
         if file is not None or height is not None:
-
             """if self.height in _all[file]._fonts:
                 ascent = _all[file].get_font(self.height)._ascent
             else:
@@ -287,8 +294,10 @@ class Font:
             self._ascent = self._font.get_ascent()
 
         if color is not None:
-            try:               color = pygame.Color(color)
-            except ValueError: color = pygame.Color(*color)
+            try:
+                color = pygame.Color(color)  # TODO little rework of Color
+            except ValueError:
+                color = pygame.Color(*color)
             self._color = color
         if bold is not None:
             self._font.set_bold(bold)
@@ -374,7 +383,7 @@ class _Fonts:
                 raise AssertionError
             slightly_higher_font = self.get_font(ascent=ascent)
             for i in range(self.get_font(ascent=ascent).get_height() - height):
-                self._fonts[height+i+1] = slightly_higher_font
+                self._fonts[height + i + 1] = slightly_higher_font
             self._fonts_by_ascent[ascent] = slightly_higher_font
             return slightly_higher_font
 
@@ -398,6 +407,8 @@ class _All(dict):
         if filepath not in self:
             self[filepath] = _Fonts(filepath)
         return super().__getitem__(filepath)
+
+
 _all = _All()
 
 
@@ -405,36 +416,48 @@ def get_filepath(file):
     import os
     exec_dir = os.getcwd()
     for path in glob.iglob(exec_dir + "/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
     for path in glob.iglob(exec_dir + "/*/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
     for path in glob.iglob(exec_dir + "/*/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
     for path in glob.iglob(exec_dir + "/*/*/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
     for path in glob.iglob(__file__[:-7] + "lib/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
     for path in glob.iglob(__file__[:-7] + "lib/*/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
     for path in glob.iglob(__file__[:-7] + "lib/*/*/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
     for path in glob.iglob("/System/Library/Fonts/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
     for path in glob.iglob("/System/Library/Fonts/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
     for path in glob.iglob("/Library/Fonts/Microsoft/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
     for path in glob.iglob("/Library/Fonts Disabled/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
     for path in glob.iglob("/Library/Fonts/*.ttf"):
-        if path.endswith(file): return path
+        if path.endswith(file):
+            return path
 
 
 filepaths = {}
 
-
 if __name__ == "__main__":
     import os
+
     exec_dir = os.getcwd()
     for path in glob.iglob(__file__[:-7] + "lib/*.ttf"):
         print(path)

@@ -615,6 +615,7 @@ class Text(Zone, _SelectableText):
 
     def _pack(self):
 
+        centerx = None  # warning shut down
         if self.align_mode == "center":  # only usefull for the widget creation
             if self._width_is_adaptable:
                 centerx = max(l.w for l in self.lines) / 2 + self.content_rect.left
@@ -631,6 +632,7 @@ class Text(Zone, _SelectableText):
             if self.align_mode == "left":
                 line.left = self.content_rect.left
             elif self.align_mode == "center":
+                # noinspection PyUnboundLocalVariable
                 line.centerx = centerx
             elif self.align_mode == "right":
                 line.right = self.content_rect.right

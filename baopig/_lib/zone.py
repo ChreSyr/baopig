@@ -20,15 +20,8 @@ class Zone(Container):
             if self.w <= 0:
                 raise ValueError("the new zone shouldn't completly override the central zone")
             zone = Zone((width, self.rect.h))
-            comps_to_move = []  # On ne peut iterer sur une liste tout en la modifiant
-            for comp in self._components:
-                if zone.hitbox.collidepoint(comp.topleft):
-                    comps_to_move.append(comp)
-                else:
-                    comp.left -= width
-            for comp in comps_to_move:
-                zone.append(comp)
-                self.remove(comp)
+        else:
+            return
         return zone
 
 
@@ -61,7 +54,8 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
     def _flip(self):  # TODO : check with new padding & etc
         """Update all the surface"""
 
-        if self.is_hidden:  return
+        if self.is_hidden:
+            return
 
         with paint_lock:
 
@@ -98,8 +92,8 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
             except ValueError:
                 assert not self.parent.auto.contains(self.rect)
                 raise PermissionError("A SubZone must fit inside its parent")
-                Widget.set_surface(self, self.parent.surface.subsurface(
-                    pygame.Rect(self.pos + (w, h)).clip(self.parent.auto)))
+                # Widget.set_surface(self, self.parent.surface.subsurface(
+                #     pygame.Rect(self.pos + (w, h)).clip(self.parent.auto)))
             self._flip_without_update()
 
         # print("RESIZED", self, "at", size)

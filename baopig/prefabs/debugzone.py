@@ -185,7 +185,8 @@ class DebugZone(Zone, Handler_SceneClose):
 
         pointed = mouse.pointed_comp
         if pointed and self.is_awake:
-            if self._pointed == pointed: return
+            if self._pointed == pointed:
+                return
             self._pointed = pointed
             if self.highlighter is None:
                 self.highlighter = Highlighter(

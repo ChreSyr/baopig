@@ -6,6 +6,8 @@ class MemoryDict(dict):
 
     def __init__(self):
 
+        dict.__init__(self)
+
         self._modified_keys = set()
 
     def __repr__(self):
@@ -190,8 +192,8 @@ class StyleClass:
 
         if constraint is None:
             self._constraints[key] = lambda val: True  # prevent from getting super-style constraint
-            if key in self.constraints_error_messages:
-                self._constraints_error_messages.pop(key)
+            if key in self._constraint_error_messages:
+                self._constraint_error_messages.pop(key)
             return
         assert callable(constraint)
         assert len(inspect.signature(constraint).parameters) == 1, \
@@ -204,9 +206,9 @@ class StyleClass:
 
     def set_type(self, key, type):
 
-        if type is None:
-            self._types[key] = UndefinedType  # prevent from getting super-style constraint
-            return
+        # if type is None:
+        #     self._types[key] = UndefinedType  # prevent from getting super-style constraint
+        #     return
         assert inspect.isclass(type)
         self._types[key] = type
         self.check_type(key)
@@ -348,20 +350,6 @@ class Theme:
             string += "\n"
         string += ")"
         return string
-
-    def update_from_colors(self):
-
-        self.colors_dict = {
-            "border": self.colors[0],
-            "content": self.colors[1],
-            "font": self.colors[0],
-            "font_opposite": self.colors[4],
-            "scene_background": self.colors[2],
-            "dialog_background": self.colors[3],
-            "selection": self.colors[5],
-            "selection_rect": self.colors[6],
-            "selection_rect_border": self.colors[7],
-        }
 
     def get_style_for(self, widget_class):
         """
@@ -537,7 +525,9 @@ class HasStyle:
                 if (val is not None) and (key in self.STYLE):
                     kwargs[key] = options.pop(key)
         if kwargs:
-            kwargs = dict(filter(lambda item: item[1] is not None, kwargs.items()))
+            def function(item):
+                return item[1] is not None
+            kwargs = dict(filter(function, kwargs.items()))
             self.style.modify(**kwargs)
 
     def set_style_for(self, *widget_classes, **kwargs):

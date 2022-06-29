@@ -2,7 +2,7 @@
 
 import time
 import pygame
-from baopig.pybao.objectutilities import Object, History, debug
+from baopig.pybao.objectutilities import Object, History
 from baopig.communicative import Communicative
 from .logging import LOGGER
 
@@ -15,7 +15,6 @@ class MouseEvent(Object):
         mouse.last_event = self
 
     def __str__(self):
-        global __mouse_signals
         return "<MouseEvent({}-{} {})>".format(
             self.type,
             list(mouse._signals.keys())[list(mouse._signals.values()).index(self.type)],
@@ -194,7 +193,7 @@ class _Mouse(Communicative):
         Release the pressed button
         """
         if self.pressed_button is not None:
-            self.receive(Object(type=pygame.MOUSEBUTTONUP, button=self.pressed_button))
+            self.receive(pygame.event.Event(type=pygame.MOUSEBUTTONUP, button=self.pressed_button))
 
     def _unhover_display(self):
 
@@ -214,10 +213,11 @@ class _Mouse(Communicative):
         # UNHOVER
         old_hovered = self.hovered_comp
         if self.hovered_comp is not None:
+            # noinspection PyBroadException
             try:
                 assert old_hovered.is_hovered
                 old_hovered._is_hovered = False
-            except:
+            except AssertionError:
                 LOGGER.warning("Hovering error")
 
         self._hovered_comp = comp

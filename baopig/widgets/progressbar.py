@@ -5,9 +5,9 @@ from baopig._lib import Rectangle, Runable
 
 class ProgressBar(Rectangle, Runable):
 
-    def __init__(self, parent, min, max, get_progress, *args, **kwargs):
+    def __init__(self, parent, min, max, get_progress, **kwargs):
 
-        try: Rectangle.__init__(self, parent, *args, **kwargs)
+        try: Rectangle.__init__(self, parent, **kwargs)
         except AttributeError: pass  # 'ProgressBar' object has no attribute '_progression'
         Runable.__init__(self)
 
@@ -31,8 +31,8 @@ class ProgressBar(Rectangle, Runable):
         # size = size if size is not None else self.size
         # surface = pygame.Surface(size, pygame.SRCALPHA)
         self.surface.fill((0, 0, 0, 0))
-        pygame.draw.rect(self.surface, self.color, (0, 0, self.progression * size[0], size[1]))
-        pygame.draw.rect(self.surface, self.border_color, (self.auto_hitbox), self.border_width * 2 - 1)
+        pygame.draw.rect(self.surface, self.color, (0, 0, self.progression * self.w, self.h))
+        pygame.draw.rect(self.surface, self.border_color, self.auto_hitbox, self.border_width * 2 - 1)
         # self.set_surface(surface)
 
     def run(self):

@@ -35,7 +35,7 @@ class Container(ResizableWidget):
     Abstract class for widgets who need to contain other widgets
 
     We need the self.container_[action]() functions for recursivity between Container,
-    because a container can contain an Handler_SceneOpen without being a Handler_SceneOpen himself
+    because a container can contain a Handler_SceneOpen without being a Handler_SceneOpen himself
 
     WARNING : Try to do not override 'container_something' methods
     """
@@ -244,7 +244,8 @@ class Container(ResizableWidget):
     def _flip(self):
         """Update all the surface"""
 
-        if self.is_hidden:  return
+        if self.is_hidden:
+            return
         self._flip_without_update()
         self.parent._warn_change(self.hitbox)
 
@@ -294,7 +295,7 @@ class Container(ResizableWidget):
                                      :     :
         child3 :        -------------
                                      :     :
-        child2 :                ------------- - - - -             <- The solid line is hitbox, the dotted plus solid line is rect
+        child2 :                ------------- - - - -             <- The solid line is hitbox, the entire line is rect
                                      :     :
         child1 :                ------------------------------
                                      :     :
@@ -306,8 +307,10 @@ class Container(ResizableWidget):
 
         """
 
-        if self._rect_to_update is None: return
-        if self.is_hidden: return
+        if self._rect_to_update is None:
+            return
+        if self.is_hidden:
+            return
 
         with paint_lock:
             rect = self._rect_to_update
@@ -326,8 +329,8 @@ class Container(ResizableWidget):
                                 self.surface.blit(child.surface, child.rect.topleft)
                             else:
                                 self.surface.blit(child.surface.subsurface(
-                                    (collision.left - child.rect.left, collision.top - child.rect.top) + collision.size),
-                                    collision.topleft
+                                    (collision.left - child.rect.left, collision.top - child.rect.top)
+                                    + collision.size), collision.topleft
                                 )
                         except pygame.error:
                             # can be raised from a child.surface who is a subsurface from self.surface
@@ -340,7 +343,8 @@ class Container(ResizableWidget):
         """Request updates at rects referenced by self"""
 
         rect = self.auto_hitbox.clip(rect)
-        if rect.size == (0, 0): return
+        if rect.size == (0, 0):
+            return
         if self._rect_to_update is None:
             self._rect_to_update = pygame.Rect(rect)  # from ProtectedHitbox to pygame.Rect
         else:
@@ -359,7 +363,8 @@ class Container(ResizableWidget):
         Not supposed to move children_list
         """
 
-        if children_list is None: children_list = self.all_children
+        if children_list is None:
+            children_list = self.all_children
         list = tuple(children_list)
         self.resize(
             (max(comp.right for comp in list) + self.padding.right
@@ -382,25 +387,6 @@ class Container(ResizableWidget):
         child._is_asleep = True
         self._children._add(child)
         child.signal.ASLEEP.emit()
-
-    def container_paint_TBR(self):
-
-        for cont in self._children.containers:
-            cont.container_paint()
-
-        if self._children_to_paint:
-            for child in tuple(self._children_to_paint):
-                if child.is_visible:
-                    child.paint()
-                    if child._dirty == 1:
-                        child._dirty = 0
-                        self._children_to_paint.remove(child)
-                    # LOGGER.debug("Painting {} from container {}".format(child, self))
-
-        if self.dirty == 0:  # else, paint() is called by parent
-            rect = self._update_rect()
-            if rect:
-                self._warn_parent(rect)
 
     def handle_resize(self):
 
@@ -439,9 +425,12 @@ class Container(ResizableWidget):
 
     def resize(self, w, h):
 
-        if self.has_locked.width: w = self.w
-        if self.has_locked.height: h = self.h
-        if (w, h) == self.size: return
+        if self.has_locked.width:
+            w = self.w
+        if self.has_locked.height:
+            h = self.h
+        if (w, h) == self.size:
+            return
 
         need_alpha = pygame.SRCALPHA if self.background_color.has_transparency() else 0
         with paint_lock:

@@ -50,12 +50,13 @@ class Column(RowOrCol):
 
     def __init__(self, grid, index):
 
-
         RowOrCol.__init__(self, grid, index)
 
         self._width = grid.col_width
-        if self.is_first: self._left = grid.padding.left
-        else: self._left = self.get_previous_col().right + grid.children_margins.left
+        if self.is_first:
+            self._left = grid.padding.left
+        else:
+            self._left = self.get_previous_col().right + grid.children_margins.left
 
         grid._cols.append(self)
 
@@ -91,7 +92,8 @@ class Column(RowOrCol):
     def _update_left(self, left):
 
         dx = left - self.left
-        if dx == 0: return
+        if dx == 0:
+            return
         self._left = left
         for comp in self.icomponents:
             self._grid._update_comp(comp)
@@ -107,14 +109,16 @@ class Column(RowOrCol):
 
     def get_next_col(self):
 
-        if self.is_last: return
+        if self.is_last:
+            return
         return self._grid.get_col(self._index + 1)
 
     def get_previous_col(self):
         """
         Return the col above self
         """
-        if self.is_first: return None
+        if self.is_first:
+            return None
         return self._grid.get_col(self._index - 1)
 
     def get_width(self):
@@ -146,12 +150,13 @@ class Row(RowOrCol):
     """
     def __init__(self, grid, index):
 
-
         RowOrCol.__init__(self, grid, index)
 
         self._height = grid.row_height
-        if self.is_first: self._top = grid.padding.top
-        else: self._top = self.get_previous_row().bottom + grid.children_margins.top
+        if self.is_first:
+            self._top = grid.padding.top
+        else:
+            self._top = self.get_previous_row().bottom + grid.children_margins.top
 
         grid._rows.append(self)
 
@@ -191,7 +196,8 @@ class Row(RowOrCol):
     def _update_top(self, top):
 
         dy = top - self.top
-        if dy == 0: return
+        if dy == 0:
+            return
         self._top = top
         for comp in self.icomponents:
             self._grid._update_comp(comp)
@@ -217,14 +223,16 @@ class Row(RowOrCol):
 
     def get_next_row(self):
 
-        if self.is_last: return
+        if self.is_last:
+            return
         return self._grid.get_row(self._index+1)
 
     def get_previous_row(self):
         """
         Return the row above self
         """
-        if self.is_first: return None
+        if self.is_first:
+            return None
         return self._grid.get_row(self._index-1)
 
     def set_height(self, height):
@@ -271,8 +279,10 @@ class GridLayer(Layer):
 
         Layer.__init__(self, *args, **kwargs)
 
-        if nbcols is not None: assert isinstance(nbcols, int) and nbcols > 0
-        if nbrows is not None: assert isinstance(nbrows, int) and nbrows > 0
+        if nbcols is not None:
+            assert isinstance(nbcols, int) and nbcols > 0
+        if nbrows is not None:
+            assert isinstance(nbrows, int) and nbrows > 0
 
         self._layer = self
         self._nbcols = None
@@ -286,8 +296,10 @@ class GridLayer(Layer):
 
         Row(self, 0)
         Column(self, 0)
-        if nbcols: self.set_nbcols(nbcols)
-        if nbrows: self.set_nbrows(nbrows)
+        if nbcols:
+            self.set_nbcols(nbcols)
+        if nbrows:
+            self.set_nbrows(nbrows)
 
     def __str__(self):
         return "{}(nbrows={}, nbcols={})".format(self.__class__.__name__, self.nbrows, self.nbcols)
@@ -350,8 +362,10 @@ class GridLayer(Layer):
             new_h = row.is_adaptable and comp.height > row.get_height()
             new_w = col.is_adaptable and comp.width > col.get_width()
             self._data[comp.row][comp.col] = comp
-            if new_h: row._update_height()
-            if new_w: col._update_width()
+            if new_h:
+                row._update_height()
+            if new_w:
+                col._update_width()
 
             comp.origin.unlock()  # the grid layer has to be the only one who gives a position to the widget
             if comp.sticky is not None:
@@ -400,6 +414,7 @@ class GridLayer(Layer):
 
         col = self.get_col(comp.col)
         row = self.get_row(comp.row)
+        old_col_width, old_row_height = None, None  # warning shut down
         if col.is_adaptable:
             old_col_width = col.get_width()
         if row.is_adaptable:
@@ -478,7 +493,7 @@ class GridLayer(Layer):
             if nbnew < 0:
                 raise PermissionError("Cannot reduce nbcols")
             elif nbnew > 0:
-            # Create new columns
+                # Create new columns
                 for row in self._data:
                     row += [None] * nbnew
                 for i in range(nbnew):
@@ -496,7 +511,7 @@ class GridLayer(Layer):
             if nbrows < 0:
                 raise PermissionError("Cannot reduce nbrows")
             elif nbnew > 0:
-            # Create new rows
+                # Create new rows
                 for i in range(self.nbrows, nbrows):
                     self._data += [[None] * self.nbcols]
                     Row(self, i)

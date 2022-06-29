@@ -66,7 +66,8 @@ class LayersManager:
                 layer_index += 1
         self._layers.sort(key=lambda layer: layer.layer_index)
 
-    def accept(self, child):
+    @staticmethod
+    def accept(child):
         return isinstance(child, Widget)
 
     def add(self, child):

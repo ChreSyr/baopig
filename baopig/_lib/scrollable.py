@@ -20,6 +20,8 @@ class Scrollable(Hoverable):
 
     def __init__(self, scrollaxis=None):
 
+        Hoverable.__init__(self)
+
         assert isinstance(self, Container)
         if scrollaxis is None:
             scrollaxis = "y"
@@ -57,12 +59,11 @@ class Scrollable(Hoverable):
         self.move(dx, dy)
 
 
-class ScrollableByMouse(Scrollable, Hoverable):
+class ScrollableByMouse(Scrollable):
 
     def __init__(self, scrollaxis=None):
 
         Scrollable.__init__(self, scrollaxis)
-        Hoverable.__init__(self)
 
         self._last_scroll_time = time.time()  # for faster scroll when together
         mouse.signal.SCROLL.connect(self.handle_mouse_scroll, owner=self)

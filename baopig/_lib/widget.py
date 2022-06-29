@@ -1,18 +1,18 @@
-
 # TODO : replace sticky and pos_ref and pos_ref_location by flags ?
 
 
+import functools
 import pygame
 from baopig.pybao.issomething import *
 from baopig.pybao.objectutilities import Object
 from baopig.io import mouse
 from baopig.communicative import Communicative
-from .utilities import paint_lock, functools
+from .utilities import paint_lock
 from .style import HasStyle, StyleClass, Theme
 
 
 class MetaPaintLocker(type):  # TODO : keep ?
-    def __call__(self, *args, **kwargs):
+    def __call__(cls, *args, **kwargs):
         with paint_lock:
             widget = super().__call__(*args, **kwargs)
             if widget.collidemouse():
@@ -127,7 +127,6 @@ class _Origin:
             try:
                 int(coord[:-1])
                 return True
-                return 0 <= int(coord[:-1]) <= 100
             except ValueError:
                 return False
 
@@ -140,7 +139,6 @@ class _Origin:
             return True
         except ValueError:
             raise TypeError("Wrong position value : {} (see documentation above)".format(coord))
-            return False
 
     def config(self, pos=None, location=None, reference_comp=None, reference_location=None,
                from_hitbox=None, locked=None):
@@ -278,11 +276,11 @@ class ProtectedHitbox(pygame.Rect):
     """
     A ProtectedHitbox cannot be resized or moved
     """
+    ERR = PermissionError("A ProtectedHitbox cannot change at all")
 
     def __init__(self, *args, **kwargs):
         pygame.Rect.__init__(self, *args, **kwargs)
         object.__setattr__(self, "_mask", None)
-        object.__setattr__(self, "err", PermissionError("A ProtectedHitbox cannot change at all"))
 
     def __setattr__(self, *args):
 
@@ -291,9 +289,9 @@ class ProtectedHitbox(pygame.Rect):
     pos = property(lambda self: tuple(self[:2]))
     lpos = property(lambda self: self[:2], doc="A list containing the rect topleft")
 
-    def clamp_ip(self, Rect):
+    def clamp_ip(self, rect):
 
-        raise self.err
+        raise self.ERR
 
     def colliderect(self, rect):
         # TODO : collidemask
@@ -301,11 +299,11 @@ class ProtectedHitbox(pygame.Rect):
 
     def inflate_ip(self, x, y):
 
-        raise self.err
+        raise self.ERR
 
     def move_ip(self, x, y):
 
-        raise self.err
+        raise self.ERR
 
     def referencing(self, pos):
         """
@@ -323,13 +321,13 @@ class ProtectedHitbox(pygame.Rect):
         # TODO : use cases
         raise PermissionError("not implemented yet")
 
-    def union_ip(self, Rect):
+    def union_ip(self, rect):
 
-        raise self.err
+        raise self.ERR
 
-    def unionall_ip(self, Rect_sequence):
+    def unionall_ip(self, rect_sequence):
 
-        raise self.err
+        raise self.ERR
 
 
 class HasProtectedHitbox:
@@ -502,7 +500,7 @@ class HasProtectedHitbox:
 
         return True
 
-    def clamp_ip(self, Rect):
+    def clamp_ip(self, rect):
 
         raise PermissionError("not implemented")
 

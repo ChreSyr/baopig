@@ -1,8 +1,8 @@
 
 
 from baopig._lib import *
-from .text import Text, DynamicText
 from .indicator import DynamicIndicator
+from .text import Text
 
 
 class SliderBloc(Rectangle):

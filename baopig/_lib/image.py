@@ -1,7 +1,6 @@
 
 
 import pygame
-from pygame.image import *  # so baopig.image contains pygame.image
 from .resizable import ResizableWidget
 
 

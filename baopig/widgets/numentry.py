@@ -1,6 +1,6 @@
 
 
-from .entry import Entry, LOGGER, Validable
+from .entry import Entry, LOGGER
 
 
 class NumEntry(Entry):

@@ -1,5 +1,3 @@
-
-
 from .utilities import *
 from .style import Theme
 from .layer import Layer
@@ -176,7 +174,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
     def run(self):
         """Stuff to repeat endlessly while this scene is focused"""
 
-    def set_mode_TO_REMOVE(self, mode):
+    def set_mode_TBR(self, mode):
 
         if mode is self.mode: return
 

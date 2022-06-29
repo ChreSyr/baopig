@@ -1,7 +1,6 @@
-import time
 from baopig._lib import *
-from .text import Text
 from .button import Button
+from .text import Text
 
 
 class DialogAnswerButton(Button):
@@ -142,7 +141,7 @@ class Dialog(Scene):
                 self.style["dialogframe_class"],
                 background_image=background_image,
             )
-        self.frame = self.style["dialogframe_class"](self, frame_style)  #  TODO : a class style cannot be a parameter
+        self.frame = self.style["dialogframe_class"](self, frame_style)  # TODO : a class style cannot be a parameter
 
         self.answer = None
         self.create_signal("ANSWERED")

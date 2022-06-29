@@ -1,5 +1,3 @@
-
-from .utilities import Handler_SceneClose
 from baopig.time.timer import RepeatingTimer
 
 

@@ -1,5 +1,6 @@
 
 import time
+
 from baopig.communicative import Communicative
 from .utilities import present_time
 
@@ -88,5 +89,5 @@ class _RunningStopwatches(set):
     pass
 
 
-_running_stopwatches = _RunningStopwatches
+_running_stopwatches = _RunningStopwatches()
 _running_stopwatches.manager = None

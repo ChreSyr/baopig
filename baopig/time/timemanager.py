@@ -37,7 +37,8 @@ class _TimeManager:
             stopwatch.start()
         self._paused_stopwatches = None
 
-    def update(self):
+    @staticmethod
+    def update():
 
         current_time = time.time()
 

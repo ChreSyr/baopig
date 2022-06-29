@@ -1,7 +1,4 @@
-
-
 import pygame
-from baopig.pybao.objectutilities import WeakSet
 from baopig.pybao.issomething import is_point
 from baopig.io import keyboard
 from .utilities import Linkable, paint_lock
@@ -39,11 +36,13 @@ class Selectable:
             selector = selector.parent
         self._selector_ref = selector.get_weakref()
 
+        assert self not in self.selector.selectables
         self.selector.selectables.add(self)
 
         self.signal.NEW_SURF.connect(self.unselect, owner=self)
         self.signal.MOTION.connect(self.unselect, owner=self)
         self.signal.HIDE.connect(self.unselect, owner=self)
+        self.signal.KILL.connect(lambda: self.selector.selectables.remove(self), owner=self)
 
     is_selected = property(lambda self: self._is_selected)
     selector = property(lambda self: self._selector_ref())
@@ -150,24 +149,12 @@ class Selector(Linkable):
 
         if SelectionRectClass is None: SelectionRectClass = DefaultSelectionRect
 
-        assert isinstance(self, Container)
-        assert issubclass(SelectionRectClass, DefaultSelectionRect)
         Linkable.__init__(self)
 
-        class Selectables(WeakSet):
-            def __init__(selectables):
-                WeakSet.__init__(selectables)
-            def add(selectables, comp):
-                assert comp not in selectables
-                super().add(comp)
-                comp.signal.KILL.connect(lambda: selectables.remove(comp), owner=self)
-            def get_selected(selectables):
-                for comp in selectables:
-                    if comp.is_selected:
-                        yield comp
-            selected = property(get_selected)
-        self.selectables = Selectables()
+        assert issubclass(SelectionRectClass, DefaultSelectionRect)
+        assert isinstance(self, Container)
 
+        self.selectables = set()
         self._can_select = True
         self._selection_rect_ref = lambda: None
         self._selection_rect_class = SelectionRectClass
@@ -176,6 +163,11 @@ class Selector(Linkable):
 
         self.signal.DEFOCUS.connect(self.close_selection, owner=self)
 
+    def _get_iselected(self):
+        for comp in self.selectables:
+            if comp.is_selected:
+                yield comp
+    _iselected = property(_get_iselected)
     is_selecting = property(lambda self: self._selection_rect_ref() is not None)
     selection_rect = property(lambda self: self._selection_rect_ref())
 
@@ -186,7 +178,7 @@ class Selector(Linkable):
 
         if not self.is_selecting: return
         self.selection_rect.kill()
-        for selectable in self.selectables.selected:
+        for selectable in self._iselected:
             if not selectable.is_selected: continue
             selectable.unselect()
             selectable._is_selected = False
@@ -226,7 +218,7 @@ class Selector(Linkable):
 
         if not self.is_selecting:
             return
-        selected = tuple(self.selectables.selected)
+        selected = tuple(self._iselected)
         if not selected:
             return  # happens when the selection_rect didn't select anything
         sorted_selected = sorted(selected, key=lambda o: (o.abs.top, o.abs.left))
@@ -276,22 +268,13 @@ class Selector(Linkable):
     def paste(self, data):
         """This method is called when the user press Ctrl + V"""
 
-    def select_all(self):
+    def select_all(self):  # TODO : solve : selects also hidden selectables
 
         if self.selectables:
             if self.is_selecting:
                 self.close_selection()
             self.start_selection(self.abs.topleft)
             self.end_selection(self.abs.bottomright, visible=False)
-
-            # self.start_selection((
-            #     min(s.abs.left for s in self.selectables),
-            #     min(s.abs.top for s in self.selectables)
-            # ))
-            # self.end_selection((
-            #     max(s.abs.right for s in self.selectables),
-            #     max(s.abs.bottom for s in self.selectables)
-            # ))
 
     def set_selectionrect_visibility(self, visible):
 

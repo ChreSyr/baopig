@@ -12,6 +12,7 @@ print("baopig from WIP")
 from .version.version import version
 print(f"baopig {version} - ", end="")
 from pygame import *
+from pygame.image import load
 from .pybao.issomething import *
 from .pybao.objectutilities import Object, PrefilledFunction, PackedFunctions
 

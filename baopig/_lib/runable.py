@@ -1,10 +1,11 @@
 
 
 import functools
-from baopig.communicative import ApplicationExit, Communicative
+from baopig.communicative import Communicative
 from .widget import Widget
 
 
+# TODO : rework
 def decorator_start_running(widget, start_running):
     functools.wraps(start_running)
     def wrapped_func(*args, **kwargs):

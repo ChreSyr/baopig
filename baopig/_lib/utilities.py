@@ -1,12 +1,9 @@
 
-
-import functools
+import threading
 import pygame
 from baopig.communicative import ApplicationExit
 from baopig.io import LOGGER, mouse, keyboard
 
-
-import threading
 paint_lock = threading.RLock()
 
 # TODO : deproteger les attributs handle_something

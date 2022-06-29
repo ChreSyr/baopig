@@ -1,7 +1,7 @@
 
 def is_one_of_types(o, *types):
     return isinstance(o, types)
-    return True in [isinstance(o, t) for t in types], "{} must be one of {} types, got {} instead".format(o, types, type(o))
+    # return True in [isinstance(o, t) for t in types], f"{o} must be one of {types} types, got {type(o)} instead"
 
 def is_iterable(o, k):
     if not hasattr(o, "__iter__"): return False

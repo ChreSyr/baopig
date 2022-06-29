@@ -1,5 +1,4 @@
 
-
 import pygame
 from baopig._lib import Rectangle
 from .button import Button
@@ -45,7 +44,7 @@ class CheckBox(Button):
         width=100,
         height=35,
         background_color=(0, 0, 0, 0),
-        text_style={"font_height": 15, "pos_location":"left", "pos_ref_location":"left"},
+        text_style={"font_height": 15, "pos_location": "left", "pos_ref_location": "left"},
         padding=2,
         children_margins=10,
     )

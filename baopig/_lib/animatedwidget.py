@@ -1,5 +1,4 @@
 
-
 import pygame
 from .utilities import paint_lock
 from .widget import Widget, _Origin
@@ -64,10 +63,11 @@ class AnimatedWidget(Widget):
         old_hitbox = tuple(self.hitbox)
         with paint_lock:
 
-            self.origin._asked_pos = (self.rect.left+dx, self.rect.top+dy)
+            self.origin._asked_pos = (self.rect.left +dx, self.rect.top +dy)
             pygame.Rect.__setattr__(self.rect, "topleft", self.origin._asked_pos)
             self._hitbox = self.rect
-            pygame.Rect.__setattr__(self.abs_rect, "topleft", (self.parent.abs.left + self.left, self.parent.abs.top + self.top))
+            pygame.Rect.__setattr__(
+                self.abs_rect, "topleft", (self.parent.abs.left + self.left, self.parent.abs.top + self.top))
             self._abs_hitbox = self.abs_rect
 
             self.signal.MOTION.emit(dx, dy)
@@ -91,4 +91,3 @@ class AnimatedWidget(Widget):
                 pygame.Rect.__setattr__(self.hitbox, "size", size)
                 pygame.Rect.__setattr__(self.abs_hitbox, "size", size)
                 pygame.Rect.__setattr__(self.auto_hitbox, "size", size)
-

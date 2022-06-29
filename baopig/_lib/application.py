@@ -79,7 +79,7 @@ class Application(HasStyle):
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_F6:
-                    self.exit("FORCED EXIT (F6)")
+                self.exit("FORCED EXIT (F6)")
             elif event.type == pygame.QUIT:
                 self.exit()
 
@@ -147,6 +147,7 @@ class Application(HasStyle):
                                         self.painter.screenshot()
                                         LOGGER.info("Screenchot !")
                             return False
+
                         self.freeze(until=u_is_pressed)
                     # Cmd + r -> toggle recording (if Maj: save application.surface only when it changes)
                     elif event.key == pygame.K_r:
@@ -311,7 +312,8 @@ class Application(HasStyle):
     def handle_app_close(self):
         """Stuff to do when the app is closed"""
 
-    def iconify(self):
+    @staticmethod
+    def iconify():
 
         with paint_lock:
             # if self.is_fullscreen:
@@ -389,7 +391,8 @@ class Application(HasStyle):
         if self.painter is not None:
             self.painter.set_fps(fps)
 
-    def set_icon(self, icon):
+    @staticmethod
+    def set_icon(icon):
 
         pygame.display.set_icon(icon)
 
@@ -400,10 +403,10 @@ class Application(HasStyle):
         assert mode in (0, pygame.NOFRAME, pygame.RESIZABLE, pygame.FULLSCREEN)
 
         # if mode is pygame.FULLSCREEN and self.mode != mode:
-          #   self._mode_before_fullscreen = self.focused_scene.mode
-            # self._size_before_fullscreen = self.asked_size
+        #   self._mode_before_fullscreen = self.focused_scene.mode
+        # self._size_before_fullscreen = self.asked_size
 
-            # mode = 0
+        # mode = 0
 
         self._default_mode = mode
         self._update_display()
@@ -412,8 +415,7 @@ class Application(HasStyle):
 
         self.focused_scene.toggle_debugging()
 
-    def warning(self, I_dont_know):
+    def warning(self, i_dont_know):
 
         # TODO : show the warning on screen
         raise PermissionError("Not implemented")
-

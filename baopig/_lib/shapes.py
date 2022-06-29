@@ -1,12 +1,12 @@
 
 
 import pygame
+
 from baopig.pybao.issomething import *
-from baopig.io import mouse
-from .utilities import Color, paint_lock, Size
-from .widget import Widget
-from .resizable import ResizableWidget
 from .layer import Layer
+from .resizable import ResizableWidget
+from .utilities import Color, paint_lock
+from .widget import Widget
 
 
 class Rectangle(ResizableWidget):
@@ -95,83 +95,6 @@ class Rectangle(ResizableWidget):
         self._border_width = width
 
         self.send_paint_request()
-
-
-class Border_TBR(ResizableWidget):  # TODO : inherit from Rectangle
-    """
-    A Border is a non filled rectangle. By default, it fits inside 'size' parameter. If
-    'surrounding' is set to True, the size will fit inside the border's interior.
-    """
-
-    def __init__(self, parent, color, size, width=1, surrounding=False, **kwargs):
-
-        try:                color = pygame.Color(color)
-        except ValueError:  color = pygame.Color(*color)
-        assert is_size(size)
-        assert 0 <= width
-        if surrounding:
-            size = (size[0] + width * 2, size[1] + width * 2)
-
-        surface = pygame.Surface(size, pygame.SRCALPHA)
-        pygame.draw.rect(surface, color, ((0, 0) + size), width * 2 - 1)
-
-        ResizableWidget.__init__(
-            self,
-            parent=parent,
-            surface=surface,
-            **kwargs
-        )
-
-        self._color = color
-        self._interior = pygame.Rect(self.left + width, self.top + width, self.w - width * 2, self.h - width * 2)
-        self._surrounding = surrounding
-        self._width = width
-
-    color = property(lambda self: self._color)
-    interior = property(lambda self: self._interior)
-    surrounding = property(lambda self: self._surrounding)
-    width = property(lambda self: self._width)
-
-    def collidemouse(self):
-
-        if not super().collidemouse():
-            return False
-
-        return not self.interior.collidepoint(mouse.get_pos_relative_to(self.parent))
-
-        mouse_x, mouse_y = mouse.get_pos_relative_to(self.parent)
-        return True in (
-            mouse_x < self.rect.left + self.width,
-            mouse_x >= self.rect.right - self.width,
-            mouse_y < self.rect.top + self.width,
-            mouse_y >= self.rect.bottom - self.width,
-        )
-
-    def config(self, color=None, width=None, surrounding=None):
-
-        if color is not None:
-            assert is_color(color)
-            self._color = color
-
-        if width is not None:
-            assert 0 <= width
-            self._width = width
-
-        if surrounding is not None and bool(surrounding) != self._surrounding:
-            self._surrounding = bool(surrounding)
-
-        if self.surrounding:
-            self.resize(self.size[0] + self.width * 2, self.size[1] + self.width * 2)
-        else:
-            self.resize(self.size[0] - self.width * 2, self.size[1] - self.width * 2)
-
-        self._interior = pygame.Rect(self.left + width, self.top + width, self.w - width * 2, self.h - width * 2)
-
-    def resize(self, w, h):
-
-        surface = pygame.Surface((w, h), pygame.SRCALPHA)
-        pygame.draw.rect(surface, self.color, (self.auto_hitbox), self.width * 2 - 1)
-        self.set_surface(surface)
 
 
 class Highlighter(Widget):

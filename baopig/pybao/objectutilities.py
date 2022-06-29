@@ -1,8 +1,7 @@
-
+import functools
 import inspect
 from collections import deque
 from weakref import ref as wkref, WeakSet
-import functools
 
 
 def ref(obj, callback=None):
@@ -20,7 +19,6 @@ class PrefilledFunction:
         self._kwargs = kwargs
 
     def __call__(self, *args, **kwargs):
-
         return self._function(*self._args, *args, **self._kwargs, **kwargs)
 
 
@@ -32,6 +30,7 @@ class PackedFunctions:
     This means you cannot pack two functions if they each require differents parameters
     You cannot remove a function from a PackedFunctions
     """
+
     def __init__(self, *functions):
 
         self._functions = list()
@@ -93,6 +92,7 @@ class TypedDeque(deque):
     A TypedDeque is a deque who can only contain items of type ItemsClass
     deque : a list-like sequence optimized for data accesses near its endpoints
     """
+
     def __init__(self, ItemsClass, seq=(), maxlen=None):
         """
         :param ItemsClass: the type for all deque items
@@ -118,10 +118,11 @@ class TypedDeque(deque):
 
     def __repr__(self):
         return "<TypedDeque({}):{}>".format(self.ItemsClass.__name__,
-                                           "[{}]".format(", ".join(list((item.__str__() for item in self)))))
+                                            "[{}]".format(", ".join(list((item.__str__() for item in self)))))
 
     def __str__(self):
-        return "[{}]".format(", ".join(list((item.__str__() for item in self)))) + (", maxlen={}".format(self.maxlen) if self.maxlen else "")
+        return "[{}]".format(", ".join(list((item.__str__() for item in self)))) + (
+            ", maxlen={}".format(self.maxlen) if self.maxlen else "")
 
     def _check(self, p_object):
         if not self.accept(p_object):
@@ -154,102 +155,6 @@ class TypedDeque(deque):
         deque.insert(self, index, p_object)
 
 
-class TypedDict_TBR(dict):
-    def __init__(self, KeysClass, ValuesClass, seq={}, **kwargs):
-        """
-        Create a dict who can only contain keys of type keys_class
-        and values of type values_class
-
-        :param KeysClass: the type for all dict keys
-        :type KeysClass: class
-        :param ValuesClass: the type for all dict values
-        :type ValuesClass: class
-        :param seq: an items sequence
-        :param kwargs: an items dictionnary
-        """
-        assert inspect.isclass(KeysClass), "KeysClass must be a class"
-        assert inspect.isclass(ValuesClass), "ValuesClass must be a class"
-        assert isinstance(seq, dict), "Optionnal seq must be a dictionnary"
-
-        self.KeysClass = KeysClass
-        self.ValuesClass = ValuesClass
-        self.msg_key_type_error = "Only {} objects are accepted as key in this dict" \
-                                  "".format(self.KeysClass.__name__)
-        self.msg_value_type_error = "Only {} objects are accepted as value in this dict" \
-                                    "".format(self.ValuesClass.__name__)
-
-        for key, value in seq.items():
-            self._checkkey(key)
-            self._checkvalue(value)
-        dict.__init__(self, seq, **kwargs)
-
-    def __setitem__(self, *args, **kwargs):
-        try:
-            self._checkkey(args[0])
-            self._checkvalue(args[1])
-            dict.__setitem__(self, *args, **kwargs)
-        except Exception as e:
-            raise Exception("This method is not properly coded, " + str(e))
-
-    def __repr__(self):
-        return "<TypedDict({}, {}):{}>" \
-               "".format(self.KeysClass.__name__, self.ValuesClass.__name__, dict.__str__(self))
-
-    def __str__(self):
-        return "{"+", ".join("{}:{}".format(i, o) for i, o in self.__dict__.items())+"}"
-
-    def _checkkey(self, key):
-        if not self.acceptkey(key):
-            raise PermissionError(self.msg_key_type_error)
-
-    def _checkvalue(self, value):
-        if not self.acceptvalue(value):
-            raise PermissionError(self.msg_value_type_error)
-
-    def acceptkey(self, item):
-        return isinstance(item, self.KeysClass)
-
-    def acceptvalue(self, item):
-        return isinstance(item, self.ValuesClass)
-
-    def setdefault(self, k, d=None):
-        """
-        If k not in D: set D[k]=d
-        If d is None:  set d=D.ValuesClass()
-        Return D[k]
-
-        WARNING: ValuesClass might need arguments
-
-        :param k: a key
-        :param d: the key value if key isn't in the dict yet
-        :return: D[k]
-        """
-        if d is None:
-            d = self.ValuesClass()
-
-        self._checkkey(k)
-        self._checkvalue(d)
-
-        return dict.setdefault(self, k, d)
-
-    def update(self, E=None, **F):
-        """
-        Set D[k] = v for k, v in E.items() or F.items()
-
-        D.update(key1=1, key2=2) <=> D.update({'key1':1, 'key2':2})
-
-        :param E: a dictionnary
-        :param F: optionnal - a dictionnary (made by keywords)
-        :return: None
-        """
-        if E is None:
-            E = F
-        assert isinstance(E, dict), "E must be a dictionnary"
-
-        for k, v in E.items():
-            self[k] = v
-
-
 class TypedList(list):
 
     def __init__(self, *ItemsClass, seq=()):
@@ -269,7 +174,7 @@ class TypedList(list):
 
     def __repr__(self):
         return "<{}(ItemsClass:{}, {}>".format(self.__class__.__name__, self.ItemsClass_name,
-                                    "[{}]".format(", ".join(list((item.__str__() for item in self)))))
+                                               "[{}]".format(", ".join(list((item.__str__() for item in self)))))
 
     def __str__(self):
         return "[{}]".format(", ".join(list((item.__str__() for item in self))))
@@ -309,7 +214,7 @@ class TypedList(list):
         self.ItemsClass = ItemsClass
         self.ItemsClass_name = name
         self.msg_item_type_error = "Only {} objects are accepted in this list".format(self.ItemsClass_name) + \
-            " (wrong object class:{})"
+                                   " (wrong object class:{})"
         for item in self:
             self._check(item)
 
@@ -321,6 +226,7 @@ class TypedSet(set):
 
     seq is the optionnal initial sequence
     """
+
     def __init__(self, ItemsClass, seq=()):
 
         assert inspect.isclass(ItemsClass), "ItemsClass must be a class"
@@ -433,10 +339,11 @@ class WeakList(list):
     Create a TypedList who only store weak references to objects
     code from : https://stackoverflow.com/questions/677978/weakref-list-in-python
     """
+
     def __init__(self, seq=()):
         list.__init__(self)
         self._refs = []
-        self._dirty=False
+        self._dirty = False
         for x in seq: self.append(x)
 
     def _mark_dirty(self, wref):
@@ -444,7 +351,7 @@ class WeakList(list):
 
     def flush(self):
         self._refs = [x for x in self._refs if x() is not None]
-        self._dirty=False
+        self._dirty = False
 
     def __eq__(self, other):
 
@@ -487,23 +394,26 @@ class WeakList(list):
         return list(self).count(obj)
 
     def extend(self, items):
-        for x in items: self.append(x)
+        for x in items:
+            self.append(x)
 
-    def index(self, obj):
-        return list(self).index(obj)
+    def index(self, obj, **kwargs):
+        return list(self).index(obj, **kwargs)
 
     def insert(self, idx, obj):
         self._refs.insert(idx, ref(obj, self._mark_dirty))
 
-    def pop(self, idx):
-        if self._dirty: self.flush()
-        obj=self._refs[idx]()
+    def pop(self, *args, **kwargs):
+        if self._dirty:
+            self.flush()
+        idx = args[0]
+        obj = self._refs[idx]()
         del self._refs[idx]
         self.flush()
         return obj
 
     def remove(self, obj):
-        if self._dirty: self.flush() # Ensure all valid.
+        if self._dirty: self.flush()  # Ensure all valid.
         for i, x in enumerate(self):
             if x == obj:
                 del self[i]
@@ -533,7 +443,7 @@ class WeakList(list):
         return obj in list(self)
 
     def __mul__(self, n):
-        return WeakList(list(self)*n)
+        return WeakList(list(self) * n)
 
     def __imul__(self, n):
         self._refs *= n
@@ -547,12 +457,10 @@ class WeakList(list):
 class WeakTypedList(TypedList, WeakList):
 
     def __init__(self, *ItemsClass, seq=()):
-
         WeakList.__init__(self, seq=seq)
         TypedList.__init__(self, *ItemsClass)
 
     def __eq__(self, other):
-
         return self is other
 
     def __setitem__(self, index, p_object):
@@ -587,6 +495,7 @@ class WeakTypedSet(WeakSet, TypedSet):
 
     WARNING : elements of a WeakTypedSet object are stored in WeakTypedSet.data
     """
+
     def __init__(self, ItemsClass, seq=()):
 
         WeakSet.__init__(self, data=seq)
@@ -642,10 +551,11 @@ def get_name(obj):
 
 def debug(func):
     functools.wraps(func)
+
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception as e:
             raise e
-    return wrapper
 
+    return wrapper

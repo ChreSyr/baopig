@@ -1,4 +1,3 @@
-
 import pygame
 from baopig._lib import Clickable, Layer
 from baopig._lib import Sail, Image, Container, Hoverable
@@ -6,7 +5,6 @@ from .text import Text
 
 
 class ButtonText(Text):
-
     STYLE = Text.STYLE.substyle()
     STYLE.modify(
         align_mode="left",
@@ -33,7 +31,7 @@ class ButtonText(Text):
 
         while self.width > content_rect.width:
             if self.font.height == 2:
-                raise ValueError(f"This text is too long for the text area : {text} (area={content_rect}), {self.align_mode}, {self.width}")
+                raise ValueError(f"This text is too long for the text area : {text} (area={content_rect})")
             self.font.config(height=self.font.height - 1)  # changing the font will automatically update the text
         if self.height > content_rect.height:
             self.resize_height(content_rect.height)
@@ -78,8 +76,8 @@ class AbstractButton(Container, Clickable, Hoverable):
 
         if self.default_layer is None:
             Layer(self)  # TODO : usefull ?
-        self.behind_lines = Layer(self, weight=self.default_layer.weight-1)
-        self.above_lines = Layer(self, weight=self.default_layer.weight+1)
+        self.behind_lines = Layer(self, weight=self.default_layer.weight - 1)
+        self.above_lines = Layer(self, weight=self.default_layer.weight + 1)
 
         self._hover_sail_ref = lambda: None
         self._link_sail_ref = lambda: None
@@ -95,11 +93,11 @@ class AbstractButton(Container, Clickable, Hoverable):
                     color=(0, 0, 0, hover),
                     pos=(0, 0),
                     size=self.size,
-                    name=self.name+".hover_sail",
+                    name=self.name + ".hover_sail",
                 ).get_weakref()
             else:
                 self._hover_sail_ref = Image(
-                    self, hover, layer="nontouchable_layer", name=self.name+".hover_sail"
+                    self, hover, layer="nontouchable_layer", name=self.name + ".hover_sail"
                 ).get_weakref()
             self.hover_sail.hide()
             self.signal.HOVER.connect(self.hover_sail.show, owner=self.hover_sail)
@@ -112,7 +110,7 @@ class AbstractButton(Container, Clickable, Hoverable):
                     parent=self,
                     color=(0, 0, 0, 0),
                     pos=(0, 0),  # (half_margin_left, half_margin_top),
-                    size=self.size,  # (self.w - half_margin_left - half_margin_right, self.h - half_margin_top - half_margin_bottom),
+                    size=self.size,
                     border_color="theme-color-border",
                     border_width=1,
                     name=self.name + ".focus_rect"
@@ -120,7 +118,7 @@ class AbstractButton(Container, Clickable, Hoverable):
                 # self.focus_rect.set_border(color=, width=1)  # TODO : Border
             else:
                 self._focus_rect_ref = Image(
-                    self, focus, layer="nontouchable_layer", name=self.name+".focus_sail"
+                    self, focus, layer="nontouchable_layer", name=self.name + ".focus_sail"
                 ).get_weakref()
             self.focus_rect.hide()
             self.signal.FOCUS.connect(self.focus_rect.show, owner=self.focus_rect)
@@ -134,11 +132,11 @@ class AbstractButton(Container, Clickable, Hoverable):
                     color=(0, 0, 0, 63),
                     pos=(0, 0),
                     size=self.size,
-                    name=self.name+".link_sail",
+                    name=self.name + ".link_sail",
                 ).get_weakref()
             else:
                 self._link_sail_ref = Image(
-                    self, link, layer="nontouchable_layer", name=self.name+".link_sail"
+                    self, link, layer="nontouchable_layer", name=self.name + ".link_sail"
                 ).get_weakref()
             self.link_sail.hide()
             self.signal.LINK.connect(self.link_sail.show, owner=self.link_sail)
@@ -189,7 +187,7 @@ class AbstractButton(Container, Clickable, Hoverable):
 
     def handle_keyup(self, key):
 
-        if key == pygame.K_RETURN:  #TODO
+        if key == pygame.K_RETURN:
             self.link_sail.hide()
 
     def handle_validate(self):
@@ -225,21 +223,5 @@ class Button(AbstractButton):
         if text is not None:
             assert isinstance(text, str)
             self.text_widget = self.style["text_class"](self, text=text, **self.style["text_style"])
-            if self.name == "NoName": self._name = text
-
-    def copy_TBR(self):
-
-        return Button(
-            parent=self.parent,
-            text=self.text,
-            pos=self.pos,
-            w=self.w,
-            h=self.h,
-            margin=0,  # TODO : self.margin
-            font_size=self.font_size,
-            font_color=self.font_color,
-            command=self.command,
-            background_color=self.background.color,
-            name="Copied"+self.name
-        )
-
+            if self.name == "NoName":
+                self._name = text

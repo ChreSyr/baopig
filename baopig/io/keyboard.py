@@ -3,7 +3,6 @@ import pygame
 from baopig.pybao.objectutilities import Object
 from baopig.time.timer import RepeatingTimer
 from .logging import LOGGER
-from .clipboard import clipboard
 
 
 class KeyEvent(Object):
@@ -14,7 +13,6 @@ class KeyEvent(Object):
         keyboard.last_event = self
 
     def __str__(self):
-        global __key_events
         return "<KeyEvent({}-{} {})>".format(
             self.type,
             "KEYDOWN" if self.type == pygame.KEYDOWN else "KEYUP" if self.type == pygame.KEYUP else "Unknown",
@@ -43,8 +41,8 @@ class _Keyboard:
                 self.l_maj = False
                 self.r_maj = False
                 self.maj = self.l_maj or self.r_maj
-            def __str__(self):
-                return Object.__str__(self)
+            # def __str__(self):
+            #     return Object.__str__(self)
         self._mod = Mod()
         self.last_event = None
 
@@ -61,7 +59,7 @@ class _Keyboard:
     def _release_all(self):
 
         for key in tuple(self._keys):
-            self.receive(Object(type=pygame.KEYUP, key=key))
+            self.receive(pygame.event.Event(type=pygame.KEYUP, key=key))
 
     def is_pressed(self, key):
         """Return True if the key with identifier 'key' (an integer) is pressed"""
