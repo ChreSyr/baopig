@@ -149,30 +149,28 @@ class Container(ResizableWidget):
         self._rects_to_update = None
         self._rect_to_update = None
 
+        surf = pygame.Surface(size, pygame.SRCALPHA)
+        ResizableWidget.__init__(self, parent, surface=surf, **options)
+
         # Box attributes
         self._children_margins = self.style["children_margins"]
         self._border_color = self.style["border_color"]
         self._border_width = self.style["border_width"]
         self._padding = self.style["padding"]
-        self.background_layer = None
-        self._background_ref = lambda: None
-
-        # BACKGROUND
-        background_color = self.style["background_color"]
-        if background_color is None: raise PermissionError  # background_color = (0, 0, 0, 0)
-        if not isinstance(background_color, Color): raise PermissionError  # background_color = (0, 0, 0, 0)
-        self._background_color = background_color
-        surf = pygame.Surface(size, pygame.SRCALPHA)
-
-        ResizableWidget.__init__(self, parent, surface=surf, **options)
+        self._content_rect = BoxRect(self.auto_rect, self.padding)
 
         if self.is_hidden:
             self.set_dirty(1)
+
+        # BACKGROUND
+        self._background_color = self.style["background_color"]
+        self.background_layer = None
+        self._background_ref = lambda: None  # TODO
         background_image = self.style["background_image"]
         if background_image is not None:
             self.set_background_image(background_image)
 
-        self.signal.RESIZE.connect(self.handle_resize, owner=None)
+        self.signal.RESIZE.connect(self.handle_resize, owner=None)  # TODO : already connected
 
     all_children = property(lambda self: self._children.awake.union(self._children.asleep))
     asleep_children = property(lambda self: self._children.asleep)
@@ -181,15 +179,16 @@ class Container(ResizableWidget):
     default_layer = property(lambda self: self.layers_manager.default_layer)
 
     # Box attributes
+    children_margins = property(lambda self: self._children_margins)
+    # -
+    border_width = property(lambda self: self._border_width)
+    padding = property(lambda self: self._padding)
+    # -
+    border_rect = property(lambda self: self.auto_rect)
+    content_rect = property(lambda self: self._content_rect)
+    # -
     background = property(lambda self: self._background_ref())
     border_color = property(lambda self: self._border_color)
-    border_width = property(lambda self: self._border_width)
-    border_rect = property(lambda self: self.rect)
-    content_rect = property(lambda self: BoxRect(self.padding_rect, self.padding))
-    children_margins = property(lambda self: self._children_margins)
-    childrenmargins_rect = property(lambda self: BoxRect(self.rect, self.children_margins, out=True))
-    padding = property(lambda self: self._padding)
-    padding_rect = property(lambda self: self.rect)  # NOTE : border does not influence padding
 
     def _add_child(self, child):
         self._children._add(child)
@@ -220,35 +219,8 @@ class Container(ResizableWidget):
     def _flip_without_update(self):
         """Update all the surface, but don't prevent the parent"""
 
-        if self.is_hidden:  return
-
-        with paint_lock:
-            # self._rects_to_update.clear()
-            self._rect_to_update = None
-
-            self.surface.fill(self.background_color)
-            if self._border_width:
-                pygame.draw.rect(self.surface, self._border_color, (0, 0) + self.size, self._border_width * 2 - 1)
-
-            for layer in self.layers:
-                for child in layer.visible:
-                    try:
-                        # collision is relative to self
-                        collision = child.hitbox.clip(self.auto)
-                        if collision == child.rect:
-                            self.surface.blit(child.surface, child.rect.topleft)
-                        else:
-                            self.surface.blit(child.surface.subsurface(
-                                (collision.left - child.rect.left, collision.top - child.rect.top) + collision.size),
-                                collision.topleft
-                            )
-                    except pygame.error as e:
-                        # can be raised from a child.surface who is a subsurface from self.surface
-                        assert child.surface.get_parent() is self.surface
-                        child._flip_without_update()  # overdraw child.hitbox
-
-            # if self.app.debug_screenupdates:
-            #     LOGGER.info("update in {} :  {}".format(self, self.auto))
+        self._rect_to_update = pygame.Rect(self.auto)
+        self._update_rect()
 
     def _find_place_for(self, child):
 
@@ -273,16 +245,16 @@ class Container(ResizableWidget):
 
         This method is the answer.
         This container will update by himself the portion to update, storing the result
-        into its surface. Then, it ask to its parent to update the same portion,
+        into its surface. Then, it asks its parent to update the same portion,
         and its parent will use this container surface.
 
         But how can a container update its surface ?
 
         The container create a surface (rect_background) at the rect size. This new surface
-        is gonna replace a portion of the container surface corresponding to the rect to
+        is going to replace a portion of the container surface corresponding to the rect to
         update, once every child have been blited on it.
 
-        if all is set, will update all of the container's hitbox
+        if all is set, will update all the container's hitbox
 
 
         surface :         --------- - - - -----------------------
@@ -309,24 +281,11 @@ class Container(ResizableWidget):
         """
 
         if self._rect_to_update is None: return
-        if self.is_hidden:  return
+        if self.is_hidden: return
 
         with paint_lock:
-            # rects_to_update = tuple(self._rects_to_update)
             rect = self._rect_to_update
             self._rect_to_update = None
-            # self._rects_to_update.clear()
-            # for rect in rects_to_update:
-
-            """
-            Si, lorsqu'un un enfant change, un pixel passe de plein a transparent,
-            il faut aller chercher la couleur de derriere
-            C'est soit background_color, soit un autre enfant
-
-            Si background_color a de la transparence, alors il ne suffit pas de faire un
-            blit des enfants sur la surface definie par rect, il faut aussi la
-            reinitialiser afin de ne pas superposer la transparence
-            """
             self.surface.fill(self.background_color, rect)
             if self._border_width:
                 pygame.draw.rect(self.surface, self._border_color, (0, 0) + self.size, self._border_width * 2 - 1)
@@ -334,7 +293,6 @@ class Container(ResizableWidget):
             for layer in self.layers:
                 for child in layer.visible:
                     if child.hitbox.colliderect(rect):
-
                         try:
                             # collision is relative to self
                             collision = child.hitbox.clip(rect)
@@ -345,26 +303,22 @@ class Container(ResizableWidget):
                                     (collision.left - child.rect.left, collision.top - child.rect.top) + collision.size),
                                     collision.topleft
                                 )
-                        except pygame.error as e:
+                        except pygame.error:
                             # can be raised from a child.surface who is a subsurface from self.surface
                             assert child.surface.get_parent() is self.surface
                             child._flip_without_update()  # overdraw child.hitbox
 
-            # if self.app.debug_screenupdates:
-            #     LOGGER.info("update in {} :  {}".format(self, rect))
-
-            self._warn_parent(rect)
+            return rect
 
     def _warn_change(self, rect):
         """Request updates at rects referenced by self"""
 
         rect = self.auto_hitbox.clip(rect)
-        if rect[2:] == (0, 0): return
+        if rect.size == (0, 0): return
         if self._rect_to_update is None:
-            self._rect_to_update = pygame.Rect(rect)
+            self._rect_to_update = pygame.Rect(rect)  # from ProtectedHitbox to pygame.Rect
         else:
-            self._rect_to_update.union_ip(rect)  # TODO : with paint_lock
-        # self._rects_to_update.add(rect)
+            self._rect_to_update.union_ip(rect)
 
     def _warn_parent(self, rect):
         """Request updates at rects referenced by self"""
@@ -376,15 +330,15 @@ class Container(ResizableWidget):
     def adapt(self, children_list=None, vertically=True, horizontally=True):
         """
         Resize in order to contain every widget in children_list
-        Only use padding.right and padding.bottom, because it is not supposed to move children_list
+        Not supposed to move children_list
         """
 
         if children_list is None: children_list = self.all_children
         list = tuple(children_list)
         self.resize(
-            (max(comp.right for comp in list)+self.padding.right
+            (max(comp.right for comp in list) + self.padding.right
              if list else self.padding.left + self.padding.right) if horizontally else self.w,
-            (max(comp.bottom for comp in list)+self.padding.bottom
+            (max(comp.bottom for comp in list) + self.padding.bottom
              if list else self.padding.top + self.padding.bottom) if vertically else self.h
         )
 
@@ -432,7 +386,9 @@ class Container(ResizableWidget):
                     # LOGGER.debug("Painting {} from container {}".format(child, self))
 
         if self.dirty == 0:  # else, paint() is called by parent
-            self._update_rect()
+            rect = self._update_rect()
+            if rect:
+                self._warn_parent(rect)
 
     def fit(self, layer):  # TODO
 
@@ -443,6 +399,7 @@ class Container(ResizableWidget):
 
         if self.background is not None:
             self.background.resize(*self.size)
+        self._content_rect = BoxRect(self.auto_rect, self.padding)
 
     def has_layer(self, layer_name):
         return layer_name in (layer.name for layer in self.layers)

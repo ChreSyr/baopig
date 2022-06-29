@@ -11,7 +11,7 @@ from .utilities import paint_lock, functools
 from .style import HasStyle, StyleClass, Theme
 
 
-class MetaPaintLocker(type):
+class MetaPaintLocker(type):  # TODO : keep ?
     def __call__(self, *args, **kwargs):
         with paint_lock:
             widget = super().__call__(*args, **kwargs)
@@ -709,8 +709,7 @@ class HasProtectedSurface:
         return self.surface.subsurface(rect).copy()
 
 
-class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
-             metaclass=MetaPaintLocker):
+class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox):  # metaclass=MetaPaintLocker
     """
     Abstract class for the elements of the screen
     A component can be visible, hidden, static, interactive, dynamic...
@@ -957,8 +956,8 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         """
         raise PermissionError("The copy() method has not been overriden")
 
-    def depend_on(self, comp):
-
+    def depend_on_TBR(self, comp):
+        # TODO : remove
         comp.signal.KILL.connect(self.kill, owner=self)
 
     def get_weakref(self, callback=None):
@@ -1007,9 +1006,9 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         if not self.is_alive: return
         with paint_lock:
             try:
+                self.signal.KILL.emit(self._weakref)
                 self.parent._remove_child(self)
                 self.disconnect()
-                self.signal.KILL.emit(self._weakref)
                 self._weakref._comp = None
             except Exception as e:
                 raise e
@@ -1038,7 +1037,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox,
         In fact, you can use paint() at any moment, but it is more efficient
         to update it through send_paint_request() if it is changing very often
         """
-        pass
 
     def send_paint_request(self):
 

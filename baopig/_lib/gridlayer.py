@@ -434,7 +434,7 @@ class GridLayer(Layer):
 
     def pack(self, start_pos=(0, 0), **kwargs):
         """
-        Updates padding and children_margins, not col.width & row.height
+        Updates from children_margins, not col.width & row.height
         """
         if kwargs:
             raise PermissionError("GridLayer.pack() only supports 'start_pos' parameters")

@@ -42,12 +42,12 @@ class _Line(ResizableWidget):
         assert isinstance(parent, Text)
 
         self._line_index = line_index
-        ResizableWidget.__init__(self,
-            parent=parent,
-            surface=pygame.Surface((parent.w, parent.font.height), pygame.SRCALPHA),
-            layer=parent.lines,
-            name="{}({})".format(self.__class__.__name__[1:], text),
-        )
+        ResizableWidget.__init__(self,  # TODO : Widget ?
+                                 parent=parent,
+                                 surface=pygame.Surface((parent.w, parent.font.height), pygame.SRCALPHA),
+                                 layer=parent.lines,
+                                 name=f"{self.__class__.__name__[1:]}({text})",
+                                 )
 
         self.__text = ""
         self.__end = ''
@@ -434,7 +434,7 @@ class _LineSelection(Rectangle):
         # Initializations
         # self.move_behind(self.line)
         self.line._selection_ref = self.get_weakref()
-        self.depend_on(self.line)
+        self.line.signal.KILL.connect(self.kill, owner=self)
         self.swap_layer("line_selections")
 
     index_end = property(lambda self: self._index_end)
@@ -618,23 +618,23 @@ class Text(Zone, _SelectableText):
 
         if self.align_mode == "center":  # only usefull for the widget creation
             if self._width_is_adaptable:
-                centerx = max(l.w for l in self.lines) / 2 + self.padding.left
+                centerx = max(l.w for l in self.lines) / 2 + self.content_rect.left
             else:
-                centerx = self.content_rect.width / 2 + self.padding.left
+                centerx = self.content_rect.centerx
 
         self.lines.sort()
-        h = self.padding.top
+        h = self.content_rect.top
         for i, line in enumerate(self.lines):
 
             line._line_index = i
             line.top = h
             h = line.bottom
             if self.align_mode == "left":
-                line.left = self.padding.left
+                line.left = self.content_rect.left
             elif self.align_mode == "center":
                 line.centerx = centerx
             elif self.align_mode == "right":
-                line.right = self.width - self.padding.right
+                line.right = self.content_rect.right
 
         self.adapt(self.lines, horizontally=self._width_is_adaptable, vertically=self._height_is_adaptable)
 
@@ -815,7 +815,7 @@ class Text(Zone, _SelectableText):
                 self._width_is_adaptable = False
             self.set_text(self.get_text())
 
-        lines_height = self.lines[-1].bottom - self.padding.top if self._height_is_adaptable else old_size[1]
+        lines_height = self.lines[-1].bottom - self.content_rect.top if self._height_is_adaptable else old_size[1]
         if self.content_rect.h != lines_height:
             if self._height_is_adaptable:
                 self._height_is_adaptable = False

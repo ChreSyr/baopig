@@ -3,7 +3,7 @@ from .utilities import Handler_SceneClose
 from baopig.time.timer import RepeatingTimer
 
 
-class RepetivelyAnimated(Handler_SceneClose):
+class RepetivelyAnimated:
     """
     A RepetivelyAnimated object is a component who blinks every interval seconds
 
@@ -33,6 +33,7 @@ class RepetivelyAnimated(Handler_SceneClose):
                 self.show()
 
         self.countdown_before_toggle_visibility = RepeatingTimer(interval, blink)
+        self.signal.KILL.connect(self.countdown_before_toggle_visibility.cancel, owner=None)
 
     def asleep(self):
 

@@ -17,7 +17,6 @@ class ButtonText(Text):
     def __init__(self, button, text, **options):
 
         assert isinstance(button, AbstractButton)
-        assert '\n' not in text
         self.inherit_style(button, options=options)
         content_rect = button.content_rect
 
@@ -31,10 +30,13 @@ class ButtonText(Text):
             selectable=False,
             **options
         )
+
         while self.width > content_rect.width:
             if self.font.height == 2:
                 raise ValueError(f"This text is too long for the text area : {text} (area={content_rect}), {self.align_mode}, {self.width}")
             self.font.config(height=self.font.height - 1)  # changing the font will automatically update the text
+        if self.height > content_rect.height:
+            self.resize_height(content_rect.height)
 
 
 class AbstractButton(Container, Clickable, Hoverable):
@@ -52,8 +54,8 @@ class AbstractButton(Container, Clickable, Hoverable):
     STYLE.modify(
         width=100,
         height=35,
-        background_color = "theme-color-content",
-        padding=10,
+        background_color="theme-color-content",
+        padding=5,
     )
     STYLE.create(
         catching_errors=False,
@@ -223,7 +225,7 @@ class Button(AbstractButton):
             self.text_widget = self.style["text_class"](self, text=text, **self.style["text_style"])
             if self.name == "NoName": self._name = text
 
-    def copy(self):
+    def copy_TBR(self):
 
         return Button(
             parent=self.parent,

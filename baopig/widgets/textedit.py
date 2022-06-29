@@ -139,6 +139,10 @@ class TextEdit(Text, Selector):
         if line_index != self.cursor.line_index or char_index != self.cursor.char_index:
             self.cursor.config(line_index=line_index, char_index=char_index, selecting="done")
 
+    def handle_defocus(self):
+
+        self.cursor.kill()
+
     def handle_focus(self):
 
         assert self.cursor is None
@@ -277,7 +281,6 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         self._text_index = None  # index of cusor in Text.text
 
         self.parent._cursor_ref = self.get_weakref()
-        self.parent.signal.DEFOCUS.connect(self.kill, owner=self)
         self.swap_layer("cursors_layer")
         self.set_nontouchable()
         self.start_animation()

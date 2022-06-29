@@ -1,9 +1,8 @@
 
 
 import pygame
-from baopig._lib import Clickable, Hoverable
 from baopig._lib import Rectangle
-from .button import Button, ButtonText
+from .button import Button
 
 
 class CheckMark(Rectangle):
@@ -78,6 +77,8 @@ class CheckBox(Button):
         assert self.w > self.h
         # self.text_widget.center = ((self.w + self.checkmarkframe.right) / 2, self.h / 2)
         area = pygame.Rect(self.content_rect)
+        area.left += self.left
+        area.top += self.top
         area_end = area.right
         area.left = self.checkmarkframe.right + self.checkmarkframe.left
         area.w = area_end - area.left

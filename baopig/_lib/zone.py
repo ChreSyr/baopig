@@ -58,7 +58,7 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
                 Widget.set_surface(self, self.parent.surface.subsurface(
                     pygame.Rect(self.rect).clip(self.parent.auto)))  # resize the subzone
 
-    def _flip(self):
+    def _flip(self):  # TODO : check with new padding & etc
         """Update all the surface"""
 
         if self.is_hidden:  return

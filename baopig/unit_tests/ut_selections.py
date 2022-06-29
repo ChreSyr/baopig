@@ -97,13 +97,10 @@ class UT_Selections_Zone(UT_Selector):
                 "When receive Ctrl + A, calls the 'select_all' method",
                 "The default implementation of 'select_all' selects all selectable children",
                 "When receive link_motion, it creates a SelectionRect",
-                "When receive Ctrl + C, calls the 'copy' method",
                 "The default implementation of 'copy' collects data from selected Selectables, join into a string and send it to the clipboard",
-                "When receive Ctrl + X, calls the 'cut' method (no default implementation)",
                 "When receive Ctrl + V, calls the 'paste' method (no default implementation)",
                 "The call of 'disable_selecting' will deactivate the selection ability",
             ]
-            # TODO : zone=Zone(...)
         )
 
         self.parent.add_section(

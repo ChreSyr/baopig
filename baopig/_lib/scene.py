@@ -46,6 +46,10 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         )
         Selector.__init__(self)
 
+        # for padd in self.padding.left, self.padding.top, self.padding.right, self.padding.bottom:
+        #     if padd != 0:
+        #         raise PermissionError("Scene do not support padding, sorry !")
+
         # self._mode = 0
         self._asked_size = size
         self._mode_before_fullscreen = None
@@ -84,13 +88,6 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
         # LOGGER.debug("Close scene : {}".format(self))
 
-    def _dirty_child_TBR(self, child, dirty):
-
-        if child is self:
-            self._dirty = dirty
-            return
-        super()._dirty_child(child, dirty)
-
     def _focus(self, widget):
 
         if widget == self.focused_comp: return
@@ -114,45 +111,15 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         if old_focused is not None: old_focused.signal.DEFOCUS.emit()
         widget.signal.FOCUS.emit()
 
-    def _update_rect(self):
+    def _warn_parent(self, rect):
 
-        if self._rect_to_update is None: return
-        assert self.application.focused_scene is self
-
-        with paint_lock:
-
-            rect = self._rect_to_update
-            self._rect_to_update = None
-            # for rect in rects_to_update:  # TODO : rect_to_update ? try fps
-            self.surface.fill(self.background_color, rect)
-            for layer in self.layers:
-                for child in layer.visible:
-                    if child.hitbox.colliderect(rect):
-                        try:
-                            collision = child.hitbox.clip(rect)
-                            self.surface.blit(
-                                child.surface.subsurface(
-                                    (collision.left - child.rect.left, collision.top - child.rect.top) + collision.size),
-                                collision.topleft
-                            )
-                        except pygame.error as e:
-                            # can be raised from a child.surface who is a subsurface from self.surface
-                            assert child.surface.get_parent() is self.surface
-                            child._flip_without_update()  # overdraw child.hitbox
-
-            # if self.app.debug_screenupdates:
-            #     LOGGER.info("update in {} :  {}".format(self, rect))
-
-            pygame.display.update(rect)
+        pygame.display.update(rect)
 
         if self.painter.is_recording and self.painter.is_recording.only_at_change:
             pygame.image.save(self.surface,
                               self.painter.out_directory + "record_{:0>3}.png".format(
                                   self.painter.record_index))
             self.painter.record_index += 1
-
-    def _warn_parent(self, rect):
-        raise PermissionError("Should never be called")
 
     def divide(self, side, width):
         raise PermissionError("Cannot divide a Scene")  # TODO : rework Zone.divide

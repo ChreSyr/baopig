@@ -12,11 +12,13 @@ class UT_Text_Zone(Zone):
         z3 = Zone(self, size=("100%", 155), background_color=(150, 150, 150), padding=5)
         z4 = Zone(self, size=("100%", 120), background_color=(150, 150, 150), children_margins=5, padding=5)
         z5 = Zone(self, size=("100%", 120), background_color=(150, 150, 150), children_margins=5, padding=5)
+        # Button(self, "l1\nl2\nl3")  # TODO : UT_Button_Zone
+        # Button(self, "-----------l1-----------")
         self.default_layer.pack()
 
         # Z1
         hello = Text(parent=z1, text="Hello world\nIamaverylongword,canyoureadmecorrectly?"
-                                     "\nWhat do you want to do ?", width=250)
+                                     "\nWhat do you want to do ?", width=250, padding=5)
         self.set_style_for(Text, font_file="Arial Narrow Bold Italic.ttf")
         Text(parent=z1, text="Hello world\nIamaverylongword,canyoureadmecorrectly?"
                              "\nWhat do you want to do ?", width=hello.width)
@@ -46,25 +48,25 @@ class UT_Text_Zone(Zone):
         for i, file in enumerate((
                 "I am written in the default font",
                 "monospace",
-                "Georgia.ttf",
-                "PlantagenetCherokee.ttf",
-                "Trebuchet MS Italic.ttf",
-                "Times New Roman.ttf",
-                "Arial.ttf",
-                "Osaka.ttf",
-                "Silom",
-                "Wingdings 2.ttf",
-                "Calibri.ttf",
-                "Candara.ttf",
-                "Consolas",
-                "Verdana",
-                "Keyboard.ttf",
-                "Gill Sans MT",
-                "Palatino Linotype.ttf",
-                "JetBrainsMono-Regular.ttf",
-                "JetBrainsMono-Medium.ttf",
-                "JetBrainsMono-Bold.ttf",
-                "JetBrainsMono-ExtraBold.ttf",
+                # "Georgia.ttf",
+                # "PlantagenetCherokee.ttf",
+                # "Trebuchet MS Italic.ttf",
+                # "Times New Roman.ttf",
+                # "Arial.ttf",
+                # "Osaka.ttf",
+                # "Silom",
+                # "Wingdings 2.ttf",
+                # "Calibri.ttf",
+                # "Candara.ttf",
+                # "Consolas",
+                # "Verdana",
+                # "Keyboard.ttf",
+                # "Gill Sans MT",
+                # "Palatino Linotype.ttf",
+                # "JetBrainsMono-Regular.ttf",
+                # "JetBrainsMono-Medium.ttf",
+                # "JetBrainsMono-Bold.ttf",
+                # "JetBrainsMono-ExtraBold.ttf",
                 "Nimportequoi.ttf",
         )):
             Text(z3, text=file[:-4] if file.endswith(".ttf") else file, font_file=file, row=i)
