@@ -51,36 +51,34 @@ class UT_Origin_Zone(Zone):
 
         # CLOCK
         z2 = DragableZone(self, pos=("-50%", 186), pos_location="midtop", pos_ref_location="topright",
-                  size=(350, 350), background_color=(140, 140, 140), name="z3")
+                          size=(350, 350), background_color=(140, 140, 140), name="z3")
         z3 = DragableZone(z2, pos=(0, 0), pos_location="center", pos_ref_location="center",
-                  size=(250, 250), background_color=(150, 150, 150), name="z2")
+                          size=(250, 250), background_color=(150, 150, 150), name="z2")
         ref = DragableRectangle(z3, pos=("50%", "50%"), pos_location="center", pos_ref=self,
-                        color=(128, 128, 0), size=(30, 30), name="ref")
+                                color=(128, 128, 0), size=(30, 30), name="ref")
         import math
         radius = 100
-        step = int(math.degrees((2*math.pi)/8))
-        for i in range(0, int(math.degrees(2*math.pi)), step):
+        step = int(math.degrees((2 * math.pi) / 8))
+        for i in range(0, int(math.degrees(2 * math.pi)), step):
             r = Rectangle(z2, color=ref.color, size=ref.size,
-                        pos=(math.cos(math.radians(i)) * radius,
-                                         math.sin(math.radians(i)) * radius),
-                                    pos_ref=ref, name="rect({})".format(i))
-        for i in range(0, int(math.degrees(2*math.pi)), step):
+                          pos=(math.cos(math.radians(i)) * radius,
+                               math.sin(math.radians(i)) * radius),
+                          pos_ref=ref, name="rect({})".format(i))
+        for i in range(0, int(math.degrees(2 * math.pi)), step):
             i += step / 2
             r = Rectangle(z3, color=(150, 120, 0), size=ref.size,
-                        pos=(math.cos(math.radians(i)) * radius,
-                                         math.sin(math.radians(i)) * radius),
-                                    pos_ref=ref, name="rect({})".format(i))
+                          pos=(math.cos(math.radians(i)) * radius,
+                               math.sin(math.radians(i)) * radius),
+                          pos_ref=ref, name="rect({})".format(i))
 
-        # TWINS
-        # These 4 rectangles are referenced to each other, forming a chain
+        # Family
+        # These 5 rectangles are referenced to each other, forming a chain
         # The loop is broken by the fact that widget.move_at(widget.pos) does nothing
         r1 = DragableRectangle(self, pos=(0, "50%"), color=(100, 50, 25), size=(30, 30), name="r1")
         r2 = DragableRectangle(self, pos=(40, 0), pos_ref=r1, color=(50, 100, 25), size=(30, 30), name="r2")
-        r3 = DragableRectangle(self, pos=(0, 40), pos_ref=r2,  color=(100, 50, 25), size=(30, 30), name="r3")
-        r4 = DragableRectangle(self, pos=(-40, 0), pos_ref=r3, color=(50, 100, 25), size=(30, 30), name="r4")
-        r1.origin.config(pos=(0, -40), reference_comp=r4)
-        r0 = DragableRectangle(self, pos=("50%", "50%"), pos_ref=r1, color=(75, 75, 25), size=(40, 40))
-        r0.move_behind(r1)
+        r3 = DragableRectangle(self, pos=(0, 40), pos_ref=r2, color=(100, 50, 25), size=(30, 30), name="r3")
+        DragableRectangle(self, pos=(-40, 0), pos_ref=r3, color=(50, 100, 25), size=(30, 30), name="r4")
+        DragableRectangle(self, pos=("50%", "50%"), pos_ref=r1, color=(75, 75, 25), size=(40, 40))
 
         # CROSS
         c1 = Rectangle(self, color=(0, 0, 0), size=(6, 20),
@@ -109,8 +107,6 @@ class UT_Origin_Zone(Zone):
                 "the yellow center (yellow rect at the clock center) can be dragged",
                 "the belt follow the yellow center everywhere he goes",
                 "dragging the yellow center don't cause lag",
-                "the twins (brown and green rects at the application top) move together",
-                "the twins child (rect between the twins) is moved by the twins but it doesn't move them",
             ]
         )
 

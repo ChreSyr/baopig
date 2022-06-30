@@ -1,4 +1,3 @@
-
 from math import inf as math_inf
 from baopig.font.font import Font
 from baopig._lib import *
@@ -66,15 +65,18 @@ class _Line(Widget):
         self.__end = end
         self._text_with_end = self.text + end
         self._real_text = self.text + ('' if end == '\v' else end)
+
     _end = property(lambda self: self.__end, _set_end)
     end = property(lambda self: self.__end)
     font = property(lambda self: self._parent._font)
     line_index = property(lambda self: self._line_index)
     real_text = property(lambda self: self._real_text)
+
     def _set_text(self, text):
         self.__text = text
         self._text_with_end = text + self.end
         self._real_text = text + ('' if self.end == '\v' else self.end)
+
     _text = property(lambda self: self.__text, _set_text)
     text = property(lambda self: self.__text)
     text_with_end = property(lambda self: self._text_with_end)
@@ -113,9 +115,10 @@ class _Line(Widget):
                     def is_end_of_word(i):
                         if self.text[i] == ' ':
                             return True
-                        if self.text[i-1] == '-':
+                        if self.text[i - 1] == '-':
                             return True
                         return False
+
                     if not is_end_of_word(index):
                         continue
 
@@ -141,7 +144,7 @@ class _Line(Widget):
         if self.line_index == 0:
             return self
         i = self.line_index
-        while self.parent.lines[i-1].end != '\n':
+        while self.parent.lines[i - 1].end != '\n':
             i -= 1
         return self.parent.lines[i]
 
@@ -155,7 +158,7 @@ class _Line(Widget):
         line = self.get_first_line_of_paragraph()
         while line.end != '\n':
             yield line
-            line = self.parent.lines[line.line_index+1]
+            line = self.parent.lines[line.line_index + 1]
         yield line
 
     def get_paragraph_text(self):
@@ -179,12 +182,12 @@ class _Line(Widget):
 
         if index < 0:
             index = len(self.real_text) + index
-        if self.end != '\v' and index == len(self.real_text)-1:
-            if self.line_index == len(self.parent.lines)-1:
+        if self.end != '\v' and index == len(self.real_text) - 1:
+            if self.line_index == len(self.parent.lines) - 1:
                 return  # pop of end of text
             self.config(end='\v')
         else:
-            self.config(text=self.text[:index] + self.text[index+1:])
+            self.config(text=self.text[:index] + self.text[index + 1:])
 
     def config(self, text=None, end=None, called_by_constructor=False):
 
@@ -205,7 +208,7 @@ class _Line(Widget):
                 assert isinstance(text, str)
                 self._text = text
 
-            if self.end != '\n' and self.line_index == len(self.parent.lines)-1:
+            if self.end != '\n' and self.line_index == len(self.parent.lines) - 1:
                 raise PermissionError
 
             if called_by_constructor is False and len(tuple(self.get_paragraph())) > 0:
@@ -222,7 +225,7 @@ class _Line(Widget):
             if '\n' in self.text:
                 self.__class__(
                     parent=self.parent,
-                    text=self.text[self.text.index('\n')+1:],
+                    text=self.text[self.text.index('\n') + 1:],
                     line_index=self.line_index + .00001
                 )
                 self._text = self.text[:self.text.index('\n')]
@@ -243,7 +246,8 @@ class _Line(Widget):
                     else:
                         end = self.text[index_end]
                         sep = ' ' if end == ' ' else '\v'  # else, the word is of type 'smth-'
-                        if end == ' ': index_newline_start += 1
+                        if end == ' ':
+                            index_newline_start += 1
                     self.__class__(
                         parent=self.parent,
                         text=self.text[index_newline_start:],
@@ -284,13 +288,14 @@ class _SelectableLine(_Line):
         - A condition described in Selectable is verified
         - A cursor moves while Maj key is pressed
     """
-    
+
     def __init__(self, *args, **kwargs):
+
+        self._selection_ref = lambda: None  # needed during construction
 
         _Line.__init__(self, *args, **kwargs)
 
         self._is_selected = False
-        self._selection_ref = lambda: None
 
     is_selected = property(lambda self: self._is_selected)
     selection = property(lambda self: self._selection_ref())
@@ -303,7 +308,7 @@ class _SelectableLine(_Line):
             - start
             - end
             - rect (the surface between start and end)
-        These attributes are absolute referenced, wich means they are relative
+        These attributes are absolutely referenced, wich means they are relative
         to the application. Start and end attributes reffer to the start and end
         of the selection_rect, who will often be caused by a mouse link motion
         """
@@ -313,19 +318,19 @@ class _SelectableLine(_Line):
 
         if selection_rect.abs_rect.colliderect(collide_rect):
             self._is_selected = True
-            self.select()
+            self.handle_select()
         else:
             if not self.is_selected:
                 return
             self._is_selected = False
-            self.unselect()
+            self.handle_unselect()
 
     def get_selected_data(self):
         if self.selection is None:
             return ''
         return self.selection.get_data()
 
-    def select(self):
+    def handle_select(self):
 
         selection = self.selector.selection_rect
         if self.selection is None and not selection.w and not selection.h:
@@ -341,7 +346,8 @@ class _SelectableLine(_Line):
             start = 0
         else:
             start = len(self.text)
-            if self is not self.parent.lines[-1]: selecting_line_end = True
+            if self is not self.parent.lines[-1]:
+                selecting_line_end = True
 
         if self.abs.top <= selection.end[1] < self.abs.bottom:
             end = self.find_index(selection.end[0] - self.abs.left)
@@ -349,10 +355,15 @@ class _SelectableLine(_Line):
             end = 0
         else:
             end = len(self.text)
-            if self is not self.parent.lines[-1]: selecting_line_end = True
+            if self is not self.parent.lines[-1]:
+                selecting_line_end = True
 
         start, end = sorted((start, end))
         self.selection.config(start, end, selecting_line_end)
+
+    def handle_unselect(self):
+        if self.selection is not None:
+            self.selection.kill()
 
     def select_word(self, index):
         """
@@ -389,10 +400,6 @@ class _SelectableLine(_Line):
             else:
                 self.selector.end_selection((self.abs.left + self.find_pixel(index_end), self.abs.top), visible=False)
 
-    def unselect(self):
-        if self.selection is not None:
-            self.selection.kill()
-
 
 class _LineSelection(Rectangle):
     """
@@ -403,14 +410,14 @@ class _LineSelection(Rectangle):
     you are selecting the SelectableLine
     The size and the position of the LineSelection object change according to your mouse
 
-    When you double-click on a SelectableLine, it select a word
-    When you triple-click on a SelectableLine, it select the whole line text
+    When you double-click on a SelectableLine, it selects a word
+    When you triple-click on a SelectableLine, it selects the whole line text
     """
 
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
-        color = "theme-color-selection",
-        border_width = 0
+        color="theme-color-selection",
+        border_width=0
     )
 
     def __init__(self, line):
@@ -419,11 +426,11 @@ class _LineSelection(Rectangle):
 
         self._line_index = line.line_index
         Rectangle.__init__(self,
-            parent=line.parent,
-            pos=line.topleft,
-            size=(0, line.h),
-            name=line.name+" -> selection"
-        )
+                           parent=line.parent,
+                           pos=line.topleft,
+                           size=(0, line.h),
+                           name=line.name + " -> selection"
+                           )
 
         # self.is_selecting = False  # True if the user is pressing the mouse button for a selection
         self._index_start = self._index_end = 0
@@ -514,15 +521,12 @@ class _SelectableText(Selectable):
                 if line.abs.top <= mouse.y < line.abs.bottom:
                     line.select_word(line.find_mouse_index())
 
-    def unselect(self):
-        if self.is_selected:
-            for line in self.lines:
-                line.unselect()
-            self._is_selected = False
+    def handle_unselect(self):
+        for line in self.lines:
+            line.handle_unselect()
 
 
 class Text(Zone, _SelectableText):
-
     STYLE = Zone.STYLE.substyle()
     STYLE.modify(
         width=0,
@@ -550,7 +554,8 @@ class Text(Zone, _SelectableText):
     STYLE.set_type("align_mode", str)
     STYLE.set_constraint("font_height", lambda val: val > 0, "a text must have a positive font height")
     STYLE.set_constraint("font_file", lambda val: (val is None) or isinstance(val, str), "must be None or a string")
-    STYLE.set_constraint("align_mode", lambda val: val in ("left", "center", "right"), "must be 'left', 'center' or 'right'")
+    STYLE.set_constraint("align_mode", lambda val: val in ("left", "center", "right"),
+                         "must be 'left', 'center' or 'right'")
 
     def __init__(self, parent, text=None, selectable=True, **kwargs):
 
@@ -568,13 +573,13 @@ class Text(Zone, _SelectableText):
         if self._height_is_adaptable is None:
             self._height_is_adaptable = self.h == 0
             self.style.modify(height_is_adaptable=self._height_is_adaptable)
-        elif self._height_is_adaptable is False and  self.h == 0:
+        elif self._height_is_adaptable is False and self.h == 0:
             raise PermissionError("When 'height_is_adaptable' is set to False, 'height' must also be set")
         self._width_is_adaptable = self.style["width_is_adaptable"]
         if self._width_is_adaptable is None:
             self._width_is_adaptable = self.w == 0
             self.style.modify(width_is_adaptable=self._width_is_adaptable)
-        elif self._width_is_adaptable is False and  self.w == 0:
+        elif self._width_is_adaptable is False and self.w == 0:
             raise PermissionError("When 'width_is_adaptable' is set to False, 'width' must also be set")
 
         self._font = Font(self)
@@ -717,7 +722,7 @@ class Text(Zone, _SelectableText):
         text_index += char_index
         if text_index < 0: return 0, 0, 0
         if text_index > len(self.text):
-            return len(self.text), len(self.lines)-1, len(self.lines[-1].text)
+            return len(self.text), len(self.lines) - 1, len(self.lines[-1].text)
 
         if not 0 <= char_index <= len(self.lines[line_index].text):
             char_index = text_index
@@ -727,7 +732,8 @@ class Text(Zone, _SelectableText):
                     break
                 char_index -= len(line.real_text)
 
-        assert text_index == self.find_index(line_index, char_index), "{}, {}, {}".format(text_index, line_index, char_index)
+        assert text_index == self.find_index(line_index, char_index), "{}, {}, {}".format(text_index, line_index,
+                                                                                          char_index)
 
         return text_index, line_index, char_index
 
@@ -753,7 +759,8 @@ class Text(Zone, _SelectableText):
             assert char_index is None
             return self._find_indexes(pos=pos)
 
-        if text_index < 0: return 0, 0
+        if text_index < 0:
+            return 0, 0
         char_index = text_index
         for line_index, line in enumerate(self.lines):
             if char_index <= len(line.text):
@@ -795,6 +802,7 @@ class Text(Zone, _SelectableText):
 
     def get_text(self):
         return ''.join(line.real_text for line in self.lines)[:-1]  # Discard last \n
+
     text = property(get_text)
 
     def lock_text(self, locked=True):
@@ -810,7 +818,7 @@ class Text(Zone, _SelectableText):
         old_size = self.content_rect.size
         super().resize(w, h)
 
-        lines_width = max(l.w for l in self.lines) if self._width_is_adaptable else old_size[0]
+        lines_width = max(line.w for line in self.lines) if self._width_is_adaptable else old_size[0]
         if self.content_rect.w != lines_width:
             if self._width_is_adaptable:
                 self._width_is_adaptable = False
@@ -856,34 +864,22 @@ class Text(Zone, _SelectableText):
                     if self.font.height == 2:
                         raise ValueError(
                             f"This text is too long for the text area : {text} (area={self.content_rect}), {self.align_mode}, {self.width}")
-                    self.font.config(height=self.font.height - 1)  # changing the font will automatically update the text
+                    self.font.config(height=self.font.height - 1)  # changing the font automatically updates the text
 
 
 class DynamicText(Text, Runable):
 
-    def __init__(
-        self,
-        parent,
-        get_text,
-        **kwargs
-    ):
-
+    def __init__(self, parent, get_text, **kwargs):
         assert callable(get_text), get_text
 
-        Text.__init__(
-            self,
-            parent=parent,
-            text=str(get_text()),
-            **kwargs
-        )
+        Text.__init__(self, parent=parent, text=str(get_text()), **kwargs)
         Runable.__init__(self)
 
-        self.get_new_text = get_text
+        self._get_new_text = get_text
 
         self.start_running()
 
     def run(self):
-
-        new_text = str(self.get_new_text())
+        new_text = str(self._get_new_text())
         if new_text != self.text:
             self.set_text(new_text)

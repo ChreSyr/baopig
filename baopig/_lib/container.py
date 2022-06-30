@@ -30,6 +30,78 @@ class BoxRect(pygame.Rect):
             )
 
 
+class ChildrenList:
+    """
+    Class for an ordered list of children
+
+    Widgets are sort by overlay, you can access to children sorted by their
+    position with children.orderedbypos
+
+    For more efficiency, you can access all the Handler_SceneClose children of a Container
+    with Container.children.handlers_sceneclose
+    """
+
+    def __init__(self, owner):
+
+        assert isinstance(owner, Container)
+
+        self._owner = owner
+        self.asleep = set()
+        self.awake = set()
+        self.containers = set()
+        self.handlers_sceneclose = set()
+        self.handlers_sceneopen = set()
+        self._lists = {
+            Handler_SceneClose: self.handlers_sceneclose,
+            Handler_SceneOpen: self.handlers_sceneopen,
+            Container: self.containers,
+        }
+        self._strong_refs = set()
+
+    def _add(self, child):
+        """
+        This method should only be called by the Widget constructor
+        """
+
+        assert child.parent == self._owner
+        if child.is_asleep:
+            if child in self.asleep:
+                raise PermissionError(f"{child} already asleep in {self.asleep}")
+            self.asleep.add(child)
+            return
+
+        if child in self.awake:
+            raise PermissionError(f"{child} already in {self}")
+
+        self.awake.add(child)
+        self._strong_refs.add(child)
+        self._owner.layers_manager.add(child)
+        for children_class, children_set in self._lists.items():
+            if isinstance(child, children_class):
+                children_set.add(child)
+        if child.is_visible:
+            self._owner._warn_change(child.hitbox)
+
+    def _remove(self, child):
+
+        if child.is_asleep:
+            self.asleep.remove(child)
+        else:
+            self.awake.remove(child)
+            self._owner.layers_manager.remove(child)
+            for children_class, children_set in self._lists.items():
+                if isinstance(child, children_class):
+                    children_set.remove(child)
+            if child.is_visible:
+                self._owner._warn_change(child.hitbox)
+
+    def add(self, **kwargs):
+        raise PermissionError
+
+    def remove(self, **kwargs):
+        raise PermissionError
+
+
 class Container(ResizableWidget):
     """
     Abstract class for widgets who need to contain other widgets
@@ -58,98 +130,22 @@ class Container(ResizableWidget):
     # NOTE : if width or height is defined in style, and a background_image is set,
     # the width and height values will be ignored
 
-    def __init__(self, parent, size=None, **options):
-        """can be size=(50, 45) or width=50, height=45"""
+    def __init__(self, parent, *args, **options):
 
-        self.inherit_style(parent, options)
+        self._children = ChildrenList(self)  # needed in ResizableWidget.__init__
+        self._rect_to_update = None
 
-        if size is not None:
-            self.style.modify(width=size[0], height=size[1])
-        size = self.get_asked_size()
+        ResizableWidget.__init__(self, parent, *args, **options)
 
-        class ChildrenList:
-            """
-            Class for an ordered list of children
+        self._children_to_paint = WeakSet()  # a set cannot have two same occurences
 
-            Widgets are sort by overlay, you can access to children sorted by their
-            position with children.orderedbypos
-
-            For more efficiency, you can access all the Handler_SceneClose children of a Container
-            with Container.children.handlers_sceneclose
-            """
-
-            def __init__(children):
-
-                children.asleep = set()
-                children.awake = set()
-                children.containers = set()
-                children.handlers_sceneclose = set()
-                children.handlers_sceneopen = set()
-                children._lists = {
-                    Handler_SceneClose: children.handlers_sceneclose,
-                    Handler_SceneOpen: children.handlers_sceneopen,
-                    Container: children.containers,
-                }
-                children._strong_refs = set()
-
-            def _add(children, child):
-                """
-                This method should only be called by the Widget constructor
-                """
-
-                assert child.parent == self
-                if child.is_asleep:
-                    if child in children.asleep:
-                        raise PermissionError(f"{child} already asleep in {children.asleep}")
-                    children.asleep.add(child)
-                    return
-
-                if child in children.awake:
-                    raise PermissionError(f"{child} already in {children}")
-
-                children.awake.add(child)
-                children._strong_refs.add(child)
-                self.layers_manager.add(child)
-                for children_class, children_set in children._lists.items():
-                    if isinstance(child, children_class):
-                        children_set.add(child)
-                if child.is_visible:
-                    self._warn_change(child.hitbox)
-
-            def _remove(children, child):
-
-                if child.is_asleep:
-                    children.asleep.remove(child)
-                else:
-                    children.awake.remove(child)
-                    self.layers_manager.remove(child)
-                    for children_class, children_set in children._lists.items():
-                        if isinstance(child, children_class):
-                            children_set.remove(child)
-                    if child.is_visible:
-                        self._warn_change(child.hitbox)
-
-            def add(children, **kwargs):
-                raise PermissionError
-
-            def remove(children, **kwargs):
-                raise PermissionError
-        self._children = ChildrenList()
-
-        # Only layers can guarantie the overlay
+        # LAYERS - Only layers can guarantie the overlay
         layersmanager_class = LayersManager
         if "layersmanager_class" in options:
             layersmanager_class = options.pop("layersmanager_class")
             assert issubclass(layersmanager_class, LayersManager)
         self.layers_manager = layersmanager_class(self)
         self.layers = self.layers_manager.layers
-
-        self._children_to_paint = WeakSet()  # a set cannot have two same occurences
-        self._rects_to_update = None
-        self._rect_to_update = None
-
-        surf = pygame.Surface(size, pygame.SRCALPHA)
-        ResizableWidget.__init__(self, parent, surface=surf, **options)
 
         # Box attributes
         self._children_margins = self.style["children_margins"]
@@ -168,8 +164,6 @@ class Container(ResizableWidget):
         background_image = self.style["background_image"]
         if background_image is not None:
             self.set_background_image(background_image)
-
-        self.signal.RESIZE.connect(self.handle_resize, owner=None)
 
     all_children = property(lambda self: self._children.awake.union(self._children.asleep))
     asleep_children = property(lambda self: self._children.asleep)
@@ -252,8 +246,9 @@ class Container(ResizableWidget):
     def _flip_without_update(self):
         """Update all the surface, but don't prevent the parent"""
 
-        self._rect_to_update = pygame.Rect(self.auto)
-        self._update_rect()
+        with paint_lock:  # prevents self._rect_to_update changes during self._update_rect()
+            self._rect_to_update = pygame.Rect(self.auto)
+            self._update_rect()
 
     def _move(self, dx, dy):
 
@@ -381,7 +376,6 @@ class Container(ResizableWidget):
         assert child in self._children.awake
 
         child._memory.need_appear = child.is_visible
-        # self.children.asleep.add(child)
         self._children._remove(child)
         child.hide()
         child._is_asleep = True
@@ -393,6 +387,7 @@ class Container(ResizableWidget):
         if self.background_image is not None:
             self.background_image.resize(*self.size)
         self._content_rect = BoxRect(self.auto_rect, self.padding)
+        self._flip_without_update()
 
     def has_layer(self, layer_name):
         return layer_name in (layer.name for layer in self.layers)
@@ -410,7 +405,7 @@ class Container(ResizableWidget):
         if adapt:
             self.adapt(self.awake_children)
 
-    def paint(self, recursive=False, only_containers=True, with_update=True):
+    def paint(self, recursive=False, only_containers=True, with_update=True):  # TODO : find a way to remove these
 
         if recursive:
             for c in self._children.awake:
@@ -423,7 +418,7 @@ class Container(ResizableWidget):
         else:
             self._flip_without_update()
 
-    def resize(self, w, h):
+    def resize_TBR(self, w, h):
 
         if self.has_locked.width:
             w = self.w
@@ -472,7 +467,8 @@ class Container(ResizableWidget):
             if background_adapt is False:
                 self.resize(*self.background_image.size)
 
-    def set_surface(self, surface):
+    def set_surface_TBR(self, surface):
+        """WARNING : DO NOT CALL THIS FUNCTION"""  # TODO : write this warning in Container doc
 
         raise PermissionError("A Container manage its surface itself (it is the addition of its child surfaces)")
 

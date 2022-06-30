@@ -1,14 +1,11 @@
 
 
+import pygame
 from .widget import Widget
 
 
 class ResizableWidget(Widget):
-    """
-    Class for widgets who can be resized
-
-    resize() method must be implemented
-    """
+    """Class for widgets who can be resized"""
 
     STYLE = Widget.STYLE.substyle()
     STYLE.create(
@@ -16,13 +13,27 @@ class ResizableWidget(Widget):
         height=None,  # must be filled
     )
 
-    def _update_size(self):
+    def __init__(self, parent, size=None, **kwargs):
+        """NOTE : can be size=(50, 45) or width=50, height=45"""
 
-        self.resize(*self.get_asked_size())
+        self.inherit_style(parent, options=kwargs)
 
-    def get_asked_size(self):
+        if size is None:
+            self._asked_size = self.style["width"], self.style["height"]
+        else:
+            self._asked_size = size
 
-        size = (self.style["width"], self.style["height"])
+        if "surface" not in kwargs:
+            kwargs["surface"] = pygame.Surface(self._get_asked_size(), pygame.SRCALPHA)
+
+        Widget.__init__(self, parent, **kwargs)
+
+        self.signal.RESIZE.connect(self.handle_resize, owner=None)
+        self.origin.reference.signal.RESIZE.connect(self._update_size, owner=self)
+
+    def _get_asked_size(self):
+
+        size = self._asked_size
         with_percentage = False
         for coord in size:
             if isinstance(coord, str):
@@ -41,39 +52,37 @@ class ResizableWidget(Widget):
 
         return size
 
-    def inherit_style(self, theme, options=None, **kwargs):
+    def _update_size(self):
 
-        size = None
-        if options and "size" in options: size = options.pop("size")
-        if "size" in kwargs: size = kwargs.pop("size")
+        asked_size = self._asked_size
+        self.resize(*self._get_asked_size())
+        self._asked_size = asked_size
 
-        super().inherit_style(theme, options, **kwargs)
-
-        if size is not None:
-            self.style._setitem("width", size[0])
-            self.style._setitem("height", size[1])
+    def handle_resize(self):
+        """Stuff to do when the widget is resized"""
 
     def resize(self, w, h):
-        """
-        Here you set up your new component's surface
-        """
+        """Sets up the new component's surface"""
+
+        if self.has_locked.width:
+            raise PermissionError("Cannot resize : the width is locked")
+        if self.has_locked.height:
+            raise PermissionError("Cannot resize : the height is locked")
+        # if (w, h) == self._asked_size:
+        #     return
+
+        self._asked_size = w, h
+
+        asked_size = self._get_asked_size()
+        if asked_size == self.size:
+            return
+
+        self.set_surface(pygame.Surface(asked_size, pygame.SRCALPHA))
 
     def resize_height(self, h):
 
-        if h < 0: raise PermissionError
-        if h == self.h: return
-        self.style.modify(height=h)  # important for self.get_asked_size()
-        self.resize(self.w, h)
+        self.resize(self._asked_size[0], h)
 
     def resize_width(self, w):
 
-        if w < 0: raise PermissionError
-        if w == self.w: return
-        self.style.modify(width=w)  # important for self.get_asked_size()
-        self.resize(w, self.h)
-
-    h =      property(lambda self: self._rect.h)
-    height = property(lambda self: self._rect.height)
-    size =   property(lambda self: self._rect.size)
-    w =      property(lambda self: self._rect.w)
-    width =  property(lambda self: self._rect.width)
+        self.resize(w, self._asked_size[1])

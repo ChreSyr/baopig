@@ -213,12 +213,14 @@ class Slider(Container, Linkable, Hoverable):
         )
         self._update_val(x=x)
 
-    def resize(self, w, h):
-
-        super().resize(w, h)
+    def handle_resize(self):
 
         bar_margin = max(0, self.bloc.border_width - self.bar.border_width) * 2
         self.bar.resize_width(self.width - bar_margin)
+
+    def resize(self, w, h):
+
+        super().resize(w, h)
 
         # TODO : bloc.length, bloc.wideness
 

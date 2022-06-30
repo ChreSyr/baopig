@@ -27,6 +27,7 @@ class MetaUndefinedType(type):
 
 class UndefinedType(metaclass=MetaUndefinedType):
     """This class is used for undefined style types, since isinstance(obj, UndefinedType) -> True"""
+
     def __init__(self):
         raise PermissionError("This class should never be instanciated")
 
@@ -61,17 +62,11 @@ class _Origin:
         self._asked_pos = owner.style["pos"]
         self._from_hitbox = owner.style["pos_from_ref_hitbox"]
         self._location = owner.style["pos_location"]
-        try:
-            self._has_adaptable_size = isinstance(self.owner.style["width"], str) or isinstance(self.owner.style["height"], str)
-        except KeyError:
-            self._has_adaptable_size = False
         # We need to initialize reference before config
         reference = owner.style["pos_ref"]
         if reference is None: reference = owner.parent
         self._reference_ref = reference.get_weakref()
         self.reference.signal.RESIZE.connect(self._weak_update_owner_pos, owner=self.owner)
-        if self._has_adaptable_size:
-            self.reference.signal.RESIZE.connect(self.owner._update_size, owner=self.owner)
         if self.reference != owner.parent:
             self.reference.signal.MOTION.connect(self._weak_update_owner_pos, owner=self.owner)
         self._reference_location = owner.style["pos_ref_location"]
@@ -79,7 +74,7 @@ class _Origin:
     def __str__(self):
         return "Origin(asked_pos={}, location={}, reference={}, reference_location={}, from_hitbox={}, " \
                "is_locked={})".format(self.asked_pos, self.location, self.reference,
-                         self.reference_location, self.from_hitbox, self.owner.has_locked.origin)
+                                      self.reference_location, self.from_hitbox, self.owner.has_locked.origin)
 
     asked_pos = property(lambda self: self._asked_pos)
     from_hitbox = property(lambda self: self._from_hitbox)
@@ -140,8 +135,7 @@ class _Origin:
         except ValueError:
             raise TypeError("Wrong position value : {} (see documentation above)".format(coord))
 
-    def config(self, pos=None, location=None, reference_comp=None, reference_location=None,
-               from_hitbox=None, locked=None):
+    def config(self, pos=None, location=None, reference_location=None, from_hitbox=None, locked=None):
 
         if locked is False:
             self.owner.has_locked.origin = False
@@ -151,25 +145,6 @@ class _Origin:
 
         if location is not None:
             self._location = WidgetLocation(location)
-
-        if reference_comp is not None and reference_comp is not self.reference:
-            assert isinstance(reference_comp, Widget)
-            try:
-                for signal in (self.reference.signal.MOTION, self.reference.signal.RESIZE):
-                    try:
-                        signal.disconnect(self._weak_update_owner_pos)
-                    except ValueError: pass  # first config, signal isn't connect yet
-                if self._has_adaptable_size:
-                    try:
-                        self.reference.signal.RESIZE.disconnect(self.owner._update_size)
-                    except ValueError: pass  # first config, signal isn't connect yet
-            except AttributeError: pass  # old reference got killed, self.reference = None
-            self._reference_ref = reference_comp.get_weakref()
-            self.reference.signal.RESIZE.connect(self._weak_update_owner_pos, owner=self.owner)
-            if self.reference != self.owner.parent:
-                self.reference.signal.MOTION.connect(self._weak_update_owner_pos, owner=self.owner)
-            if self._has_adaptable_size:
-                self.reference.signal.RESIZE.connect(self.owner._update_size, owner=self.owner)
 
         if reference_location is not None:
             self._reference_location = WidgetLocation(reference_location)
@@ -235,6 +210,7 @@ class _Origin:
                 )
 
         return tuple(pos)
+
     pos = property(get_pos_relative_to_owner_parent)
 
     def lock(self):
@@ -251,7 +227,6 @@ class _Window(tuple):
 
 
 class WidgetLocation(str):
-
     ACCEPTED = ("topleft", "midtop", "topright",
                 "midleft", "center", "midright",
                 "bottomleft", "midbottom", "bottomright")
@@ -283,14 +258,12 @@ class ProtectedHitbox(pygame.Rect):
         object.__setattr__(self, "_mask", None)
 
     def __setattr__(self, *args):
-
         raise PermissionError
 
     pos = property(lambda self: tuple(self[:2]))
     lpos = property(lambda self: self[:2], doc="A list containing the rect topleft")
 
     def clamp_ip(self, rect):
-
         raise self.ERR
 
     def colliderect(self, rect):
@@ -298,11 +271,9 @@ class ProtectedHitbox(pygame.Rect):
         return super().colliderect(rect)
 
     def inflate_ip(self, x, y):
-
         raise self.ERR
 
     def move_ip(self, x, y):
-
         raise self.ERR
 
     def referencing(self, pos):
@@ -322,11 +293,9 @@ class ProtectedHitbox(pygame.Rect):
         raise PermissionError("not implemented yet")
 
     def union_ip(self, rect):
-
         raise self.ERR
 
     def unionall_ip(self, rect_sequence):
-
         raise self.ERR
 
 
@@ -336,7 +305,6 @@ class HasProtectedHitbox:
     """
 
     def __init__(self):
-
         """
         rect is the surface hitbox, relative to the parent
         abs_rect is the rect relative to the application (also called 'abs')
@@ -348,15 +316,6 @@ class HasProtectedHitbox:
         auto_hitbox is the hitbox relative to the component itself
         """
 
-        size = self.surface.get_size()
-        self._rect = ProtectedHitbox((0, 0), size)
-        self._abs_rect = ProtectedHitbox((0, 0), size)
-        self._auto_rect = ProtectedHitbox((0, 0), size)
-        self._window = None
-        self._hitbox = ProtectedHitbox((0, 0), size)
-        self._abs_hitbox = ProtectedHitbox((0, 0), size)
-        self._auto_hitbox = ProtectedHitbox((0, 0), size)
-
         """
         MOTION is emitted when the absolute position of the component.rect moves
         It sends two parameters : dx and dy
@@ -367,19 +326,6 @@ class HasProtectedHitbox:
         NOTE : an hitbox cannot move and be resized in the same time
         """
         self.create_signal("MOTION")
-
-        """
-        A margin is a defined rectangle around the component's surface
-        A margin have left, top, right and bottom attributes, they are the amount of
-        space required between the hitbox sides and the surface
-        The hitbox contain the margin, so it is occasionnaly bigger than surface
-        """
-        self._margin_TBR = Object(
-            left=0,
-            top=0,
-            right=0,
-            bottom=0,
-        )
 
         """
         Change a surface via set_surface(...) is the only way to change a cmponent size
@@ -402,68 +348,82 @@ class HasProtectedHitbox:
         # This will initialize the rects and hiboxes
         self._origin = _Origin(owner=self)
 
-        new = self.origin.pos
-        old = getattr(self.rect, self.origin.location)
-        self._move(new[0] - old[0], new[1] - old[1])
+        size = self.surface.get_size()
+        self._rect = ProtectedHitbox((0, 0), size)
+        self._abs_rect = ProtectedHitbox((0, 0), size)
+        self._auto_rect = ProtectedHitbox((0, 0), size)
+        self._window = None
+        self._hitbox = ProtectedHitbox((0, 0), size)
+        self._abs_hitbox = ProtectedHitbox((0, 0), size)
+        self._auto_hitbox = ProtectedHitbox((0, 0), size)
 
+        # SETUP
+        pygame.Rect.__setattr__(self.rect, self.origin.location, self.origin.pos)
+        pygame.Rect.__setattr__(self.abs_rect, "topleft",
+                                (self.parent.abs.left + self.left, self.parent.abs.top + self.top))
+        pygame.Rect.__setattr__(self.hitbox, "topleft", self.topleft)
+        pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs.topleft)
 
     # GETTERS ON PROTECTED FIELDS
-    margin_TBR =            property(lambda self: self._margin)
-    origin =            property(lambda self: self._origin)
+    origin = property(lambda self: self._origin)
 
     # HITBOX
-    rect =              property(lambda self: self._rect)
-    abs = abs_rect =    property(lambda self: self._abs_rect)
-    auto = auto_rect =  property(lambda self: self._auto_rect)
-    window =            property(lambda self: self._window)
-    hitbox =            property(lambda self: self._hitbox)
-    abs_hitbox =        property(lambda self: self._abs_hitbox)
-    auto_hitbox =       property(lambda self: self._auto_hitbox)
+    rect = property(lambda self: self._rect)
+    abs = abs_rect = property(lambda self: self._abs_rect)
+    auto = auto_rect = property(lambda self: self._auto_rect)
+    window = property(lambda self: self._window)
+    hitbox = property(lambda self: self._hitbox)
+    abs_hitbox = property(lambda self: self._abs_hitbox)
+    auto_hitbox = property(lambda self: self._auto_hitbox)
 
-    bottom =            property(lambda self: self._rect.bottom,        lambda self, v: self.move_at(v, "bottom"))
-    bottomleft =        property(lambda self: self._rect.bottomleft,    lambda self, v: self.move_at(v, "bottomleft"))
-    bottomright =       property(lambda self: self._rect.bottomright,   lambda self, v: self.move_at(v, "bottomright"))
-    center =            property(lambda self: self._rect.center,        lambda self, v: self.move_at(v, "center"))
-    centerx =           property(lambda self: self._rect.centerx,       lambda self, v: self.move_at(v, "centerx"))
-    centery =           property(lambda self: self._rect.centery,       lambda self, v: self.move_at(v, "centery"))
-    left =              property(lambda self: self._rect.left,          lambda self, v: self.move_at(v, "left"))
-    midbottom =         property(lambda self: self._rect.midbottom,     lambda self, v: self.move_at(v, "midbottom"))
-    midleft =           property(lambda self: self._rect.midleft,       lambda self, v: self.move_at(v, "midleft"))
-    midright =          property(lambda self: self._rect.midright,      lambda self, v: self.move_at(v, "midright"))
-    midtop =            property(lambda self: self._rect.midtop,        lambda self, v: self.move_at(v, "midtop"))
-    pos = topleft =     property(lambda self: self._rect.topleft,       lambda self, v: self.move_at(v, "topleft"))
-    right =             property(lambda self: self._rect.right,         lambda self, v: self.move_at(v, "right"))
-    top =               property(lambda self: self._rect.top,           lambda self, v: self.move_at(v, "top"))
-    topright =          property(lambda self: self._rect.topright,      lambda self, v: self.move_at(v, "topright"))
-    x =                 property(lambda self: self._rect.x,             lambda self, v: self.move_at(v, "x"))
-    y =                 property(lambda self: self._rect.y,             lambda self, v: self.move_at(v, "y"))
+    bottom = property(lambda self: self._rect.bottom, lambda self, v: self.move_at(v, "bottom"))
+    bottomleft = property(lambda self: self._rect.bottomleft, lambda self, v: self.move_at(v, "bottomleft"))
+    bottomright = property(lambda self: self._rect.bottomright, lambda self, v: self.move_at(v, "bottomright"))
+    center = property(lambda self: self._rect.center, lambda self, v: self.move_at(v, "center"))
+    centerx = property(lambda self: self._rect.centerx, lambda self, v: self.move_at(v, "centerx"))
+    centery = property(lambda self: self._rect.centery, lambda self, v: self.move_at(v, "centery"))
+    left = property(lambda self: self._rect.left, lambda self, v: self.move_at(v, "left"))
+    midbottom = property(lambda self: self._rect.midbottom, lambda self, v: self.move_at(v, "midbottom"))
+    midleft = property(lambda self: self._rect.midleft, lambda self, v: self.move_at(v, "midleft"))
+    midright = property(lambda self: self._rect.midright, lambda self, v: self.move_at(v, "midright"))
+    midtop = property(lambda self: self._rect.midtop, lambda self, v: self.move_at(v, "midtop"))
+    pos = topleft = property(lambda self: self._rect.topleft, lambda self, v: self.move_at(v, "topleft"))
+    right = property(lambda self: self._rect.right, lambda self, v: self.move_at(v, "right"))
+    top = property(lambda self: self._rect.top, lambda self, v: self.move_at(v, "top"))
+    topright = property(lambda self: self._rect.topright, lambda self, v: self.move_at(v, "topright"))
+    x = property(lambda self: self._rect.x, lambda self, v: self.move_at(v, "x"))
+    y = property(lambda self: self._rect.y, lambda self, v: self.move_at(v, "y"))
 
-    h =                 property(lambda self: self._rect.h)
-    height =            property(lambda self: self._rect.height)
-    size =              property(lambda self: self._rect.size)
-    w =                 property(lambda self: self._rect.w)
-    width =             property(lambda self: self._rect.width)
+    h = property(lambda self: self._rect.h)
+    height = property(lambda self: self._rect.height)
+    size = property(lambda self: self._rect.size)
+    w = property(lambda self: self._rect.w)
+    width = property(lambda self: self._rect.width)
 
     def _move(self, dx, dy):
 
         old_hitbox = tuple(self.hitbox)
         with paint_lock:
 
-            pygame.Rect.__setattr__(self.rect, "left", self.rect.left+dx)
-            pygame.Rect.__setattr__(self.rect, "top", self.rect.top+dy)
-            pygame.Rect.__setattr__(self.abs_rect, "topleft", (self.parent.abs.left + self.left, self.parent.abs.top + self.top))
+            pygame.Rect.__setattr__(self.rect, "left", self.rect.left + dx)
+            pygame.Rect.__setattr__(self.rect, "top", self.rect.top + dy)
+            pygame.Rect.__setattr__(self.abs_rect, "topleft",
+                                    (self.parent.abs.left + self.left, self.parent.abs.top + self.top))
 
             if self.window is not None:
 
                 if self.window.follow_movements:
                     self._window = _Window((self.window[0] + dx, self.window[1] + dy) + self.window[2:])
                     self.window.follow_movements = True
-                    pygame.Rect.__setattr__(self.hitbox, "topleft", (self.hitbox.left+dx, self.hitbox.top+dy))
-                    pygame.Rect.__setattr__(self.abs_hitbox, "topleft", (self.abs_hitbox.left+dx, self.abs_hitbox.top+dy))
+                    pygame.Rect.__setattr__(self.hitbox, "topleft", (self.hitbox.left + dx, self.hitbox.top + dy))
+                    pygame.Rect.__setattr__(self.abs_hitbox, "topleft",
+                                            (self.abs_hitbox.left + dx, self.abs_hitbox.top + dy))
                 else:
                     self._hitbox = ProtectedHitbox(self.rect.clip(self.window))
-                    pygame.Rect.__setattr__(self.abs_hitbox, "topleft", (self.parent.abs.left + self.hitbox.left, self.parent.abs.top + self.hitbox.top))
-                    pygame.Rect.__setattr__(self.auto_hitbox, "topleft", (self.hitbox.left - self.rect.left, self.hitbox.top - self.rect.top))
+                    pygame.Rect.__setattr__(self.abs_hitbox, "topleft", (
+                        self.parent.abs.left + self.hitbox.left, self.parent.abs.top + self.hitbox.top))
+                    pygame.Rect.__setattr__(self.auto_hitbox, "topleft",
+                                            (self.hitbox.left - self.rect.left, self.hitbox.top - self.rect.top))
                     if old_hitbox[2:] != self.hitbox.size:
                         pygame.Rect.__setattr__(self.abs_hitbox, "size", self.hitbox.size)
                         pygame.Rect.__setattr__(self.auto_hitbox, "size", self.hitbox.size)
@@ -486,10 +446,10 @@ class HasProtectedHitbox:
         new_pos = getattr(self.rect, self.origin.location)
         if self.has_locked.origin:
             self.origin.unlock()
-            self._move(dx=old_pos[0]-new_pos[0], dy=old_pos[1]-new_pos[1])
+            self._move(dx=old_pos[0] - new_pos[0], dy=old_pos[1] - new_pos[1])
             self.origin.lock()
         else:
-            self._move(dx=old_pos[0]-new_pos[0], dy=old_pos[1]-new_pos[1])
+            self._move(dx=old_pos[0] - new_pos[0], dy=old_pos[1] - new_pos[1])
 
     def can_be_resized_at(self, size):
 
@@ -533,8 +493,10 @@ class HasProtectedHitbox:
 
     def move_at(self, value, key="topleft"):
 
-        accepted = ("x", "y", "centerx", "centery", "top", "bottom", "left", "right", "topleft", "midtop", "topright", "midleft",
-                       "center", "midright", "bottomleft", "midbottom", "bottomright")
+        accepted = (
+            "x", "y", "centerx", "centery", "top", "bottom", "left", "right", "topleft", "midtop", "topright",
+            "midleft",
+            "center", "midright", "bottomleft", "midbottom", "bottomright")
         assert key in accepted, f"key '{key}' is not a valid rect position (one of {accepted})"
 
         if self.has_locked.origin:
@@ -573,7 +535,7 @@ class HasProtectedHitbox:
 
         if window is not None:
             if window == self.window: return
-            assert is_typed_iterable(window, int, 4) or isinstance(window, pygame.Rect),\
+            assert is_typed_iterable(window, int, 4) or isinstance(window, pygame.Rect), \
                 "Wrong recstyle object : {}".format(window)
             self._window = _Window(window)
             if follow_movements is not None:
@@ -582,9 +544,11 @@ class HasProtectedHitbox:
             old_pos = self.hitbox.topleft
             old_size = self.hitbox.size
             self._hitbox = ProtectedHitbox(self.rect.clip(self.window))
-            pygame.Rect.__setattr__(self.abs_hitbox, "topleft", (self.parent.abs.left + self.hitbox.left, self.parent.abs.top + self.hitbox.top))
+            pygame.Rect.__setattr__(self.abs_hitbox, "topleft",
+                                    (self.parent.abs.left + self.hitbox.left, self.parent.abs.top + self.hitbox.top))
             # NOTE : should auto_hitbox.topleft be (0, 0) or the difference between self.pos and self.window.topleft ?
-            pygame.Rect.__setattr__(self.auto_hitbox, "topleft", (self.hitbox.left - self.rect.left, self.hitbox.top - self.rect.top))
+            pygame.Rect.__setattr__(self.auto_hitbox, "topleft",
+                                    (self.hitbox.left - self.rect.left, self.hitbox.top - self.rect.top))
             pygame.Rect.__setattr__(self.abs_hitbox, "size", self.hitbox.size)
             pygame.Rect.__setattr__(self.auto_hitbox, "size", self.hitbox.size)
 
@@ -641,7 +605,7 @@ class HasProtectedSurface:
         self._surface = surface
         self.create_signal("NEW_SURF")
 
-    surface =            property(lambda self: self._surface)
+    surface = property(lambda self: self._surface)
 
     def _set_surface(self, surface):
 
@@ -663,10 +627,12 @@ class HasProtectedSurface:
         assert isinstance(surface, pygame.Surface), surface
 
         if self.has_locked.height and self.rect.height != surface.get_height():
-            raise PermissionError("Wrong surface : {} (this component's surface height is locked at {})".format(surface, self.h))
+            raise PermissionError(
+                "Wrong surface : {} (this component's surface height is locked at {})".format(surface, self.h))
 
         if self.has_locked.width and self.rect.width != surface.get_width():
-            raise PermissionError("Wrong surface : {} (this component's surface width is locked at {})".format(surface, self.w))
+            raise PermissionError(
+                "Wrong surface : {} (this component's surface width is locked at {})".format(surface, self.w))
 
         with paint_lock:
             if self.rect.size != surface.get_size():
@@ -706,11 +672,11 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
     """
     STYLE = StyleClass()
     STYLE.create(
-        pos = (0, 0),
-        pos_location = "topleft",
-        pos_ref = None,  # default is parent
-        pos_ref_location = "topleft",
-        pos_from_ref_hitbox = False,
+        pos=(0, 0),
+        pos_location="topleft",
+        pos_ref=None,  # default is parent
+        pos_ref_location="topleft",
+        pos_from_ref_hitbox=False,
     )
     STYLE.set_type("pos_location", WidgetLocation)
     STYLE.set_type("pos_ref_location", WidgetLocation)
@@ -737,7 +703,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
 
         HasStyle.__init__(self, theme)
 
-        if "style" in options:
+        if "style" in options:  # TODO : why ???
             style = options.pop("style")
             if style:
                 self.style.modify(**style)
@@ -852,15 +818,15 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
         if "sticky" in options:
             self._sticky = WidgetLocation(options.pop("sticky"))
             self.style.modify(
-                pos_location = self._sticky,
-                pos_ref_location = self._sticky
+                pos_location=self._sticky,
+                pos_ref_location=self._sticky
             )
-        if "pos_location" in options:
-            self.style.modify(pos_location = options.pop("pos_location"))
+        if "pos_location" in options:  # TODO : did inherit_style made this useless ?
+            self.style.modify(pos_location=options.pop("pos_location"))
         if "pos_ref" in options:
-            self.style.modify(pos_ref = options.pop("pos_ref"))
+            self.style.modify(pos_ref=options.pop("pos_ref"))
         if "pos_ref_location" in options:
-            self.style.modify(pos_ref_location = options.pop("pos_ref_location"))
+            self.style.modify(pos_ref_location=options.pop("pos_ref_location"))
 
         # TODO : center=(34, 45) instead of pos=(34, 45), pos_location="center"
 
@@ -894,11 +860,14 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
 
         def paint_decorator(widget, paint):
             functools.wraps(paint)
+
             def wrapped_func(*args, **kwargs):
                 res = paint(*args, **kwargs)
                 widget.parent._warn_change(widget.hitbox)
                 return res
+
             return wrapped_func
+
         self.paint = paint_decorator(self, self.paint)
 
     def __repr__(self):
@@ -921,21 +890,21 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
 
     # GETTERS ON PROTECTED FIELDS
     app = application = property(lambda self: self._app)  # TODO : remove application ?
-    col =               property(lambda self: self._col)
-    dirty =             property(lambda self: self._dirty)
-    has_locked =        property(lambda self: self._has_locked)
-    is_alive =          property(lambda self: self._weakref._comp is not None)
-    is_asleep =         property(lambda self: self._is_asleep)
-    is_awake =          property(lambda self: not self._is_asleep)
-    is_dead =           property(lambda self: self._weakref._comp is None)
-    is_hidden =         property(lambda self: not self._is_visible)
-    is_visible =        property(lambda self: self._is_visible)
-    layer =             property(lambda self: self._layer)
-    name =              property(lambda self: self._name)
-    parent =            property(lambda self: self._parent)
-    row =               property(lambda self: self._row)
-    scene =             property(lambda self: self.__scene)
-    sticky =            property(lambda self: self._sticky)
+    col = property(lambda self: self._col)
+    dirty = property(lambda self: self._dirty)
+    has_locked = property(lambda self: self._has_locked)
+    is_alive = property(lambda self: self._weakref._comp is not None)
+    is_asleep = property(lambda self: self._is_asleep)
+    is_awake = property(lambda self: not self._is_asleep)
+    is_dead = property(lambda self: self._weakref._comp is None)
+    is_hidden = property(lambda self: not self._is_visible)
+    is_visible = property(lambda self: self._is_visible)
+    layer = property(lambda self: self._layer)
+    name = property(lambda self: self._name)
+    parent = property(lambda self: self._parent)
+    row = property(lambda self: self._row)
+    scene = property(lambda self: self.__scene)
+    sticky = property(lambda self: self._sticky)
 
     def copy(self):
         """
@@ -1019,6 +988,14 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
         If you use send_paint_request(), this method will be called when the next frame is rendered
         In fact, you can use paint() at any moment, but it is more efficient
         to update it through send_paint_request() if it is changing very often
+
+        WARNING : never call this method without paint_lock
+
+        Example:
+            import baopig
+            ...
+            with baopig.paint_lock:
+                my_widget.paint()
         """
 
     def send_paint_request(self):
@@ -1048,8 +1025,10 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
 
     def set_visibility(self, visible):
 
-        if visible: self.show()
-        else:       self.hide()
+        if visible:
+            self.show()
+        else:
+            self.hide()
 
     def show(self):
         """
@@ -1099,4 +1078,3 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
     def wake(self):
 
         self.parent.wake_child(self)
-

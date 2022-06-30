@@ -9,7 +9,7 @@ class UT_LayerPack_Zone(Zone):
 
         Zone.__init__(self, *args, **kwargs)
 
-        classiclayer_tester = Zone(self, ("100%", "50%"), name="classiclayer_tester")
+        classiclayer_tester = Zone(self, size=("100%", "50%"), name="classiclayer_tester")
         safe_layer = Layer(classiclayer_tester, Button, name="safe_layer")
         self.package = Zone(classiclayer_tester, padding=10, children_margins=5, pos=(0, 35), size=(300, 300),
                             background_color=(90, 90, 80))

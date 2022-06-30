@@ -1,5 +1,6 @@
+
 import pygame
-from baopig._lib import Rectangle, Color
+from baopig._lib import Rectangle, Color, paint_lock
 from .slider import Slider, SliderBar, SliderBloc
 from .text import Text
 from .numentry import NumEntry
@@ -85,7 +86,10 @@ class ColorSlider(Slider):
             return self.bloc.paint()
         self.color = self.parent.color.copy()
         self._update_val(getattr(self.parent.color, self.attr))
-        self.paint(recursive=True, only_containers=False)
+        with paint_lock:
+            self.bloc.paint()
+            self.bar.paint()
+            self.paint()
 
 
 class ColorEntry(NumEntry):

@@ -3,6 +3,7 @@ from baopig.pybao.issomething import is_point
 from baopig.io import keyboard
 from .utilities import Linkable, paint_lock
 from .layer import Layer
+from .widget import Widget
 from .shapes import Rectangle
 from .container import Container
 
@@ -29,9 +30,11 @@ class Selectable:
 
     def __init__(self):
 
+        assert isinstance(self, Widget)
+
         self._is_selected = False
 
-        selector = self.parent
+        selector = self.parent  # TODO self & remove 3 lines in TextEdit.__init__
         while not isinstance(selector, Selector):
             selector = selector.parent
         self._selector_ref = selector.get_weakref()
@@ -39,9 +42,9 @@ class Selectable:
         assert self not in self.selector.selectables
         self.selector.selectables.add(self)
 
-        self.signal.NEW_SURF.connect(self.unselect, owner=self)
-        self.signal.MOTION.connect(self.unselect, owner=self)
-        self.signal.HIDE.connect(self.unselect, owner=self)
+        self.signal.NEW_SURF.connect(self.handle_unselect, owner=self)
+        self.signal.MOTION.connect(self.handle_unselect, owner=self)
+        self.signal.HIDE.connect(self.handle_unselect, owner=self)
         self.signal.KILL.connect(lambda: self.selector.selectables.remove(self), owner=self)
 
     is_selected = property(lambda self: self._is_selected)
@@ -62,24 +65,24 @@ class Selectable:
         assert self.is_alive
         if self.abs_hitbox.colliderect(selection_rect.abs_hitbox):
             self._is_selected = True
-            self.select()
+            self.handle_select()
         else:
             if not self.is_selected:
                 return
             self._is_selected = False
-            self.unselect()
+            self.handle_unselect()
 
     def get_selected_data(self):
 
         if self.is_selected:
             return self
 
-    def select(self):
+    def handle_select(self):
         """
         Called each time the selection rect move and collide with this Selectable
         """
 
-    def unselect(self):
+    def handle_unselect(self):
         """
         Called when the selection rect don't collide anymore with this Selectable
         """
@@ -92,20 +95,19 @@ class DefaultSelectionRect(Rectangle):
 
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
-        color = "theme-color-selection_rect",
-        border_color = "theme-color-selection_rect_border",
-        border_width = 1,
+        color="theme-color-selection_rect",
+        border_color="theme-color-selection_rect_border",
+        border_width=1,
     )
 
     def __init__(self, parent, start, end):
-
         Rectangle.__init__(
             self,
             parent=parent,
             pos=(0, 0),
             size=(0, 0),
             layer=parent.selectionrect_layer,
-            name=parent.name+".selection_rect"
+            name=parent.name + ".selection_rect"
         )
         self.start = None
         self.end = None
@@ -120,15 +122,12 @@ class DefaultSelectionRect(Rectangle):
         assert self.start is not None
         assert is_point(abs_pos)
         self.end = abs_pos
-        left = min((self.start[0], self.end[0]))
-        top = min((self.start[1], self.end[1]))
         rect = pygame.Rect(self.start,
                            (self.end[0] - self.start[0],
                             self.end[1] - self.start[1]))
         rect.normalize()
-        # rect = self.parent.abs_hitbox.clip(rect)
         self.move_at(self.reference(rect.topleft))
-        self.resize(rect.w+1, rect.h+1)  # the selection_rect rect collide with mouse.pos
+        self.resize(rect.w + 1, rect.h + 1)  # the selection_rect rect collide with mouse.pos
         self.clip(self.parent.auto_hitbox)
 
     def set_start(self, abs_pos):
@@ -167,6 +166,7 @@ class Selector(Linkable):
         for comp in self.selectables:
             if comp.is_selected:
                 yield comp
+
     _iselected = property(_get_iselected)
     is_selecting = property(lambda self: self._selection_rect_ref() is not None)
     selection_rect = property(lambda self: self._selection_rect_ref())
@@ -180,8 +180,8 @@ class Selector(Linkable):
         self.selection_rect.kill()
         for selectable in self._iselected:
             if not selectable.is_selected: continue
-            selectable.unselect()
             selectable._is_selected = False
+            selectable.handle_unselect()
 
     def enable_selecting(self, can_select=True):
         """
@@ -208,8 +208,10 @@ class Selector(Linkable):
         if not self._can_select: return
         assert self.selection_rect is not None
         if abs_pos == self.selection_rect.end: return
-        if visible is not None: self.selection_rect.set_visibility(visible)
-        else:                   self.selection_rect.set_visibility(self._selectionrect_visibility)
+        if visible is not None:
+            self.selection_rect.set_visibility(visible)
+        else:
+            self.selection_rect.set_visibility(self._selectionrect_visibility)
         self.selection_rect.set_end((abs_pos[0], abs_pos[1]))
         for selectable in self.selectables:
             selectable.check_select(self.selection_rect)
@@ -254,10 +256,10 @@ class Selector(Linkable):
 
     def handle_link(self):
 
-        self.close_selection()  # only usefull at link while focused
+        self.close_selection()  # only usefull at link while already focused
         for s in self.selectables:
             if hasattr(s, "handle_selector_link"):
-                s.handle_selector_link()
+                s.handle_selector_link()  # double & triple clicks on text
 
     def handle_link_motion(self, link_motion_event):
         with paint_lock:

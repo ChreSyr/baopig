@@ -374,8 +374,8 @@ class GridLayer(Layer):
             else:
                 pos = self.get_cell_rect(comp.row, comp.col)[:2]
                 loc = "topleft"
-            comp.origin.config(pos=pos, location=loc, reference_comp=self.container,
-                               reference_location="topleft", locked=True)
+            assert comp.origin.reference is self.container
+            comp.origin.config(pos=pos, location=loc, reference_location="topleft", locked=True)
             if new_h or new_w or len(row) == 1 or len(col) == 1:
                 self.pack()
 
@@ -390,13 +390,13 @@ class GridLayer(Layer):
         except Exception as e:
             raise e
 
-    def move(self, widget, col, row):
+    def move(self, widget, col, row):  # TODO : invert col & row
 
         assert widget in self
         if self._data[row][col] is not None:
             if self._data[row][col] is widget:
                 return
-            raise PermissionError("This cell is already occupied by : "+str(self._data[row][col]))
+            raise PermissionError("This cell is already occupied by : " + str(self._data[row][col]))
 
         self._data[widget.row][widget.col] = None
         self._data[row][col] = widget

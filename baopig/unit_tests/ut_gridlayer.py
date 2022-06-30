@@ -34,11 +34,10 @@ class UT_GridLayer_Zone(Zone):
             def __init__(self, **kwargs):
                 Rectangle.__init__(self, **kwargs)
                 Dragable.__init__(self)
-        r = DragableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30))
+        DragableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30))
         Text(z2, "HI", col=6, row=0)
         Text(z2, "HI", col=7, row=1)
-        r = DragableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30), col=8, row=2)
-        Button(z2, "Update sizes", command=z2.grid._update_size, col=0, row=3)
+        DragableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30), col=8, row=2)
 
         # Z3
         grid = GridLayer(z3, nbrows=5, nbcols=10)
@@ -98,7 +97,10 @@ class UT_GridLayer_Zone(Zone):
         def click():
             from baopig._lib.widget import WidgetLocation
             for w in grid4:
-                w._sticky = WidgetLocation(mouse.hovered_comp.text_widget.text)
+                # sticky = mouse.hovered_comp.text_widget.text
+                # w.origin.unlock()
+                # w.origin.config(sticky=sticky, locked=True)
+                w._sticky = WidgetLocation(mouse.hovered_comp.text_widget.text)  # TODO : origin.config(sticky=...)
             grid4.pack()
         Button(z4, row=0, col=0, command=click, text="topleft")
         Button(z4, row=1, col=0, command=click, text="midleft")

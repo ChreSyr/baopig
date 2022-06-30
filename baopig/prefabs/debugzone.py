@@ -188,17 +188,10 @@ class DebugZone(Zone, Handler_SceneClose):
             if self._pointed == pointed:
                 return
             self._pointed = pointed
-            if self.highlighter is None:
-                self.highlighter = Highlighter(
-                    parent=self,
-                    target=self._pointed,
-                    color=(0, 255, 0),
-                    width=1,
-                    name=self.name + ".highlighter"
-                )
-                self.highlighter.move_behind(self.debug_zone)
-            else:
-                self.highlighter.config(target=self._pointed)
+            if self.highlighter is not None:
+                self.highlighter.kill()
+            self.highlighter = Highlighter(parent=self, target=pointed, name=self.name + ".highlighter")
+            self.highlighter.move_behind(self.debug_zone)
         else:
             self._pointed = None
             if self.highlighter is not None:

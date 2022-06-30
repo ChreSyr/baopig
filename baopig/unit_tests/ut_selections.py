@@ -3,7 +3,7 @@
 from baopig import *
 
 
-class UT_Selectable(Rectangle, Selectable):
+class SelectableRectangle(Rectangle, Selectable):
 
     def __init__(self, parent, pos):
 
@@ -12,12 +12,12 @@ class UT_Selectable(Rectangle, Selectable):
         self.hightlighter = None
         self.timer = None
 
-    def select(self):
+    def handle_select(self):
 
         self.set_color("blue4")
         self.highlight("green")
 
-    def unselect(self):
+    def handle_unselect(self):
 
         self.set_color("blue")
         self.highlight("red")
@@ -33,7 +33,7 @@ class UT_Selectable(Rectangle, Selectable):
                 return
             self.timer.cancel()
             timeout()
-        self.hightlighter = Highlighter(self.parent, self, color, 2)
+        self.hightlighter = Highlighter(self.parent, self, border_color=color, border_width=2)
         self.timer = Timer(.4, timeout)
         self.timer.start()
 
@@ -51,41 +51,41 @@ class UT_Selections_Zone(UT_Selector):
     def __init__(self, *args, **kwargs):
         UT_Selector.__init__(self, *args, **kwargs)
 
-        z = UT_Selector(self, size=(self.w/3, self.h - 20), background_color="gray",
+        z = UT_Selector(self, size=(self.w / 3, self.h - 20), background_color="gray",
                         pos=("50%", 10), pos_location="midtop")
-        UT_Selectable(z, (10, 10))
-        UT_Selectable(z, (50, 10))
-        UT_Selectable(z, (90, 10))
+        SelectableRectangle(z, (10, 10))
+        SelectableRectangle(z, (50, 10))
+        SelectableRectangle(z, (90, 10))
         Text(z, "I am selectable", pos=(10, 50))
         TextEdit(z, width=z.w - 20, pos=(10, 75))  # TODO : Scrollable
 
-        z2 = UT_Selector(z, size=(z.w-20, (z.h-40)/3), background_color=(128, 128, 128),
+        z2 = UT_Selector(z, size=(z.w - 20, (z.h - 40) / 3), background_color=(128, 128, 128),
                          pos=(10, "50%"), pos_location="midleft")
         z2.enable_selecting(False)
-        UT_Selectable(z2, (10, 10))
-        UT_Selectable(z2, (50, 10))
-        UT_Selectable(z2, (90, 10))
+        SelectableRectangle(z2, (10, 10))
+        SelectableRectangle(z2, (50, 10))
+        SelectableRectangle(z2, (90, 10))
         Text(z2, "I am not selectable", pos=(10, 50))
         TextEdit(z2, width=z2.w - 20, pos=(10, 75))
 
-        z3 = UT_Selector(z, size=(z.w-20, (z.h-40)/3), background_color=(128, 128, 128, 200),
+        z3 = UT_Selector(z, size=(z.w - 20, (z.h - 40) / 3), background_color=(128, 128, 128, 200),
                          pos=(10, -10), pos_location="bottom", pos_ref_location="bottom")
         z3.set_selectionrect_visibility(False)
-        UT_Selectable(z3, (10, 10))
-        UT_Selectable(z3, (50, 10))
-        UT_Selectable(z3, (90, 10))
+        SelectableRectangle(z3, (10, 10))
+        SelectableRectangle(z3, (50, 10))
+        SelectableRectangle(z3, (90, 10))
         Text(z3, "Selection rectangle ?", pos=(10, 50))
         TextEdit(z3, width=z3.w - 20, pos=(10, 75))
 
-        UT_Selectable(self, (10, 10))
-        UT_Selectable(self, (50, 10))
-        UT_Selectable(self, (90, 10))
+        SelectableRectangle(self, (10, 10))
+        SelectableRectangle(self, (50, 10))
+        SelectableRectangle(self, (90, 10))
         Text(self, "I am selectable", pos=(10, 50))
         TextEdit(self, width=z.w - 20, pos=(10, 75))
 
-        UT_Selectable(self, (z.right + 10, 10))
-        UT_Selectable(self, (z.right + 50, 10))
-        UT_Selectable(self, (z.right + 90, 10))
+        SelectableRectangle(self, (z.right + 10, 10))
+        SelectableRectangle(self, (z.right + 50, 10))
+        SelectableRectangle(self, (z.right + 90, 10))
         Text(self, "I am selectable", pos=(z.right + 10, 50))
         TextEdit(self, width=z.w - 20, pos=(z.right + 10, 75))
 

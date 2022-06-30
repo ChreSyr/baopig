@@ -44,17 +44,11 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         )
         Selector.__init__(self)
 
-        # for padd in self.padding.left, self.padding.top, self.padding.right, self.padding.bottom:
-        #     if padd != 0:
-        #         raise PermissionError("Scene do not support padding, sorry !")
-
         # self._mode = 0
-        self._asked_size = size
+        self._asked_size = self.size
         self._mode_before_fullscreen = None
         self._size_before_fullscreen = None
         self._focused_comp_ref = lambda: None
-
-        # self.enable_selecting()
 
     def __str__(self):
 
@@ -167,7 +161,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
     def resize(self, w, h):
 
         if (w, h) == self.asked_size: return
-        self._asked_size = (w, h)
+        self._asked_size = w, h
         if self is self.application.focused_scene:
             self.application._update_display()
 

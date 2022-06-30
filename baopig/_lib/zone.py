@@ -82,6 +82,8 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
 
     def resize(self, w, h):
 
+        raise NotImplementedError("Have to implement depending on ResizableWidget.resize")
+
         if self.has_locked.width: w = self.w
         if self.has_locked.height: h = self.h
         if (w, h) == self.size: return
