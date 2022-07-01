@@ -1,7 +1,7 @@
 
 
 from baopig.pybao.objectutilities import *
-from .image import Image
+from .imagewidget import Image
 from .layer import Layer
 from .layersmanager import LayersManager
 from .resizable import ResizableWidget

@@ -6,7 +6,7 @@ from .animations import RepetivelyAnimated
 from .widget import Widget, Communicative
 from .widget_supers import Clickable, Draggable, Enablable, Focusable, Linkable, Validable
 from .resizable import ResizableWidget
-from .image import Image
+from .imagewidget import Image
 from .shapes import Rectangle, Highlighter, Sail, Polygon, Line, Circle
 from .layer import Layer
 from .gridlayer import GridLayer
