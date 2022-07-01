@@ -132,6 +132,9 @@ class Container(ResizableWidget):
 
     def __init__(self, parent, *args, **options):
 
+        if hasattr(self, "_weakref"):  # Container.__init__() has already been called
+            return
+
         self._children = ChildrenList(self)  # needed in ResizableWidget.__init__
         self._rect_to_update = None
 

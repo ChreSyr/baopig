@@ -9,77 +9,6 @@ from .text import Text
 # TODO : solve arrows
 # TODO : presentation text when nothing is in the text ?
 
-class _TextEditSelector(Selector):
-    """
-    Abstract class for components who need to handle when they are linked
-    and then, while the mouse is still pressed, to handle the mouse drag in
-    order to simulate a rect from the link origin to the link position and
-    select every SelectableWidget who collide with this rect
-    """
-
-    def __init__(self):
-
-        Selector.__init__(self)
-
-        self._can_select = True
-        self._selectionrect_visibility = False
-        self.selectionrect_layer = Layer(self, self._selection_rect_class, name="selectionrect_layer",
-                                         level=self.layers_manager.FOREGROUND, maxlen=1, touchable=False)
-
-        self.selector.selectables.remove(self)  # remove this Text from the Selector parent
-        self._selector_ref = self.get_weakref()  # make this Text its own Selector
-        self.selector.selectables.add(self)
-        # self.signal.DEFOCUS.connect(self.close_selection, owner=self)
-        # self.signal.LINK.connect(self.close_selection, owner=self)  # only usefull at link while focused
-
-    # is_selecting = property(lambda self: self._selection_rect_ref() is not None)
-    # selection_rect = property(lambda self: self._selection_rect_ref())
-
-    def close_selection(self):
-
-        if not self.is_selecting: return
-        self.selection_rect.kill()
-        if not self.is_selected: return
-        self.unselect()
-        self._is_selected = False
-
-    def end_selection(self, abs_pos, *args, **kwargs):  # ignore visible param
-        """
-        :param abs_pos: An absolute position -> relative to the scene
-        """
-
-        assert self._can_select
-        assert self.selection_rect is not None
-        if abs_pos == self.selection_rect.end: return
-        self.selection_rect.set_end((abs_pos[0], abs_pos[1]))
-        Text.check_select(self, self.selection_rect)
-
-        pos = (self.selection_rect.end[0] - self.abs.left, self.selection_rect.end[1] - self.abs.top)
-        line_index, char_index = self.find_indexes(pos=pos)
-        if line_index != self.cursor.line_index or char_index != self.cursor.char_index:
-            self.cursor.config(line_index=line_index, char_index=char_index, selecting="done")
-
-    def get_selection_data(self):
-
-        return Text.get_selected_data(self)  # TODO
-
-    def select_all(self):
-
-        if self.is_selecting:
-            self.close_selection()
-        self.start_selection(self.abs.topleft)
-        self.end_selection(self.abs.bottomright)
-
-    def start_selection(self, abs_pos):
-        """
-        A selection_rect can only be started once
-        :param abs_pos: An absolute position -> relative to the scene
-        """
-        if not self._can_select: return
-        if self.selection_rect is not None:
-            raise PermissionError("A selection must be closed before creating a new one")
-        self._selection_rect_class(self, abs_pos, abs_pos)
-
 
 class TextEdit(Text, Selector):
 
@@ -93,10 +22,8 @@ class TextEdit(Text, Selector):
 
         if text is None: text = ""
 
-        self.inherit_style(parent, **kwargs)
-
         Text.__init__(self, parent=parent, text=text, selectable=True, **kwargs)
-        Selector.__init__(self)
+        Selector.__init__(self, parent)
 
         # self.enable_selecting(True)
         self.set_selectionrect_visibility(False)

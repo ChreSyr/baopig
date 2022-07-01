@@ -43,7 +43,7 @@ class UT_Selector(Zone, Selector):
     def __init__(self, *args, **kwargs):
 
         Zone.__init__(self, *args, **kwargs)
-        Selector.__init__(self)
+        Selector.__init__(self, *args)
 
 
 class UT_Selections_Zone(UT_Selector):

@@ -42,7 +42,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             size=application.default_size if size is None else size,
             **options
         )
-        Selector.__init__(self)
+        Selector.__init__(self, parent=self)
 
         # self._mode = 0
         self._asked_size = self.size

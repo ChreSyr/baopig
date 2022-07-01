@@ -136,7 +136,7 @@ class DefaultSelectionRect(Rectangle):
         self.start = abs_pos
 
 
-class Selector(Linkable):
+class Selector(Container, Linkable):
     """
     Abstract class for components who need to handle when they are linked
     and then, while the mouse is still pressed, to handle the mouse drag in
@@ -144,10 +144,11 @@ class Selector(Linkable):
     select every SelectableWidget object who collide with this rect
     """
 
-    def __init__(self, SelectionRectClass=None):
+    def __init__(self, parent, SelectionRectClass=None, **kwargs):
 
         if SelectionRectClass is None: SelectionRectClass = DefaultSelectionRect
 
+        Container.__init__(self, parent, **kwargs)
         Linkable.__init__(self)
 
         assert issubclass(SelectionRectClass, DefaultSelectionRect)
