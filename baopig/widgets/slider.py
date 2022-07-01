@@ -1,5 +1,6 @@
+
 from baopig.io import mouse
-from baopig.lib import *
+from baopig.lib import Rectangle, Container, Linkable, Hoverable
 from .indicator import DynamicIndicator
 from .text import Text
 
@@ -87,8 +88,7 @@ class Slider(Container, Linkable, Hoverable):
     STYLE.set_constraint("bloc_class", lambda val: issubclass(val, SliderBloc))
     STYLE.set_constraint("bar_class", lambda val: issubclass(val, SliderBar))
 
-    def __init__(self, parent, minval, maxval,
-                 bloc_class=None, bar_class=None, has_indicator=None, bar_size=None,
+    def __init__(self, parent, minval, maxval, bar_size=None,
                  defaultval=None, step=None, title=None, printed_title=False, **options):
 
         if "size" in options:
@@ -96,13 +96,15 @@ class Slider(Container, Linkable, Hoverable):
 
         self.inherit_style(parent, options)
 
-        if defaultval is None: defaultval = minval
+        if defaultval is None:
+            defaultval = minval
 
         assert minval < maxval, f"There must be a positive difference between minval and maxval " \
                                 f"(minval : {minval}, maxval : {maxval})"
         assert minval <= defaultval <= maxval, f"The defaultval must be included between minval and maxval " \
                                                f"(minval : {minval}, maxval : {maxval}, defaultval : {defaultval})"
-        if step is not None: assert step > 0
+        if step is not None:
+            assert step > 0
 
         if bar_size is not None:  # TODO : bar_style
             self.set_style_for(self.style["bar_class"], width=bar_size[0], height=bar_size[1])
@@ -112,7 +114,7 @@ class Slider(Container, Linkable, Hoverable):
         self.style.modify(width=bar_style["length"], height=bar_style["wideness"])
         Container.__init__(self, parent, **options)
         Linkable.__init__(self, parent)
-        Hoverable.__init__(self)
+        Hoverable.__init__(self, parent)
 
         self._minval = minval
         self._maxval = maxval
@@ -135,14 +137,14 @@ class Slider(Container, Linkable, Hoverable):
         self.create_signal("NEW_VAL")
 
         if self.style["has_indicator"]:
-            get_indicator_text = lambda: self.val
             if title:
                 if printed_title:
                     self.title = Text(self, title, sticky="center", touchable=False, font_color=(96, 96, 96),
                                       font_height=int((self.bar.height - self.bar.border_width * 2) * .9),
                                       font_bold=True)
-                get_indicator_text = lambda: f"{title} : {self.val}"
-            DynamicIndicator(self, get_text=get_indicator_text)
+                DynamicIndicator(self, get_text=lambda: f"{title} : {self.val}")
+            else:
+                DynamicIndicator(self, get_text=lambda: self.val)
 
     axis = property(lambda self: self._axis)
     defaultval = property(lambda self: self._defaultval)
@@ -156,13 +158,14 @@ class Slider(Container, Linkable, Hoverable):
 
         assert (val is None) != (x is None)
         if x is not None:
-            if x == self.bloc.x: return
+            if x == self.bloc.x:
+                return
             # val = x * (max - min) / max_index + min
             val = x * self.range / self._max_bloc_index + self.minval
         if self.step is not None:
-            def cut(n, l):
+            def cut(n, length):
                 # print(n, l, float(("{:." + str(l-1) + "e}").format(n)))
-                return float(("{:." + str(l - 1) + "e}").format(n))
+                return float(("{:." + str(length - 1) + "e}").format(n))
 
             val = round((val - self.minval) / self.step) * self.step + self.minval
             if isinstance(self.step, float):
@@ -172,13 +175,15 @@ class Slider(Container, Linkable, Hoverable):
             if val >= self.maxval:  # not else, because step can make val go to maxval or higher
                 val = self.maxval
 
-        if val == self.val: return
+        if val == self.val:
+            return
         assert self.minval <= val <= self.maxval, f"{val}, {self.maxval}, {self.minval}"
 
         self._val = val
         # x = (val - min) / (max - min) * max_index
         self.bloc.update()
-        if self.bloc.x == 0: self._val = self.minval  # prevent approximations
+        if self.bloc.x == 0:
+            self._val = self.minval  # prevent approximations
         self.signal.NEW_VAL.emit(self.val)
 
     def get_pourcent(self):
@@ -223,15 +228,18 @@ class Slider(Container, Linkable, Hoverable):
 
     def reset(self):
         """Set the value to defaultval"""
-        if self.val == self.defaultval: return
+        if self.val == self.defaultval:
+            return
         self._update_val(self.defaultval)
 
     def set_defaultval(self, val, reset=True):
         """If reset is True, reset the value to defaultval"""
 
-        if val is self.defaultval: return
+        if val is self.defaultval:
+            return
         assert self.minval <= val <= self.maxval, f"The value must be included between minval and maxval " \
                                                   f"(minval : {self.minval}, maxval : {self.maxval}, startval : {val})"
 
         self._defaultval = val
-        if reset: self.reset()
+        if reset:
+            self.reset()

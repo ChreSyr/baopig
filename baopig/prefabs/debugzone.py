@@ -1,6 +1,5 @@
-
-
-from baopig import *
+from baopig import PrefilledFunction, mouse
+from baopig import Zone, Handler_SceneClose, Text, DynamicText, Highlighter
 
 
 # --- DEBUG ---
@@ -175,13 +174,13 @@ class DebugZone(Zone, Handler_SceneClose):
         else:
             self.start_debugging()
 
-    def update(self, old_size):
+    def update(self):
 
         self.resize(*self.parent.size)
         self.debug_zone.resize_width(self.size[0] - 10)
         self.update_pointed_outline()
 
-    def update_pointed_outline(self, *args):
+    def update_pointed_outline(self):
 
         pointed = mouse.pointed_comp
         if pointed and self.is_awake:
@@ -202,4 +201,3 @@ class DebugZone(Zone, Handler_SceneClose):
         self.highlighter.show()
         super().wake()
         self.update_pointed_outline()
-

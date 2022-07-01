@@ -1,6 +1,6 @@
 
 
-from baopig.lib.hoverable import Hoverable
+from baopig.lib import Hoverable
 from .text import Text, DynamicText
 
 

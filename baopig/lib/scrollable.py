@@ -3,7 +3,7 @@
 import time
 from pygame import Rect
 from baopig.io import mouse
-from .hoverable import Hoverable
+from .widget_supers import Hoverable
 from .container import Container
 
 
@@ -18,9 +18,9 @@ class Scrollable(Hoverable):
 
     """
 
-    def __init__(self, scrollaxis=None):
+    def __init__(self, parent, scrollaxis=None, **kwargs):
 
-        Hoverable.__init__(self)
+        Hoverable.__init__(self, parent, **kwargs)
 
         assert isinstance(self, Container)
         if scrollaxis is None:

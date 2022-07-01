@@ -200,7 +200,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
             name=parent.name + " -> cursor"
         )
         HaveHistory.__init__(self)
-        RepetivelyAnimated.__init__(self, interval=.5)
+        RepetivelyAnimated.__init__(self, parent, interval=.5)
 
         self._char_index = None  # index of cursor position, see _Line._chars_pos for more explanations
         self.__line_index = None  # index of cursor line, see Text._lines_pos for more explanations

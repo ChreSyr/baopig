@@ -64,12 +64,13 @@ class AbstractButton(Container, Clickable, Hoverable):
 
         self.inherit_style(parent, options, background_color=background_color, catching_errors=catching_errors)
 
-        if command is None: command = lambda: None
+        if command is None:
+            command = lambda: None
 
         assert callable(command), "command must be callable"
 
         Container.__init__(self, parent=parent, name=name, **options)
-        Hoverable.__init__(self)
+        Hoverable.__init__(self, parent)
         Clickable.__init__(self, parent, catching_errors=self.style["catching_errors"])
 
         self.command = command  # non protected field
