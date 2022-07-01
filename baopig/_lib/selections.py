@@ -57,7 +57,7 @@ class SelectableWidget(Widget):
             - start
             - end
             - rect (the surface between start and end)
-        These attributes are absolute referenced, wich means they are relative
+        These attributes are absolutely referenced, wich means they are relative
         to the application. Start and end attributes reffer to the start and end
         of the selection_rect, who will often be caused by a mouse link motion
         """
@@ -88,7 +88,7 @@ class SelectableWidget(Widget):
         """
 
 
-class DefaultSelectionRect(Rectangle):
+class SelectionRect(Rectangle):
     """
     A SelectionRect is a rect relative to the application
     """
@@ -100,19 +100,13 @@ class DefaultSelectionRect(Rectangle):
         border_width=1,
     )
 
-    def __init__(self, parent, start, end):
-        Rectangle.__init__(
-            self,
-            parent=parent,
-            pos=(0, 0),
-            size=(0, 0),
-            layer=parent.selectionrect_layer,
-            name=parent.name + ".selection_rect"
-        )
+    def __init__(self, parent, start, end, **kwargs):
+        Rectangle.__init__(self, parent=parent, layer=parent.selectionrect_layer,
+                           name=parent.name + ".selection_rect", **kwargs)
+
         self.start = None
         self.end = None
         self.parent._selection_rect_ref = self.get_weakref()
-        self.set_visibility(parent._selectionrect_visibility)
         self.parent.signal.UNLINK.connect(self.hide, owner=self)
 
         self.set_start(start)
@@ -144,20 +138,14 @@ class Selector(Container, Linkable):
     select every SelectableWidget object who collide with this rect
     """
 
-    def __init__(self, parent, SelectionRectClass=None, **kwargs):
-
-        if SelectionRectClass is None: SelectionRectClass = DefaultSelectionRect
+    def __init__(self, parent, can_select=True, **kwargs):
 
         Container.__init__(self, parent, **kwargs)
         Linkable.__init__(self)
 
-        assert issubclass(SelectionRectClass, DefaultSelectionRect)
-        assert isinstance(self, Container)
-
         self.selectables = set()
-        self._can_select = True
+        self._can_select = can_select
         self._selection_rect_ref = lambda: None
-        self._selection_rect_class = SelectionRectClass
         self._selectionrect_visibility = True
         self.selectionrect_layer = None
 
@@ -169,6 +157,7 @@ class Selector(Container, Linkable):
                 yield comp
 
     _iselected = property(_get_iselected)
+    can_select = property(lambda self: self._can_select)
     is_selecting = property(lambda self: self._selection_rect_ref() is not None)
     selection_rect = property(lambda self: self._selection_rect_ref())
 
@@ -177,38 +166,27 @@ class Selector(Container, Linkable):
 
     def close_selection(self):
 
-        if not self.is_selecting: return
+        if not self.is_selecting:
+            return
         self.selection_rect.kill()
         for selectable in self._iselected:
-            if not selectable.is_selected: continue
+            if not selectable.is_selected:
+                continue
             selectable._is_selected = False
             selectable.handle_unselect()
 
-    def enable_selecting(self, can_select=True):
-        """
-        Define the ability to make selections in a Selector
-        """
-
-        if bool(can_select) == self._can_select: return
-        self._can_select = bool(can_select)
-        if can_select:
-            self.selectionrect_layer = Layer(self, self._selection_rect_class, name="selectionrect_layer",
-                                             level=self.layers_manager.FOREGROUND, maxlen=1, touchable=False)
-        else:
-            self.close_selection()
-            if self.selectionrect_layer:
-                self.selectionrect_layer.kill()
-                self.selectionrect_layer = None
-
     def end_selection(self, abs_pos, visible=None):
         """
+        Sets up the selection_rect & checks the selectables which are selected
         :param abs_pos: An absolute position -> relative to the scene
         :param visible: If you want to change the visibility until the next end_selection
         """
 
-        if not self._can_select: return
+        if not self._can_select:
+            return
         assert self.selection_rect is not None
-        if abs_pos == self.selection_rect.end: return
+        if abs_pos == self.selection_rect.end:
+            return
         if visible is not None:
             self.selection_rect.set_visibility(visible)
         else:
@@ -242,9 +220,9 @@ class Selector(Container, Linkable):
                     pygame.scrap.put(pygame.SCRAP_TEXT, str.encode(selected_data))
 
             elif key == pygame.K_v:  # Cmd + v -> paste clipboard data
-                bytes = pygame.scrap.get(pygame.SCRAP_TEXT)
-                if bytes is not None:
-                    text = bytes.decode()
+                scrap_bytes = pygame.scrap.get(pygame.SCRAP_TEXT)
+                if scrap_bytes is not None:
+                    text = scrap_bytes.decode()
                     text = str.replace(text, '\0', '')  # removes null characters
                     text = str.replace(text, '\r', '')  # removes carriage return characters
                     self.paste(text)
@@ -290,7 +268,10 @@ class Selector(Container, Linkable):
         A selection_rect can only be started once
         :param abs_pos: An absolute position -> relative to the scene
         """
-        if not self._can_select: return
+
+        if not self._can_select:
+            return
         if self.selection_rect is not None:
             raise PermissionError("A selection must be closed before creating a new one")
-        self._selection_rect_class(self, abs_pos, abs_pos)
+
+        SelectionRect(self, abs_pos, abs_pos, visible=self._selectionrect_visibility)

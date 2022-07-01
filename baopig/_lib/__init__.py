@@ -14,6 +14,6 @@ from .layersmanager import LayersManager
 from .container import Container
 from .scrollable import Scrollable, ScrollableByMouse
 from .zone import Zone, SubZone
-from .selections import SelectableWidget, Selector
+from .selections import SelectableWidget, Selector, SelectionRect
 from .scene import Scene
 from .application import Application

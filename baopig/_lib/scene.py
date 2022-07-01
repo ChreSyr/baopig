@@ -19,7 +19,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         background_color="theme-color-scene_background",
     )
 
-    def __init__(self, application, size=None, **options):
+    def __init__(self, application, size=None, can_select=True, **options):
 
         if "name" not in options:
             options["name"] = self.__class__.__name__
@@ -42,7 +42,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             size=application.default_size if size is None else size,
             **options
         )
-        Selector.__init__(self, parent=self)
+        Selector.__init__(self, parent=self, can_select=can_select)
 
         # self._mode = 0
         self._asked_size = self.size

@@ -38,38 +38,37 @@ class SelectableRectangle(Rectangle, SelectableWidget):
         self.timer.start()
 
 
-class UT_Selector(Zone, Selector):
+class SelectorZone(Zone, Selector):
+
+    def __init__(self, parent, can_select=True, **kwargs):
+        Zone.__init__(self, parent, **kwargs)
+        Selector.__init__(self, parent, can_select)
+
+
+class UT_Selections_Zone(SelectorZone):
 
     def __init__(self, *args, **kwargs):
+        SelectorZone.__init__(self, *args, **kwargs)
 
-        Zone.__init__(self, *args, **kwargs)
-        Selector.__init__(self, *args)
-
-
-class UT_Selections_Zone(UT_Selector):
-
-    def __init__(self, *args, **kwargs):
-        UT_Selector.__init__(self, *args, **kwargs)
-
-        z = UT_Selector(self, size=(self.w / 3, self.h - 20), background_color="gray",
-                        pos=("50%", 10), pos_location="midtop")
+        z = SelectorZone(self, size=(self.w / 3, self.h - 20), background_color="gray",
+                         pos=("50%", 10), pos_location="midtop")
+        z.set_style_for(SelectionRect, border_color="red", color=(255, 0, 0, 40))
         SelectableRectangle(z, (10, 10))
         SelectableRectangle(z, (50, 10))
         SelectableRectangle(z, (90, 10))
         Text(z, "I am selectable", pos=(10, 50))
         TextEdit(z, width=z.w - 20, pos=(10, 75))  # TODO : Scrollable
 
-        z2 = UT_Selector(z, size=(z.w - 20, (z.h - 40) / 3), background_color=(128, 128, 128),
-                         pos=(10, "50%"), pos_location="midleft")
-        z2.enable_selecting(False)
+        z2 = SelectorZone(z, size=(z.w - 20, (z.h - 40) / 3), background_color=(128, 128, 128),
+                          pos=(10, "50%"), pos_location="midleft", can_select=False)
         SelectableRectangle(z2, (10, 10))
         SelectableRectangle(z2, (50, 10))
         SelectableRectangle(z2, (90, 10))
         Text(z2, "I am not selectable", pos=(10, 50))
         TextEdit(z2, width=z2.w - 20, pos=(10, 75))
 
-        z3 = UT_Selector(z, size=(z.w - 20, (z.h - 40) / 3), background_color=(128, 128, 128, 200),
-                         pos=(10, -10), pos_location="bottom", pos_ref_location="bottom")
+        z3 = SelectorZone(z, size=(z.w - 20, (z.h - 40) / 3), background_color=(128, 128, 128, 200),
+                          pos=(0, -10), sticky="bottom")
         z3.set_selectionrect_visibility(False)
         SelectableRectangle(z3, (10, 10))
         SelectableRectangle(z3, (50, 10))
@@ -121,6 +120,7 @@ class UT_Selections_Zone(UT_Selector):
                 "The visibility of the selection rect can be edited -> set_selectionrect_visibility",
                 "When setting an end position for the selection rect, a temporary visibility can be given in argument",
                 "The selection rect is always fitting inside its parent",
+                "The middle zone's selection rect is red",
             ]
         )
 
