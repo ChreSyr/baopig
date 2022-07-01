@@ -70,7 +70,7 @@ class AbstractButton(Container, Clickable, Hoverable):
 
         Container.__init__(self, parent=parent, name=name, **options)
         Hoverable.__init__(self)
-        Clickable.__init__(self, catching_errors=self.style["catching_errors"])
+        Clickable.__init__(self, parent, catching_errors=self.style["catching_errors"])
 
         self.command = command  # non protected field
 

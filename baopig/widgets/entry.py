@@ -23,7 +23,7 @@ class Entry(LineEdit, Validable):
         """
 
         LineEdit.__init__(self, parent, **kwargs)
-        Validable.__init__(self, catching_errors=False)
+        Validable.__init__(self, parent, catching_errors=False)
 
         self._entry_type = entry_type
         self.command = command

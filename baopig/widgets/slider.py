@@ -116,7 +116,7 @@ class Slider(Container, Linkable, Hoverable):
         # TODO : if the slider goes vertically, switch length and wideness in the following line
         self.style.modify(width=bar_style["length"], height=bar_style["wideness"])
         Container.__init__(self, parent, **options)
-        Linkable.__init__(self)
+        Linkable.__init__(self, parent)
         Hoverable.__init__(self)
 
         self._minval = minval

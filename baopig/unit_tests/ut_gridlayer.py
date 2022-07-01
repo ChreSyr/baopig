@@ -30,10 +30,11 @@ class UT_GridLayer_Zone(Zone):
                 text = "row:{}\ncol:{}".format(row, col)
                 Text(z2, text, row=row, col=col, name=text)
 
-        class DragableRectangle(Rectangle, Dragable):
-            def __init__(self, **kwargs):
-                Rectangle.__init__(self, **kwargs)
-                Dragable.__init__(self)
+        class DragableRectangle(Rectangle, Draggable):
+            def __init__(self, parent, **kwargs):
+                Rectangle.__init__(self, parent, **kwargs)
+                Draggable.__init__(self, parent, **kwargs)
+
         DragableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30))
         Text(z2, "HI", col=6, row=0)
         Text(z2, "HI", col=7, row=1)
@@ -41,10 +42,11 @@ class UT_GridLayer_Zone(Zone):
 
         # Z3
         grid = GridLayer(z3, nbrows=5, nbcols=10)
+
         class RemovableRect(Rectangle, Linkable):
             def __init__(self, *args, **kwargs):
                 Rectangle.__init__(self, *args, **kwargs)
-                Linkable.__init__(self)
+                Linkable.__init__(self, *args)
                 def update(*args):
                     if self.collidemouse() and isinstance(mouse.linked_comp, RemovableRect):
                         self.kill()

@@ -1,9 +1,9 @@
 import pygame
 from baopig.pybao.issomething import is_point
 from baopig.io import keyboard
-from .utilities import Linkable, paint_lock
-from .layer import Layer
+from .utilities import paint_lock
 from .widget import Widget
+from .widget_supers import Linkable
 from .shapes import Rectangle
 from .container import Container
 
@@ -141,7 +141,7 @@ class Selector(Container, Linkable):
     def __init__(self, parent, can_select=True, **kwargs):
 
         Container.__init__(self, parent, **kwargs)
-        Linkable.__init__(self)
+        Linkable.__init__(self, parent)
 
         self.selectables = set()
         self._can_select = can_select

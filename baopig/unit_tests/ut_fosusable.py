@@ -16,7 +16,6 @@ class UT_Focusable_Zone(Zone):
         b2 = PosButton(self, pos=(80, 45))
         b0 = PosButton(self, pos=(10, 80))
         b0 = PosButton(self, pos=(80, 80))
-        Dragable.set_dragable(b0)
 
         z = Zone(self, pos=(-5, 5), sticky="topright",
                  size=(self.w-155, self.h-10), background_color=(10, 30, 20, 128))
