@@ -1,7 +1,6 @@
-
-
 import pygame
-from baopig._lib import Validable, LOGGER
+from baopig.io import LOGGER
+from baopig._lib import Validable
 from .lineedit import LineEdit
 
 

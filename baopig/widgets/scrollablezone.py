@@ -1,4 +1,4 @@
-from baopig._lib import Scrollable, ScrollableByMouse, Size, MarginType
+from baopig._lib import Scrollable, ScrollableByMouse, MarginType
 from baopig._lib import Zone, LayersManager
 from .slider import Slider, SliderBar, SliderBloc
 
@@ -66,7 +66,7 @@ class ScrollableZone(Zone, ScrollableByMouse):
         self.scrollsliders = []
         scrollslider_class = self.style["scrollslider_class"]
 
-        self.set_window(self.pos + Size(window_size))
+        self.set_window(self.pos + window_size)
         assert self.rect.contains(self.rect.__class__(self.window))  # TODO : remove
         if self.width > window_size[0]:
             self._scrollaxis += "x"

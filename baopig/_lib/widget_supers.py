@@ -1,6 +1,6 @@
 import pygame
 from baopig.io import LOGGER, mouse, keyboard
-from .utilities import ApplicationExit
+from baopig.communicative import ApplicationExit
 from .widget import Widget
 
 

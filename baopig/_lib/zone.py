@@ -82,20 +82,25 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
 
     def resize(self, w, h):
 
-        raise NotImplementedError("Have to implement depending on ResizableWidget.resize")
+        if self.has_locked.width:
+            raise PermissionError("Cannot resize : the width is locked")
+        if self.has_locked.height:
+            raise PermissionError("Cannot resize : the height is locked")
+        # if (w, h) == self._asked_size:
+        #     return
 
-        if self.has_locked.width: w = self.w
-        if self.has_locked.height: h = self.h
-        if (w, h) == self.size: return
+        self._asked_size = w, h
+
+        asked_size = self._get_asked_size()
+        if asked_size == self.size:
+            return
+
+        # self.set_surface(pygame.Surface(asked_size, pygame.SRCALPHA))
 
         with paint_lock:
             try:
-                Widget.set_surface(self, self.parent.surface.subsurface(self.pos + (w, h)))
+                Widget.set_surface(self, self.parent.surface.subsurface(self.pos + asked_size))
             except ValueError:
                 assert not self.parent.auto.contains(self.rect)
                 raise PermissionError("A SubZone must fit inside its parent")
-                # Widget.set_surface(self, self.parent.surface.subsurface(
-                #     pygame.Rect(self.pos + (w, h)).clip(self.parent.auto)))
             self._flip_without_update()
-
-        # print("RESIZED", self, "at", size)

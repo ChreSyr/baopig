@@ -1,6 +1,7 @@
 
 
 from baopig.pybao.objectutilities import Object, deque
+from baopig.io import keyboard, mouse, LOGGER
 from baopig._lib import *
 from .text import Text
 
@@ -25,7 +26,6 @@ class TextEdit(Text, Selector):
         Text.__init__(self, parent=parent, text=text, selectable=True, **kwargs)
         Selector.__init__(self, parent)
 
-        # self.enable_selecting(True)
         self.set_selectionrect_visibility(False)
         self.selector.selectables.remove(self)  # remove this Text from the Selector parent
         self._selector_ref = self.get_weakref()  # make this Text its own Selector

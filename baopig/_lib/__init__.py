@@ -4,6 +4,7 @@ from .hoverable import Hoverable
 from .utilities import *
 from .animations import RepetivelyAnimated
 from .widget import Widget, Communicative
+from .widget_supers import Clickable, Draggable, Enablable, Focusable, Linkable, Validable
 from .resizable import ResizableWidget
 from .animatedwidget import AnimatedWidget
 from .image import Image

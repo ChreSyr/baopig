@@ -1,3 +1,4 @@
+from baopig.io import LOGGER
 from .utilities import *
 from .style import Theme
 from .layer import Layer

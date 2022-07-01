@@ -1,27 +1,24 @@
-
-
+from baopig.io import mouse
 from baopig._lib import *
 from .indicator import DynamicIndicator
 from .text import Text
 
 
 class SliderBloc(Rectangle):
-
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
-        width = -1,   # use length and wideness instead
-        height = -1,  # use length and wideness instead
-        border_width = 3,
-        pos_location = "left",
-        pos_ref_location = "left",
+        width=-1,  # use length and wideness instead
+        height=-1,  # use length and wideness instead
+        border_width=3,
+        pos_location="left",
+        pos_ref_location="left",
     )
     STYLE.create(
-        length = 16,
-        wideness = 14,
+        length=16,
+        wideness=14,
     )
 
     def __init__(self, slider):
-
         assert isinstance(slider, Slider)
 
         self._border_width = 0
@@ -38,29 +35,27 @@ class SliderBloc(Rectangle):
     x_max = property(lambda self: self._max_index)
 
     def update(self):
-
         self.x = self.slider.get_pourcent() * self.x_max
 
 
 class SliderBar(Rectangle):
-
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
-        pos_location = "center",
-        pos_ref_location = "center",
-        width = -1,  # TODO : delete, but is it possible ? maybe not
-        height = -1,  # TODO : delete
-        color = (0, 0, 0, 64),
-        border_width = 1,
+        pos_location="center",
+        pos_ref_location="center",
+        width=-1,  # TODO : delete, but is it possible ? maybe not
+        height=-1,  # TODO : delete
+        color=(0, 0, 0, 64),
+        border_width=1,
     )
     STYLE.create(
-        length = 150,
-        wideness = 10,
+        length=150,
+        wideness=10,
     )
+
     # NOTE : we replaced width/height with length/wideness, so it is easier to code vertical sliders
 
     def __init__(self, slider):
-
         assert isinstance(slider, Slider)
 
         style = slider.get_style_for(self.__class__)
@@ -76,15 +71,15 @@ class Slider(Container, Linkable, Hoverable):
 
     STYLE = Container.STYLE.substyle()
     STYLE.modify(
-        width = -1,   # don't use them
-        height = -1,  # don't use them
+        width=-1,  # don't use them
+        height=-1,  # don't use them
     )
     # NOTE : On peut facilement se tromper en laissant width et height alors qu'on devrait utiliser bar_size
     STYLE.create(
-        has_indicator = True,
-        bloc_class = SliderBloc,
-        bar_class = SliderBar,
-        axis = "x",
+        has_indicator=True,
+        bloc_class=SliderBloc,
+        bar_class=SliderBar,
+        axis="x",
     )
     STYLE.set_constraint("axis", lambda val: val in ("x", "y"), "must be 'x' or 'y'")
 
@@ -106,7 +101,7 @@ class Slider(Container, Linkable, Hoverable):
         assert minval < maxval, f"There must be a positive difference between minval and maxval " \
                                 f"(minval : {minval}, maxval : {maxval})"
         assert minval <= defaultval <= maxval, f"The defaultval must be included between minval and maxval " \
-                                             f"(minval : {minval}, maxval : {maxval}, defaultval : {defaultval})"
+                                               f"(minval : {minval}, maxval : {maxval}, defaultval : {defaultval})"
         if step is not None: assert step > 0
 
         if bar_size is not None:  # TODO : bar_style
@@ -144,7 +139,8 @@ class Slider(Container, Linkable, Hoverable):
             if title:
                 if printed_title:
                     self.title = Text(self, title, sticky="center", touchable=False, font_color=(96, 96, 96),
-                                      font_height=int((self.bar.height - self.bar.border_width*2) * .9), font_bold=True)
+                                      font_height=int((self.bar.height - self.bar.border_width * 2) * .9),
+                                      font_bold=True)
                 get_indicator_text = lambda: f"{title} : {self.val}"
             DynamicIndicator(self, get_text=get_indicator_text)
 
@@ -166,7 +162,8 @@ class Slider(Container, Linkable, Hoverable):
         if self.step is not None:
             def cut(n, l):
                 # print(n, l, float(("{:." + str(l-1) + "e}").format(n)))
-                return float(("{:." + str(l-1) + "e}").format(n))
+                return float(("{:." + str(l - 1) + "e}").format(n))
+
             val = round((val - self.minval) / self.step) * self.step + self.minval
             if isinstance(self.step, float):
                 val = cut(val, len(str(self.step % 1)) - 2 + len(str(int(val))))
@@ -234,8 +231,7 @@ class Slider(Container, Linkable, Hoverable):
 
         if val is self.defaultval: return
         assert self.minval <= val <= self.maxval, f"The value must be included between minval and maxval " \
-                                f"(minval : {self.minval}, maxval : {self.maxval}, startval : {val})"
+                                                  f"(minval : {self.minval}, maxval : {self.maxval}, startval : {val})"
 
         self._defaultval = val
         if reset: self.reset()
-

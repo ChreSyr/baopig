@@ -7,15 +7,6 @@ paint_lock = threading.RLock()
 # TODO : deproteger les attributs handle_something
 
 
-class Size(tuple):
-
-    def __init__(self, size):
-        assert len(self) == 2, f"Wrong length : {self} (a size only have 2 elements)"
-        for coord in self:
-            assert isinstance(coord, (int, float)), f"Wrong value in size : {coord} (must be a number)"
-            assert coord >= 0, f"Wrong value in size : {coord} (must be positive)"
-
-
 class Color(pygame.Color):
     """
     Very close to pygame.Color :
@@ -62,23 +53,27 @@ class Color(pygame.Color):
 
     def set_hue(self, h):
         self.hsv = (h,) + self.hsv[1:]
-    h = property(lambda self: self.hsva[0], set_hue)
+    h = property(lambda self: self.hsva[0], set_hue)  # TODO : replace h by hue
 
     def get_saturation(self):
         s = self.hsva[1]
         if s > 100:  # sometime 100.00000000000001
             s = 100
         return s
+
     def set_saturation(self, s):
         self.hsv = self.h, s, self.v
+
     s = property(get_saturation, set_saturation)
 
     def set_value(self, v):
         self.hsv = self.hsva[:2] + (v,)
+
     v = property(lambda self: self.hsva[2], set_value)
 
-    def set_lightness(self, l):
-        self.hsl = self.hsla[:2] + (l,)
+    def set_lightness(self, lightness):
+        self.hsl = self.hsla[:2] + (lightness,)
+
     l = property(lambda self: self.hsla[2], set_lightness)
 
     def copy(self):

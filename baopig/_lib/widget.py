@@ -683,7 +683,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
 
     def __init__(self, parent, surface=None, pos=None, layer=None, name=None, row=None, col=None, **options):
 
-        if hasattr(self, "_weakref"):  # Widget___init__() has already been called
+        if hasattr(self, "_weakref"):  # Widget.__init__() has already been called
             return
 
         if name is None: name = "NoName"

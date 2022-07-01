@@ -87,9 +87,8 @@ class ColorSlider(Slider):
         self.color = self.parent.color.copy()
         self._update_val(getattr(self.parent.color, self.attr))
         with paint_lock:
-            self.bloc.paint()
-            self.bar.paint()
-            self.paint()
+            self.bloc.send_paint_request()
+            self.bar.send_paint_request()
 
 
 class ColorEntry(NumEntry):
