@@ -8,7 +8,7 @@ from baopig.communicative import ApplicationExit
 from baopig.io import keyboard, mouse, LOGGER
 from .style import HasStyle, Theme, StyleClass
 from .widget import Widget
-from .runable import _runables_manager
+from .widget_supers import _runables_manager
 from .utilities import *
 
 

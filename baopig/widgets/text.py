@@ -822,7 +822,7 @@ class DynamicText(Text, Runable):
         assert callable(get_text), get_text
 
         Text.__init__(self, parent=parent, text=str(get_text()), **kwargs)
-        Runable.__init__(self)
+        Runable.__init__(self, parent)
 
         self._get_new_text = get_text
 
