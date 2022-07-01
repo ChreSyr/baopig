@@ -1,6 +1,8 @@
+
 import pygame
 from baopig.io import LOGGER, mouse, keyboard
 from baopig.communicative import ApplicationExit
+from baopig.time.timer import RepeatingTimer
 from .widget import Widget
 
 
@@ -79,7 +81,7 @@ class Enablable(Widget):
 class Focusable(Enablable):
     """
     A Focusable is a Widget who listen to keyboard input, when it has the focus. Only one
-    widget can be focused in the same time. When a new clic occurs and it doesn't collide
+    widget can be focused in the same time. When a new clic occurs, and it doesn't collide
     this widget, it is defocused. If disabled, it cannot be focused.
 
     It has no 'focus' method since it is the application who decide who is focused or not.
@@ -117,7 +119,7 @@ class Focusable(Enablable):
 
     def focus_antecedant(self):
         """
-        Give the focus to the previous focusable (ranked by position) is self.parent
+        Give the focus to the previous focusable (ranked by position) in parent
         """
 
         all_focs = []
@@ -133,7 +135,7 @@ class Focusable(Enablable):
 
     def focus_next(self):
         """
-        Give the focus to the next focusable (ranked by position) is self.parent
+        Give the focus to the next focusable (ranked by position) in parent
         """
         all_focs = []
         for child in self.parent.awake_children:
@@ -261,3 +263,65 @@ class Draggable(Linkable):
 
     def handle_link_motion(self, link_motion_event):
         self.move(*link_motion_event.rel)
+
+
+class RepetivelyAnimated(Widget):  # TODO : rework default anitmations
+    """
+    A RepetivelyAnimated is a widget who blinks every interval seconds
+
+    Exemple :
+
+        class Lighthouse(RepetivelyAnimated):
+
+    """
+
+    def __init__(self, parent, interval, **kwargs):
+        """
+        The widget will appear and disappear every interval seconds
+        :param interval: the time between appear and disappear
+        """
+
+        Widget.__init__(self, parent, **kwargs)
+
+        assert isinstance(interval, (int, float)), "interval must be a float or an integer"
+
+        self.interval = interval
+
+        def blink():
+            if self.is_visible:
+                self.hide()
+            else:
+                self.show()
+
+        self.countdown_before_toggle_visibility = RepeatingTimer(interval, blink)
+        self.signal.KILL.connect(self.countdown_before_toggle_visibility.cancel, owner=None)
+
+    def sleep(self):
+
+        super().sleep()
+        if self.countdown_before_toggle_visibility.is_paused:
+            self.countdown_before_toggle_visibility.pause()
+
+    def start_animation(self):
+
+        if self.is_asleep:
+            self._memory.need_start_animation = True
+            return
+
+        if self.countdown_before_toggle_visibility.is_running:
+            self.countdown_before_toggle_visibility.cancel()
+        self.countdown_before_toggle_visibility.start()
+
+    def stop_animation(self):
+
+        if self.is_asleep:
+            self._memory.need_start_animation = False
+            return
+
+        self.countdown_before_toggle_visibility.cancel()
+
+    def wake(self):
+
+        super().wake()
+        if self.countdown_before_toggle_visibility.is_paused:
+            self.countdown_before_toggle_visibility.resume()
