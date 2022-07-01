@@ -3,12 +3,12 @@
 from baopig import *
 
 
-class SelectableRectangle(Rectangle, Selectable):
+class SelectableRectangle(Rectangle, SelectableWidget):
 
     def __init__(self, parent, pos):
 
         Rectangle.__init__(self, parent, color="blue", size=(30, 30), pos=pos)
-        Selectable.__init__(self)
+        SelectableWidget.__init__(self, parent)
         self.hightlighter = None
         self.timer = None
 
@@ -104,9 +104,9 @@ class UT_Selections_Zone(UT_Selector):
         )
 
         self.parent.add_section(
-            title="Selectable",
+            title="SelectableWidget",
             tests=[
-                "A Selectable's selector is the youngest Selector in Selectable's family tree",
+                "A SelectableWidget's selector is the youngest Selector in SelectableWidget's family tree",
                 "For each selection rect movement, if it collide with a selectable, it calls the 'select' method",
                 "At the time selection rect don't collide with a selectable anymore, 'unselect' is called",
             ]

@@ -681,7 +681,10 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
     STYLE.set_type("pos_location", WidgetLocation)
     STYLE.set_type("pos_ref_location", WidgetLocation)
 
-    def __init__(self, parent, surface, pos=None, layer=None, name=None, row=None, col=None, **options):
+    def __init__(self, parent, surface=None, pos=None, layer=None, name=None, row=None, col=None, **options):
+
+        if hasattr(self, "_weakref"):  # Widget___init__() has already been called
+            return
 
         if name is None: name = "NoName"
         if isinstance(layer, str): layer = parent.layers_manager.get_layer(layer)

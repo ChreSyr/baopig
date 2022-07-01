@@ -8,29 +8,29 @@ from .shapes import Rectangle
 from .container import Container
 
 
-class Selectable:
+class SelectableWidget(Widget):
     """
-    A Selectable is a Widget who can be selected
+    A SelectableWidget is a Widget who can be selected
 
-    You are selecting a Selectable when :
+    You are selecting a SelectableWidget when :
         - You click on its selector (a parent), and then move the mouse while it is clicked, and
-          the rect representing the drag collide with the Selectable
+          the rect representing the drag collide with the SelectableWidget
         - You pressed Ctrl+A while its selector is focused
 
     The selection_rect closes when :
         - A mouse.LEFTCLICK occurs (not double clicks, wheel clicks...)
-        - The Selectable size or position changes
+        - The SelectableWidget size or position changes
 
     You can rewrite the check_select(abs_rect) method for accurate selections (like SelectableText)
     You can rewrite the select() and unselect() methods for specific behaviors (like SelectableText)
 
-    The get_selected_data() method return, when the Selectable is selected, the Selectable itself
+    The get_selected_data() method return, when the SelectableWidget is selected, the SelectableWidget itself
     You will probably want to override this method
     """
 
-    def __init__(self):
+    def __init__(self, parent, **kwargs):
 
-        assert isinstance(self, Widget)
+        Widget.__init__(self, parent, **kwargs)
 
         self._is_selected = False
 
@@ -79,12 +79,12 @@ class Selectable:
 
     def handle_select(self):
         """
-        Called each time the selection rect move and collide with this Selectable
+        Called each time the selection rect move and collide with this SelectableWidget
         """
 
     def handle_unselect(self):
         """
-        Called when the selection rect don't collide anymore with this Selectable
+        Called when the selection rect don't collide anymore with this SelectableWidget
         """
 
 
@@ -141,7 +141,7 @@ class Selector(Linkable):
     Abstract class for components who need to handle when they are linked
     and then, while the mouse is still pressed, to handle the mouse drag in
     order to simulate a rect from the link origin to the link position and
-    select every Selectable object who collide with this rect
+    select every SelectableWidget object who collide with this rect
     """
 
     def __init__(self, SelectionRectClass=None):

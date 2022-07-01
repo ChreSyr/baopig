@@ -285,7 +285,7 @@ class _Line(Widget):
 class _SelectableLine(_Line):
     """
     You are selecting a SelectableLine when :
-        - A condition described in Selectable is verified
+        - A condition described in SelectableWidget is verified
         - A cursor moves while Maj key is pressed
     """
 
@@ -489,7 +489,7 @@ class _LineSelection(Rectangle):
         self.show()
 
 
-class _SelectableText(Selectable):
+class _SelectableText(SelectableWidget):
 
     def check_select(self, selection_rect):
         for line in self.lines:
@@ -563,7 +563,7 @@ class Text(Zone, _SelectableText):
 
         Zone.__init__(self, parent, **kwargs)
         if selectable:
-            _SelectableText.__init__(self)
+            _SelectableText.__init__(self, parent)
 
         # Adaptable size
         self._max_width = self.style["max_width"]

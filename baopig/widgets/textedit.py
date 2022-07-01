@@ -14,7 +14,7 @@ class _TextEditSelector(Selector):
     Abstract class for components who need to handle when they are linked
     and then, while the mouse is still pressed, to handle the mouse drag in
     order to simulate a rect from the link origin to the link position and
-    select every Selectable object who collide with this rect
+    select every SelectableWidget who collide with this rect
     """
 
     def __init__(self):
