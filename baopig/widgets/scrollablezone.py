@@ -1,5 +1,5 @@
-from baopig._lib import Scrollable, ScrollableByMouse, MarginType
-from baopig._lib import Zone, LayersManager
+from baopig.lib import Scrollable, ScrollableByMouse, MarginType
+from baopig.lib import Zone, LayersManager
 from .slider import Slider, SliderBar, SliderBloc
 
 

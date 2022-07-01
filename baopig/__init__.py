@@ -18,7 +18,7 @@ from .pybao.objectutilities import Object, PrefilledFunction, PackedFunctions
 
 from .io import *
 from .time import *
-from ._lib import *
+from .lib import *
 from .widgets import *
 
 display = None  # protection for pygame.display

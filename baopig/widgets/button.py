@@ -1,6 +1,6 @@
 import pygame
-from baopig._lib import Clickable, Layer
-from baopig._lib import Sail, Image, Container, Hoverable
+from baopig.lib import Clickable, Layer
+from baopig.lib import Sail, Image, Container, Hoverable
 from .text import Text
 
 

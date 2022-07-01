@@ -2,7 +2,7 @@
 
 from baopig.pybao.objectutilities import Object, deque
 from baopig.io import keyboard, mouse, LOGGER
-from baopig._lib import *
+from baopig.lib import *
 from .text import Text
 
 

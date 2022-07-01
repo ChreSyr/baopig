@@ -1,6 +1,6 @@
 from math import inf as math_inf
 from baopig.font.font import Font
-from baopig._lib import *
+from baopig.lib import *
 
 
 class _Line(Widget):

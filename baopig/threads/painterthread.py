@@ -7,7 +7,7 @@ import threading
 import pygame
 from baopig.pybao.objectutilities import History, Object
 from baopig.time.timer import RepeatingTimer
-from baopig._lib import paint_lock
+from baopig.lib import paint_lock
 from .thread import ExtraThread, LOGGER
 
 

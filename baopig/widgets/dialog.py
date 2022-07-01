@@ -1,4 +1,4 @@
-from baopig._lib import *
+from baopig.lib import *
 from .button import Button
 from .text import Text
 

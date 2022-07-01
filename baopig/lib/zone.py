@@ -1,7 +1,7 @@
 
 
 import pygame
-from baopig._lib import Container, paint_lock, Widget
+from baopig.lib import Container, paint_lock, Widget
 
 
 class Zone(Container):

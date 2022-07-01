@@ -1,5 +1,5 @@
 from baopig.io import mouse
-from baopig._lib import *
+from baopig.lib import *
 from .indicator import DynamicIndicator
 from .text import Text
 

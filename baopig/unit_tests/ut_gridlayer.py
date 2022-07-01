@@ -97,7 +97,7 @@ class UT_GridLayer_Zone(Zone):
 
         buttons_layer = GridLayer(z4, nbrows=3, nbcols=3)
         def click():
-            from baopig._lib.widget import WidgetLocation
+            from baopig.lib.widget import WidgetLocation
             for w in grid4:
                 # sticky = mouse.hovered_comp.text_widget.text
                 # w.origin.unlock()

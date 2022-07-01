@@ -183,7 +183,7 @@ import glob
 import pygame
 
 from baopig.io import LOGGER
-# TODO : move to _lib
+# TODO : move to lib
 
 class Font:
 

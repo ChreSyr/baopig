@@ -1,6 +1,6 @@
 
 import pygame
-from baopig._lib import Rectangle
+from baopig.lib import Rectangle
 from .button import Button
 
 
