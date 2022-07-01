@@ -12,7 +12,7 @@ class _TimeManager:
         self._paused_timers = None
         self._paused_stopwatches = None
 
-    def pause(self):
+    def pause_TBR(self):
 
         if self._paused_timers is not None:
             raise PermissionError("The TimeThread is already paused")
@@ -25,7 +25,7 @@ class _TimeManager:
             stopwatch.stop()
         self._is_paused = True
 
-    def resume(self):
+    def resume_TBR(self):
 
         if self._paused_timers is None:
             raise PermissionError("The TimeThread is already running")

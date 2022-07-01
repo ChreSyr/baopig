@@ -296,7 +296,7 @@ class Application(HasStyle):
         """
         pass  # TODO : implemented this functionnality
 
-    def freeze(self, until):  # TODO : until
+    def freeze(self, until):  # TODO : remove this, not a supported functionnality
         """Freeze the application until 'freeze' function returns True"""
 
         assert callable(until)

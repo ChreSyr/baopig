@@ -39,11 +39,11 @@ class UTMenu_Scene(Scene):
 
         def get_ut_filenames():
             import os
-            dir = os.path.dirname(os.path.realpath(__file__))[:-7] + "unit_tests"
-            for root, dirs, files in os.walk(dir):
-                for filename in files:
-                    if filename.endswith(".py") and filename.startswith("ut_"):
-                        yield filename[:-3]  # discard '.py'
+            directory = os.path.dirname(os.path.realpath(__file__))[:-7] + "unit_tests"
+            for root, dirs, files in os.walk(directory):
+                for file_name in files:
+                    if file_name.endswith(".py") and file_name.startswith("ut_"):
+                        yield file_name[:-3]  # discard '.py'
 
         import importlib
         for filename in get_ut_filenames():
@@ -52,6 +52,7 @@ class UTMenu_Scene(Scene):
             ut_file = importlib.import_module("baopig.unit_tests." + filename)
             try:
                 zone_class = ut_file.ut_zone_class
+
                 def open_testerscene(zc):
                     TesterScene(app, ContentZoneClass=zc).open()
                 Button(self, row=len(self.default_layer), text=zone_class.__name__[3:-5],  # discards 'UT_' and '_Zone'

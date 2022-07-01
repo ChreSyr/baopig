@@ -1,58 +1,10 @@
-
-
 import functools
 from baopig.communicative import Communicative
 from .widget import Widget
 
 
-# TODO : rework
-def decorator_start_running(widget, start_running):
-    functools.wraps(start_running)
-    def wrapped_func(*args, **kwargs):
-        if widget.is_running is True: return
-        _runables_manager.start_running(widget)
-        widget._is_running = True
-        res = start_running(*args, **kwargs)
-        widget.signal.START_RUNNING.emit()
-        return res
-    return wrapped_func
-
-def decorator_pause(widget, pause):
-    functools.wraps(pause)
-    def wrapped_func(*args, **kwargs):
-        if widget.is_running is False: raise PermissionError("Cannot pause a Runable who didn't start yet")
-        if widget.is_paused is True: return
-        _runables_manager.pause(widget)
-        widget._is_running = False
-        widget._is_paused = True
-        res = pause(*args, **kwargs)
-        widget.signal.PAUSE.emit()
-        return res
-    return wrapped_func
-
-def decorator_resume(widget, resume):
-    functools.wraps(resume)
-    def wrapped_func(*args, **kwargs):
-        if widget.is_paused is False: raise PermissionError("Cannot resume a Runable who isn't paused")
-        _runables_manager.resume(widget)
-        widget._is_running = True
-        widget._is_paused = False
-        res = resume(*args, **kwargs)
-        widget.signal.RESUME.emit()
-        return res
-    return wrapped_func
-
-def decorator_stop_running(widget, stop_running):
-    functools.wraps(stop_running)
-    def wrapped_func(*args, **kwargs):
-        if widget.is_paused is True: widget.resume()
-        if widget.is_running is False: return
-        _runables_manager.stop_running(widget)
-        widget._is_running = False
-        res = stop_running(*args, **kwargs)
-        widget.signal.STOP_RUNNING.emit()
-        return res
-    return wrapped_func
+# TODO : merge _RunablesManager & _TimeManager
+# TODO : baopig.time.init() for chifoumi__server
 
 
 class _RunablesManager:
@@ -125,11 +77,6 @@ class Runable(Communicative):
         if not hasattr(self, "signal"):  # if Communicative.__init__(self) haven't been called elsewhere
             Communicative.__init__(self)
 
-        self.start_running = decorator_start_running(self, self.start_running)
-        self.pause = decorator_pause(self, self.pause)
-        self.resume = decorator_resume(self, self.resume)
-        self.stop_running = decorator_stop_running(self, self.stop_running)
-
         self._is_running = False
         self._is_paused = False
 
@@ -153,13 +100,61 @@ class Runable(Communicative):
         """Stuff to do when the object is running"""
 
     def pause(self):
+
+        if not self.is_running:
+            raise PermissionError("Cannot pause a Runable who didn't start yet")
+
+        if self.is_paused is True:
+            return
+
+        _runables_manager.pause(self)
+        self._is_running = False
+        self._is_paused = True
+        self.handle_pause()
+        self.signal.PAUSE.emit()
+
+    def handle_pause(self):
         """Stuff to do when the object is paused"""
 
     def resume(self):
+
+        if self.is_paused is False:
+            raise PermissionError("Cannot resume a Runable who isn't paused")
+
+        _runables_manager.resume(self)
+        self._is_running = True
+        self._is_paused = False
+        self.handle_resume()
+        self.signal.RESUME.emit()
+
+    def handle_resume(self):
         """Stuff to do when the object resume"""
 
     def start_running(self):
+
+        if self.is_running is True:
+            return
+
+        _runables_manager.start_running(self)
+        self._is_running = True
+        self.handle_startrunning()
+        self.signal.START_RUNNING.emit()
+
+    def handle_startrunning(self):
         """Stuff to do when the object starts to run"""
 
     def stop_running(self):
+
+        if self.is_paused is True:
+            self.resume()
+
+        if self.is_running is False:
+            return
+
+        _runables_manager.stop_running(self)
+        self._is_running = False
+        self.handle_stoprunning()
+        self.signal.STOP_RUNNING.emit()
+
+    def handle_stoprunning(self):
         """Stuff to do when the object stops to run"""

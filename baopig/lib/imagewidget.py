@@ -9,7 +9,7 @@ class Image(ResizableWidget):
 
     # TODO : self.tiled instead of parameter in resize()
 
-    def __init__(self, parent, image, pos=None, w=None, h=None, **kwargs):
+    def __init__(self, parent, image, pos=None, w=None, h=None, **kwargs):  # TODO : remove w & h params
         """
         Cree une image
 
@@ -20,8 +20,10 @@ class Image(ResizableWidget):
         assert isinstance(image, pygame.Surface), "image must be a Surface"
 
         image_size = image.get_size()
-        if w is None: w = image_size[0]
-        if h is None: h = image_size[1]
+        if w is None:
+            w = image_size[0]
+        if h is None:
+            h = image_size[1]
         if image_size != (w, h):
             surface = pygame.transform.scale(image, (w, h))
         else:
