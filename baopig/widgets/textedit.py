@@ -62,7 +62,7 @@ class TextEdit(Text, Selector):
         super().end_selection(*args, **kwargs)
 
         pos = (self.selection_rect.end[0] - self.abs.left, self.selection_rect.end[1] - self.abs.top)
-        line_index, char_index = self.find_indexes(pos=pos)
+        line_index, char_index = self._find_indexes(pos=pos)
         if line_index != self.cursor.line_index or char_index != self.cursor.char_index:
             self.cursor.config(line_index=line_index, char_index=char_index, selecting="done")
 
@@ -89,7 +89,7 @@ class TextEdit(Text, Selector):
         super().handle_link()
 
         if not mouse.has_double_clicked and not mouse.has_triple_clicked:  # else, the cursor follow the selection
-            self.cursor.config(text_index=self.find_mouse_index())
+            self.cursor.config(text_index=self._find_mouse_index())
 
     def paste(self, data):
 
@@ -240,13 +240,10 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
             assert line_index is None
             assert char_index is None
             line_index, char_index = self.parent.find_indexes(text_index=text_index)
-            assert text_index == self.parent.find_index(line_index, char_index)
         else:
             assert char_index is not None
-            if line_index is None:
-                text_index, line_index, char_index = self.parent.find_indexes(line_index=self.line_index, char_index=char_index)
-            else:
-                text_index = self.parent.find_index(line_index, char_index)
+            assert line_index is not None
+            text_index = self.parent.find_index(line_index, char_index)
 
         assert text_index == self.parent.find_index(line_index, char_index)
 
@@ -255,9 +252,11 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
             abs_pos = self.parent.abs_left + pos[0], self.parent.abs_top + pos[1]
             self.parent.start_selection(abs_pos)
 
-        def fit(v, min, max):
-            if v < min: v = min
-            elif v > max: v = max
+        def fit(v, mini, maxi):
+            if v < mini:
+                v = mini
+            elif v > maxi:
+                v = maxi
             return v
 
         self._text_index = fit(text_index, 0, len(self.parent.text))

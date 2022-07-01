@@ -1,4 +1,6 @@
+
 from math import inf as math_inf
+from baopig.io import mouse
 from baopig.font.font import Font
 from baopig.lib import *
 
@@ -457,7 +459,8 @@ class _LineSelection(Rectangle):
 
     def get_data(self):
         end = self.line.end if self._is_selecting_line_end else ''
-        if end == '\v': end = ''
+        if end == '\v':
+            end = ''
         return self.line.text[self.index_start:self.index_end] + end
 
     def set_end(self, index, selecting_line_end):
@@ -489,44 +492,7 @@ class _LineSelection(Rectangle):
         self.show()
 
 
-class _SelectableText(SelectableWidget):
-
-    def check_select(self, selection_rect):
-        for line in self.lines:
-            line.check_select(selection_rect)
-        self._is_selected = True in tuple((line.is_selected for line in self.lines))
-
-    def get_selected_data(self):
-        if self.is_selected:
-            data = ""
-            for line in self.lines:
-                data += line.get_selected_data()
-            return data
-
-    def handle_selector_link(self):
-
-        if not self.collidemouse():
-            return
-
-        if mouse.has_triple_clicked:
-            for line in self.lines:
-                if line.abs.top <= mouse.y < line.abs.bottom:
-                    with paint_lock:
-                        self.selector.close_selection()
-                        self.selector.start_selection((line.abs.left, line.abs.top))
-                        self.selector.end_selection((line.abs.right, line.abs.top), visible=False)
-                        return
-        elif mouse.has_double_clicked:
-            for line in self.lines:
-                if line.abs.top <= mouse.y < line.abs.bottom:
-                    line.select_word(line.find_mouse_index())
-
-    def handle_unselect(self):
-        for line in self.lines:
-            line.handle_unselect()
-
-
-class Text(Zone, _SelectableText):
+class Text(Zone, SelectableWidget):
     STYLE = Zone.STYLE.substyle()
     STYLE.modify(
         width=0,
@@ -562,8 +528,7 @@ class Text(Zone, _SelectableText):
         assert isinstance(selectable, bool)
 
         Zone.__init__(self, parent, **kwargs)
-        if selectable:
-            _SelectableText.__init__(self, parent)
+        SelectableWidget.__init__(self, parent)
 
         # Adaptable size
         self._max_width = self.style["max_width"]
@@ -623,7 +588,7 @@ class Text(Zone, _SelectableText):
         centerx = None  # warning shut down
         if self.align_mode == "center":  # only usefull for the widget creation
             if self._width_is_adaptable:
-                centerx = max(l.w for l in self.lines) / 2 + self.content_rect.left
+                centerx = max(line.w for line in self.lines) / 2 + self.content_rect.left
             else:
                 centerx = self.content_rect.centerx
 
@@ -668,7 +633,7 @@ class Text(Zone, _SelectableText):
         assert self.lines[-1].bottom == self.h, str(self.lines[-1].bottom) + ' ' + str(self.h)
         raise Exception
 
-    def find_index(self, line_index, char_index=None):
+    def find_index(self, line_index, char_index):
         """
         This method return the total index from a line index and a character index
 
@@ -682,8 +647,6 @@ class Text(Zone, _SelectableText):
                   the text is cut inside a word or after a '-', we need two different
                   indexes for the end of the line and the start of the next line
         """
-        if char_index is None:
-            return self._find_index(pos=line_index)
 
         text_index = 0
         for i, line in enumerate(self.lines):
@@ -712,93 +675,32 @@ class Text(Zone, _SelectableText):
 
         raise Exception
 
-    def _find_indexes_corrected(self, line_index, char_index):
-
-        text_index = 0
-        for i, line in enumerate(self.lines):
-            if i == line_index:
-                break
-            text_index += len(line.real_text)
-        text_index += char_index
-        if text_index < 0: return 0, 0, 0
-        if text_index > len(self.text):
-            return len(self.text), len(self.lines) - 1, len(self.lines[-1].text)
-
-        if not 0 <= char_index <= len(self.lines[line_index].text):
-            char_index = text_index
-            for line_index, line in enumerate(self.lines):
-                if char_index <= len(line.text):
-                    assert 0 <= char_index <= len(line.text), char_index
-                    break
-                char_index -= len(line.real_text)
-
-        assert text_index == self.find_index(line_index, char_index), "{}, {}, {}".format(text_index, line_index,
-                                                                                          char_index)
-
-        return text_index, line_index, char_index
-
-    def find_indexes(self, text_index=None, line_index=None, char_index=None, pos=None):
+    def find_indexes(self, text_index):
         """
         Renvoie l'inverse de self.find_index(line_index, char_index)
 
         Example:
             text = "Hello\n"
                    "world"
-            text.find_indexes(8) -> (1, 2)
+            text.find_indexes(8) -> (1, 2) (index is between 'wo' & 'rld')
         """
-
-        if line_index is not None:
-            assert text_index is None
-            assert char_index is not None
-            assert pos is None
-            return self._find_indexes_corrected(line_index=line_index, char_index=char_index)
-
-        if pos is not None:
-            assert text_index is None
-            assert line_index is None
-            assert char_index is None
-            return self._find_indexes(pos=pos)
 
         if text_index < 0:
             return 0, 0
-        char_index = text_index
+
         for line_index, line in enumerate(self.lines):
-            if char_index <= len(line.text):
-                assert 0 <= char_index <= len(line.text), char_index
-                return line_index, char_index
-            char_index -= len(line.real_text)
+            if text_index <= len(line.text):
+                return line_index, text_index
+            text_index -= len(line.real_text)
 
         # The given text_index is too high
-        return line_index, len(line.text)
+        return len(self.lines), len(self.lines[-1].text)
 
-    def find_mouse_index(self):
+    def _find_mouse_index(self):
         """
         Return the closest index from mouse.x
         """
-        return self.find_index(mouse.get_pos_relative_to(self))
-
-    def find_mouse_indexes(self):
-        """
-        Return the closest indexes from mouse.x
-        """
-        return self.find_indexes(pos=mouse.get_pos_relative_to(self))
-
-    def _find_pos(self, text_index):
-
-        line_index, char_index = self.find_indexes(text_index=text_index)
-        return self.find_pos(line_index=line_index, char_index=char_index)
-
-    def find_pos(self, text_index=None, line_index=None, char_index=None):
-        """
-        Effectue l'inverse de find_indexes
-        La position renvoyee est relative a self.topleft
-        """
-        if text_index is not None: return self._find_pos(text_index=text_index)
-        return self.lines[line_index].find_pixel(char_index), self._lines_pos[line_index]
-
-    def get_selected_data(self):
-        if self.is_selectable:
-            return ''.join(line.get_selected_data() for line in self.lines)
+        return self._find_index(pos=mouse.get_pos_relative_to(self))
 
     def get_text(self):
         return ''.join(line.real_text for line in self.lines)[:-1]  # Discard last \n
@@ -832,7 +734,9 @@ class Text(Zone, _SelectableText):
 
     def set_text(self, text):
 
-        if self.has_locked.text: return
+        if self.has_locked.text:
+            return
+
         with paint_lock:
 
             first_line = self.lines[0] if self.lines else None
@@ -849,8 +753,8 @@ class Text(Zone, _SelectableText):
             if first_line is not None:
                 first_line.config(text=text, end='\n')
             else:
-                LineClass = _SelectableLine if self.is_selectable else _Line
-                LineClass(
+                line_class = _SelectableLine if self.is_selectable else _Line
+                line_class(
                     parent=self,
                     text=text,
                     line_index=0,
@@ -863,8 +767,53 @@ class Text(Zone, _SelectableText):
                 while self.lines[-1].bottom > self.content_rect.bottom:
                     if self.font.height == 2:
                         raise ValueError(
-                            f"This text is too long for the text area : {text} (area={self.content_rect}), {self.align_mode}, {self.width}")
+                            f"This text is too long for the text area : {text} (area={self.content_rect}), "
+                            f"{self.align_mode}, {self.width}")
                     self.font.config(height=self.font.height - 1)  # changing the font automatically updates the text
+
+    # Selectable methods
+    def check_select(self, selection_rect):
+
+        if not self.is_selectable:
+            return
+
+        for line in self.lines:
+            line.check_select(selection_rect)
+        self._is_selected = True in tuple((line.is_selected for line in self.lines))
+
+    def get_selected_data(self):
+
+        if self.is_selected:
+            return ''.join(line.get_selected_data() for line in self.lines)
+
+    def handle_selector_link(self):
+
+        if not self.is_selectable:
+            return
+
+        if not self.collidemouse():
+            return
+
+        if mouse.has_triple_clicked:
+            for line in self.lines:
+                if line.abs.top <= mouse.y < line.abs.bottom:
+                    with paint_lock:
+                        self.selector.close_selection()
+                        self.selector.start_selection((line.abs.left, line.abs.top))
+                        self.selector.end_selection((line.abs.right, line.abs.top), visible=False)
+                        return
+        elif mouse.has_double_clicked:
+            for line in self.lines:
+                if line.abs.top <= mouse.y < line.abs.bottom:
+                    line.select_word(line.find_mouse_index())
+
+    def handle_unselect(self):
+
+        if not self.is_selectable:
+            return
+
+        for line in self.lines:
+            line.handle_unselect()
 
 
 class DynamicText(Text, Runable):
