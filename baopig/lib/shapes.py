@@ -4,7 +4,7 @@ import pygame
 
 from baopig.pybao.issomething import *
 from .layer import Layer
-from .resizable import ResizableWidget
+from .widget_supers import ResizableWidget
 from .utilities import Color, paint_lock
 from .widget import Widget
 

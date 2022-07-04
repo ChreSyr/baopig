@@ -4,7 +4,7 @@ from baopig.pybao.objectutilities import *
 from .imagewidget import Image
 from .layer import Layer
 from .layersmanager import LayersManager
-from .resizable import ResizableWidget
+from .widget_supers import ResizableWidget
 from .utilities import *
 
 
@@ -130,7 +130,7 @@ class Container(ResizableWidget):
     # NOTE : if width or height is defined in style, and a background_image is set,
     # the width and height values will be ignored
 
-    def __init__(self, parent, *args, **options):
+    def __init__(self, parent, **kwargs):
 
         if hasattr(self, "_weakref"):  # Container.__init__() has already been called
             return
@@ -138,14 +138,14 @@ class Container(ResizableWidget):
         self._children = ChildrenList(self)  # needed in ResizableWidget.__init__
         self._rect_to_update = None
 
-        ResizableWidget.__init__(self, parent, *args, **options)
+        ResizableWidget.__init__(self, parent, **kwargs)
 
         self._children_to_paint = WeakSet()  # a set cannot have two same occurences
 
         # LAYERS - Only layers can guarantie the overlay
         layersmanager_class = LayersManager
-        if "layersmanager_class" in options:
-            layersmanager_class = options.pop("layersmanager_class")
+        if "layersmanager_class" in kwargs:
+            layersmanager_class = kwargs.pop("layersmanager_class")
             assert issubclass(layersmanager_class, LayersManager)
         self.layers_manager = layersmanager_class(self)
         self.layers = self.layers_manager.layers

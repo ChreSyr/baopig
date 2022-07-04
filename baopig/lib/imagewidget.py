@@ -2,7 +2,7 @@
 # NOTE : filename is imagewidget.py because image.py would overlap pygame.image
 
 import pygame
-from .resizable import ResizableWidget
+from .widget_supers import ResizableWidget
 
 
 class Image(ResizableWidget):
