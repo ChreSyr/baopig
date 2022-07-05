@@ -66,14 +66,18 @@ class TextEdit(Text, Selector):
 
     def handle_defocus(self):
 
-        self.cursor.kill()
+        self.cursor.sleep()
 
     def handle_focus(self):
 
-        assert self.cursor is None
         line_index = len(self.lines) - 1
         char_index = len(self.lines[-1].text)
-        Cursor(self, line_index=line_index, char_index=char_index)
+
+        if self.cursor is None:
+            Cursor(self, line_index=line_index, char_index=char_index)
+        else:
+            self.cursor.wake()
+            self.cursor.config(line_index=line_index, char_index=char_index)
 
     def handle_keydown(self, key):
 

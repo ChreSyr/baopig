@@ -60,7 +60,7 @@ class UT_LayerPack_Zone(Zone):
 
             for i in range(10):
 
-                if len(self.package2.all_children) == 81:
+                if len(self.package2.children) == 81:
                     return
 
                 searching = True

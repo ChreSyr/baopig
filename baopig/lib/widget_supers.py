@@ -260,7 +260,7 @@ class Focusable(Enablable):
         """
 
         all_focs = []
-        for child in self.parent.awake_children:
+        for child in self.parent.children:
             if isinstance(child, Focusable):
                 if child.is_enabled:
                     if child.is_visible:
@@ -275,7 +275,7 @@ class Focusable(Enablable):
         Give the focus to the next focusable (ranked by position) in parent
         """
         all_focs = []
-        for child in self.parent.awake_children:
+        for child in self.parent.children:
             if isinstance(child, Focusable):
                 if child.is_enabled:
                     if child.is_visible:
@@ -543,35 +543,37 @@ class RepetivelyAnimated(Widget):  # TODO : rework default anitmations
             else:
                 self.show()
 
-        self.countdown_before_toggle_visibility = RepeatingTimer(interval, blink)
-        self.signal.KILL.connect(self.countdown_before_toggle_visibility.cancel, owner=None)
+        self._countdown_before_blink = RepeatingTimer(interval, blink)
+        self._need_start_animation = False
+        self.signal.SLEEP.connect(self.handle_sleep, owner=None)
+        self.signal.WAKE.connect(self.handle_wake, owner=None)
+        self.signal.KILL.connect(self._countdown_before_blink.cancel, owner=None)
 
-    def sleep(self):
+    def handle_sleep(self):
 
-        super().sleep()
-        if self.countdown_before_toggle_visibility.is_paused:
-            self.countdown_before_toggle_visibility.pause()
+        self._need_start_animation = self._countdown_before_blink.is_running
+        self._countdown_before_blink.cancel()
 
     def start_animation(self):
 
         if self.is_asleep:
-            self._memory.need_start_animation = True
+            self._need_start_animation = True
             return
 
-        if self.countdown_before_toggle_visibility.is_running:
-            self.countdown_before_toggle_visibility.cancel()
-        self.countdown_before_toggle_visibility.start()
+        if self._countdown_before_blink.is_running:
+            self._countdown_before_blink.cancel()
+        self._countdown_before_blink.start()
 
     def stop_animation(self):
 
         if self.is_asleep:
-            self._memory.need_start_animation = False
+            self._need_start_animation = False
             return
 
-        self.countdown_before_toggle_visibility.cancel()
+        self._countdown_before_blink.cancel()
 
-    def wake(self):
+    def handle_wake(self):
 
-        super().wake()
-        if self.countdown_before_toggle_visibility.is_paused:
-            self.countdown_before_toggle_visibility.resume()
+        if self._need_start_animation:
+            self._countdown_before_blink.start()
+        self._need_start_animation = False

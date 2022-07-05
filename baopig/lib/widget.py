@@ -11,7 +11,7 @@ from .utilities import paint_lock
 from .style import HasStyle, StyleClass, Theme
 
 
-class MetaPaintLocker(type):  # TODO : keep ?
+class MetaPaintLocker(type):
     def __call__(cls, *args, **kwargs):
         with paint_lock:
             widget = super().__call__(*args, **kwargs)
@@ -64,7 +64,8 @@ class _Origin:
         self._location = owner.style["pos_location"]
         # We need to initialize reference before config
         reference = owner.style["pos_ref"]
-        if reference is None: reference = owner.parent
+        if reference is None:
+            reference = owner.parent
         self._reference_ref = reference.get_weakref()
         self.reference.signal.RESIZE.connect(self._weak_update_owner_pos, owner=self.owner)
         if self.reference != owner.parent:
@@ -108,9 +109,12 @@ class _Origin:
         )
 
     def _weak_update_owner_pos(self):
+        if self.owner.is_asleep:
+            return
         new_pos = self.pos
         old_pos = getattr(self.owner.rect, self.location)
-        if new_pos == old_pos: return
+        if new_pos == old_pos:
+            return
         self.owner._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
 
     @staticmethod
@@ -582,9 +586,13 @@ class HasProtectedHitbox:
 
     def update_pos(self):
 
+        if self.is_asleep:  # the widget has no parent
+            return
+
         new_pos = self.origin.pos
         old_pos = getattr(self.rect, self.origin.location)
-        if new_pos == old_pos: return
+        if new_pos == old_pos:
+            return
         self._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
 
 
@@ -642,13 +650,13 @@ class HasProtectedSurface:
                 self._set_surface(surface)
                 self.signal.RESIZE.emit(old_size)
 
-                if self.is_visible:
+                if self.is_visible & self.is_awake:
                     self.parent._warn_change(self.hitbox.union(old_hitbox))
 
             else:
 
                 self._surface = surface
-                if self.is_visible:
+                if self.is_visible & self.is_awake:
                     self.parent._warn_change(self.hitbox)
 
             self.signal.NEW_SURF.emit()
@@ -749,25 +757,13 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
         self._dirty = 0
 
         """
-        An asleep component won't be visible and won't update itself until it awakes
-        The memory is an object who remember all the changements the component should
-        have done while it is asleep
-        When it awakes, it will operate all the changements
-        
-        Exemple : you can do
-        
-            comp.move_at((4, 4))
-            comp.asleep()
-            comp.move_at((10, 10))
-            comp.wake()
-            
-            and the comp will reappear positionned at (10, 10)
-        This is very usefull for components who are often hidden and shown
+        A sleeping widget is not attached to its parent.
+        If nothing connects it to its application, the garbage collector will delete it.
         """
         self._is_asleep = False
-        self._memory = Object(  # TODO : requests_at_awake
+        self._sleep_memory = Object(
             need_appear=None,
-            need_start_animation=None,
+            parent=None,
         )
         self.create_signal("SLEEP")
         self.create_signal("WAKE")
@@ -851,12 +847,16 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
 
         # INITIALIZATIONS
         HasProtectedHitbox.__init__(self)
-        self.parent._add_child(self)
+        parent._add_child(self)
 
         if "touchable" in options:
             if options["touchable"] is False:
                 self.set_nontouchable()
             options.pop("touchable")
+
+        if "top" in options:  # TODO
+            top = options.pop("top")
+            self.top = top
 
         if options:
             raise ValueError(f"Unused options : {options}")
@@ -871,7 +871,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
 
             return wrapped_func
 
-        self.paint = paint_decorator(self, self.paint)
+        self.paint = paint_decorator(self, self.paint)  # TODO : Paintable
 
     def __repr__(self):
         """
@@ -943,7 +943,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
             return
 
         if self.is_asleep:
-            self._memory.need_appear = False
+            self._sleep_memory.need_appear = False
             return
 
         self._is_visible = False
@@ -958,11 +958,13 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
 
     def kill(self):
 
-        if not self.is_alive: return
+        if not self.is_alive:
+            return
         with paint_lock:
             try:
                 self.signal.KILL.emit(self._weakref)
-                self.parent._remove_child(self)
+                if self.parent.is_alive:  # False when called by Widget.wake()
+                    self.parent._remove_child(self)
                 self.disconnect()
                 self._weakref._comp = None
             except Exception as e:
@@ -1004,7 +1006,10 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
     def send_paint_request(self):
 
         if self._dirty == 0:
-            self.parent._dirty_child(self, 1)
+            if self.is_asleep:  # the widget has no parent
+                self._dirty = 1
+            else:
+                self.parent._dirty_child(self, 1)
 
     def set_nontouchable(self):
         """Cannot go back"""
@@ -1038,13 +1043,13 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
         If the component was awake and hidden, it will appear on the screen
         """
 
-        if self.has_locked.visibility: return
-
+        if self.has_locked.visibility:
+            return
         if self.is_visible:
             return
 
         if self.is_asleep:
-            self._memory.need_appear = True
+            self._sleep_memory.need_appear = True
             return
 
         self._is_visible = True
@@ -1058,7 +1063,16 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
 
     def sleep(self):
 
-        self.parent.asleep_child(self)
+        if self.is_asleep:
+            return
+
+        assert self in self.parent.children
+
+        self.parent._remove_child(self)
+        self._sleep_memory.__setattr__("parent", self.parent)
+        self._parent = None
+        self._is_asleep = True
+        self.signal.SLEEP.emit()
 
     def swap_layer(self, layer):
 
@@ -1080,4 +1094,24 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
 
     def wake(self):
 
-        self.parent.wake_child(self)
+        if self.is_awake:
+            return
+
+        self._parent = self._sleep_memory.parent
+
+        if self.parent.is_dead:
+            return self.kill()
+
+        self._is_asleep = False
+        self.parent._add_child(self)
+        self.origin._weak_update_owner_pos()
+
+        if self._sleep_memory.need_appear:
+            self.show()
+
+        self.send_paint_request()
+
+        self._sleep_memory.need_appear = None  # TODO : self._sleep_memory.clear()
+        self._sleep_memory.parent = None
+
+        self.signal.WAKE.emit()

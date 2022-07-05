@@ -4,7 +4,7 @@ from baopig.pybao.objectutilities import *
 from .imagewidget import Image
 from .layer import Layer
 from .layersmanager import LayersManager
-from .widget_supers import ResizableWidget
+from .widget_supers import ResizableWidget, Runable
 from .utilities import *
 
 
@@ -30,7 +30,7 @@ class BoxRect(pygame.Rect):
             )
 
 
-class ChildrenList:
+class ChildrenManager:
     """
     Class for an ordered list of children
 
@@ -46,34 +46,32 @@ class ChildrenList:
         assert isinstance(owner, Container)
 
         self._owner = owner
-        self.asleep = set()
-        self.awake = set()
+        self.all = set()  # accessible via Container.children
         self.containers = set()
         self.handlers_sceneclose = set()
         self.handlers_sceneopen = set()
+        self.runables = set()
         self._lists = {
             Handler_SceneClose: self.handlers_sceneclose,
             Handler_SceneOpen: self.handlers_sceneopen,
             Container: self.containers,
+            Runable: self.runables,
         }
         self._strong_refs = set()
 
-    def _add(self, child):
+    def add(self, child):
         """
         This method should only be called by the Widget constructor
         """
 
         assert child.parent == self._owner
         if child.is_asleep:
-            if child in self.asleep:
-                raise PermissionError(f"{child} already asleep in {self.asleep}")
-            self.asleep.add(child)
-            return
+            raise PermissionError("A Container cannot contain asleep widgets")
 
-        if child in self.awake:
+        if child in self.all:
             raise PermissionError(f"{child} already in {self}")
 
-        self.awake.add(child)
+        self.all.add(child)
         self._strong_refs.add(child)
         self._owner.layers_manager.add(child)
         for children_class, children_set in self._lists.items():
@@ -82,24 +80,18 @@ class ChildrenList:
         if child.is_visible:
             self._owner._warn_change(child.hitbox)
 
-    def _remove(self, child):
+    def remove(self, child):
 
         if child.is_asleep:
-            self.asleep.remove(child)
-        else:
-            self.awake.remove(child)
-            self._owner.layers_manager.remove(child)
-            for children_class, children_set in self._lists.items():
-                if isinstance(child, children_class):
-                    children_set.remove(child)
-            if child.is_visible:
-                self._owner._warn_change(child.hitbox)
+            raise PermissionError("A Container cannot contain asleep widgets")
 
-    def add(self, **kwargs):
-        raise PermissionError
-
-    def remove(self, **kwargs):
-        raise PermissionError
+        self.all.remove(child)
+        self._owner.layers_manager.remove(child)
+        for children_class, children_set in self._lists.items():
+            if isinstance(child, children_class):
+                children_set.remove(child)
+        if child.is_visible:
+            self._owner._warn_change(child.hitbox)
 
 
 class Container(ResizableWidget):
@@ -135,7 +127,7 @@ class Container(ResizableWidget):
         if hasattr(self, "_weakref"):  # Container.__init__() has already been called
             return
 
-        self._children = ChildrenList(self)  # needed in ResizableWidget.__init__
+        self._children_manager = ChildrenManager(self)  # needed in ResizableWidget.__init__
         self._rect_to_update = None
 
         ResizableWidget.__init__(self, parent, **kwargs)
@@ -168,9 +160,10 @@ class Container(ResizableWidget):
         if background_image is not None:
             self.set_background_image(background_image)
 
-    all_children = property(lambda self: self._children.awake.union(self._children.asleep))
-    asleep_children = property(lambda self: self._children.asleep)
-    awake_children = property(lambda self: self._children.awake)
+        self._flip()  # TODO : remove flip_all at application launch, because a Zone created during the process
+        #        is not correctly printed
+
+    children = property(lambda self: self._children_manager.all)
     background_color = property(lambda self: self._background_color)
     default_layer = property(lambda self: self.layers_manager.default_layer)
 
@@ -187,25 +180,27 @@ class Container(ResizableWidget):
     border_color = property(lambda self: self._border_color)
 
     def _add_child(self, child):
-        self._children._add(child)
+        self._children_manager.add(child)
+        if child.dirty:
+            self._dirty_child(child, child.dirty)
 
     def _container_close(self):
 
-        for cont in self._children.containers:
+        for cont in self._children_manager.containers:
             cont._container_close()
-        for child in tuple(self._children.handlers_sceneclose):  # tuple prevent from in-loop killed handlers_sceneclose
+        for child in tuple(self._children_manager.handlers_sceneclose):  # tuple prevent from in-loop killed widgets
             child.handle_scene_close()
 
     def _container_open(self):
 
-        for cont in self._children.containers:
+        for cont in self._children_manager.containers:
             cont._container_open()
-        for child in self._children.handlers_sceneopen:
+        for child in self._children_manager.handlers_sceneopen:
             child.handle_scene_open()
 
     def _container_paint(self):
 
-        for cont in self._children.containers:
+        for cont in self._children_manager.containers:
             cont._container_paint()
 
         if self._children_to_paint:
@@ -222,14 +217,23 @@ class Container(ResizableWidget):
             if rect:
                 self._warn_parent(rect)
 
+    def _container_run(self):
+
+        for cont in self._children_manager.containers:
+            cont._container_run()
+        for child in self._children_manager.runables:
+            child.run()
+
     def _dirty_child(self, child, dirty):
         """
         Should only be called by Widget.send_paint_request()
         """
-        try:
-            assert (child in self._children.awake) or child is self  # for scenes
-        except AssertionError as e:
-            raise e
+        # try:
+        #     assert (child in self.children) or child is self  # for scenes
+        # except AssertionError as e:
+        #     raise e
+        if child not in self.children:
+            raise PermissionError(f"{child} not in {self}")
         assert dirty in (0, 1, 2)
 
         child._dirty = dirty
@@ -257,12 +261,13 @@ class Container(ResizableWidget):
 
         with paint_lock:
             super()._move(dx, dy)
-            for tup in tuple(self.awake_children), tuple(self.asleep_children):
-                for child in tup:
-                    child._update_from_parent_movement()
+            for child in self.children:
+                child._update_from_parent_movement()
 
     def _remove_child(self, child):
-        self._children._remove(child)
+        self._children_manager.remove(child)
+        if child in self._children_to_paint:
+            self._children_to_paint.remove(child)
 
     def _update_rect(self):
         """
@@ -278,8 +283,6 @@ class Container(ResizableWidget):
         The container create a surface (rect_background) at the rect size. This new surface
         is going to replace a portion of the container surface corresponding to the rect to
         update, once every child have been blited on it.
-
-        if all is set, will update all the container's hitbox
 
 
         surface :         --------- - - - -----------------------
@@ -362,7 +365,7 @@ class Container(ResizableWidget):
         """
 
         if children_list is None:
-            children_list = self.all_children
+            children_list = self.children
         children = tuple(children_list)
         self.resize(
             (max(comp.right for comp in children) + self.padding.right
@@ -370,20 +373,6 @@ class Container(ResizableWidget):
             (max(comp.bottom for comp in children) + self.padding.bottom
              if children else self.padding.top + self.padding.bottom) if vertically else self.h
         )
-
-    def asleep_child(self, child):
-
-        if child.is_asleep:
-            return
-
-        assert child in self._children.awake
-
-        child._memory.need_appear = child.is_visible
-        self._children._remove(child)
-        child.hide()
-        child._is_asleep = True
-        self._children._add(child)
-        child.signal.SLEEP.emit()
 
     def handle_resize(self):
 
@@ -398,7 +387,7 @@ class Container(ResizableWidget):
     def kill(self):
 
         self.hide()
-        for child in tuple(self.all_children):
+        for child in tuple(self.children):
             child.kill()
         super().kill()
 
@@ -406,16 +395,16 @@ class Container(ResizableWidget):
         for layer in self.layers:
             layer.pack(*args, **kwargs)
         if adapt:
-            self.adapt(self.awake_children)
+            self.adapt(self.children)
 
     def paint(self, recursive=False, only_containers=True, with_update=True):  # TODO : find a way to remove these
 
         if recursive:
-            for c in self._children.awake:
-                if isinstance(c, Container):
-                    c.paint(recursive, only_containers, with_update=False)
+            for child in self.children:
+                if isinstance(child, Container):
+                    child.paint(recursive, only_containers, with_update=False)
                 elif not only_containers:
-                    c.paint()
+                    child.paint()
         if with_update:
             self._flip()
         else:
@@ -479,27 +468,3 @@ class Container(ResizableWidget):
 
         super().set_window(*args, **kwargs)
         self._rect_to_update = pygame.Rect(self.auto)
-
-    def wake_child(self, child):
-
-        if child.is_awake:
-            return
-
-        assert child in self._children.asleep
-
-        self._children._remove(child)  # TODO : .remove & .add since ._children is no longer accessible
-        child._is_asleep = False
-        self._children._add(child)
-
-        if child._memory.need_start_animation:
-            child.start_animation()
-
-        if child._memory.need_appear:
-            child.show()
-
-        child.send_paint_request()
-
-        child._memory.need_appear = None
-        child._memory.need_start_animation = None
-
-        child.signal.WAKE.emit()

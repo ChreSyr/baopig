@@ -139,14 +139,9 @@ class DebugZone(Zone, Handler_SceneClose):
 
     is_debugging = property(lambda self: self.is_awake)
 
-    def sleep(self):
-
-        self.highlighter.hide()
-        super().sleep()
-
     def handle_scene_close(self):
 
-        self.kill()
+        self.kill()  # TODO : not kill
 
     def print(self, obj):
 
@@ -182,8 +177,11 @@ class DebugZone(Zone, Handler_SceneClose):
 
     def update_pointed_outline(self):
 
+        if self.is_asleep:
+            return
+
         pointed = mouse.pointed_comp
-        if pointed and self.is_awake:
+        if pointed:
             if self._pointed == pointed:
                 return
             self._pointed = pointed
@@ -193,11 +191,8 @@ class DebugZone(Zone, Handler_SceneClose):
             self.highlighter.move_behind(self.debug_zone)
         else:
             self._pointed = None
-            if self.highlighter is not None:
-                self.highlighter.hide()
 
     def wake(self):
 
-        self.highlighter.show()
         super().wake()
         self.update_pointed_outline()

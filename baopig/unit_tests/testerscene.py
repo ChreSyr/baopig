@@ -98,17 +98,19 @@ app.launch()"""
 
         if self.sections and self.sections[0] == ["NO TEST SECTION YET", []]:
             self.sections.pop(0)
-            for temp in tuple(self.sections_zone.all_children):
+            for temp in tuple(self.sections_zone.children):
                 temp.kill()
 
         self.sections.append([title, tests])
-        Text(self.sections_zone, "--- SECTION {} : {} ---".format(len(self.sections), title),
+        Text(self.sections_zone, f"--- SECTION {len(self.sections)} : {title} ---",
              font_height=self.theme.get_style_for(Text)["font_height"] + 2, font_bold=True,
-             row=len(self.sections_zone.all_children), width=self.sections_zone.w)
+             row=len(self.sections_zone.children), width=self.sections_zone.w)
         for i, v in enumerate(tests):
-            CheckBox(self.sections_zone, text=f"TEST {i + 1} : {v}",  # {:0>2} for 01, 02...
-                     row=len(self.sections_zone.all_children), width=self.sections_zone.w)
-        Text(self.sections_zone, "", row=len(self.sections_zone.all_children))
+            cb = CheckBox(self.sections_zone, text=f"TEST {i + 1} : {v}",  # {:0>2} for 01, 02...
+                          row=len(self.sections_zone.children), width=self.sections_zone.w)
+            if v.startswith("TODO"):
+                cb.text_widget.font.config(color="red3")
+        Text(self.sections_zone, "", row=len(self.sections_zone.children))
 
     def handle_scene_close(self):
 

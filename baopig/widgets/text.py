@@ -753,7 +753,7 @@ class Text(Zone, SelectableWidget):
 
             first_line = self.lines[0] if self.lines else None
             for child in tuple(self.lines):
-                assert child in self.all_children
+                assert child in self.children
                 assert self == child.parent
                 if child != first_line:
                     child.kill()

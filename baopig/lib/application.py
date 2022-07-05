@@ -116,7 +116,7 @@ class Application(HasStyle):
                     # Cmd + e -> toggle debugging
                     if event.key == pygame.K_e:
                         if keyboard.mod.maj:
-                            c = self.focused_scene.all_children
+                            c = self.focused_scene.children
                             raise Exception("Made for debugging")
                         self.toggle_debugging()
                     # Cmd + g -> collect garbage
@@ -204,7 +204,8 @@ class Application(HasStyle):
 
                 # Possible advanced events treatments
                 self._time_manager.update()
-                self._runables_manager.run_once()
+                self.focused_scene._container_run()
+                # self._runables_manager.run_once()  # TODO : remove _runables_manager
 
                 # Possible coded stuff
                 self.focused_scene.run()

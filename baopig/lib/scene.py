@@ -67,8 +67,9 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
     def _add_child(self, widget):
 
         if widget is self:
-            return self.application._add_scene(self)  # a scene is a root
-        super()._add_child(widget)
+            self.application._add_scene(self)  # a scene is a root
+        else:
+            super()._add_child(widget)
 
     def _close(self):
 
@@ -125,7 +126,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             raise PermissionError("Cannot kill a focused scene")
 
         with paint_lock:
-            for child in tuple(self.all_children):
+            for child in tuple(self.children):
                 child.kill()
             self.disconnect()
             self.signal.KILL.emit(self._weakref)
@@ -202,6 +203,11 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             self.set_mode(pygame.FULLSCREEN)
 
     def sleep(self): raise PermissionError("A Scene cannot sleep")
-    def wake(self): raise PermissionError("A Scene cannot sleep")
-    def show(self): pass
-    def hide(self): pass
+    def wake(self):
+        raise PermissionError("A Scene cannot sleep")
+
+    def show(self):
+        pass  # TODO : PermissionError ?
+
+    def hide(self):
+        pass
