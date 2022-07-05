@@ -607,7 +607,20 @@ class Text(Zone, SelectableWidget):
             elif self.align_mode == "right":
                 line.right = self.content_rect.right
 
-        self.adapt(self.lines, horizontally=self._width_is_adaptable, vertically=self._height_is_adaptable)
+        # Adaptable resize
+        if self._height_is_adaptable and self._width_is_adaptable:
+            right = max(line.right for line in self.lines)
+            bottom = max(line.bottom for line in self.lines)
+            assert bottom == self.lines[-1].bottom
+            self.resize(w=right + self.padding.right, h=bottom + self.padding.bottom)
+        elif self._height_is_adaptable:
+            bottom = max(line.bottom for line in self.lines)
+            assert bottom == self.lines[-1].bottom
+            if bottom + self.padding.bottom != self.h:  # TODO : without this line, the printing bug, find why
+                self.resize_height(bottom + self.padding.bottom)
+        elif self._width_is_adaptable:
+            right = max(line.right for line in self.lines)
+            self.resize_width(right + self.padding.right)
 
         self._lines_pos = []
         for line in self.lines:
@@ -716,21 +729,30 @@ class Text(Zone, SelectableWidget):
         raise PermissionError("Should not use this method on a Text")
 
     def resize(self, w, h):
+        # NOTE : resizing a Text with adaptable size will set the size fixed, non-adaptable
 
         old_size = self.content_rect.size
         super().resize(w, h)
 
-        lines_width = max(line.w for line in self.lines) if self._width_is_adaptable else old_size[0]
-        if self.content_rect.w != lines_width:
-            if self._width_is_adaptable:
+        if self._width_is_adaptable:
+            lines_width = max(line.w for line in self.lines)
+            if self.content_rect.w != lines_width:
                 self._width_is_adaptable = False
-            self.set_text(self.get_text())
+                self.set_text(self.get_text())
+        else:
+            lines_width = old_size[0]
+            if self.content_rect.w != lines_width:
+                self.set_text(self.get_text())
 
-        lines_height = self.lines[-1].bottom - self.content_rect.top if self._height_is_adaptable else old_size[1]
-        if self.content_rect.h != lines_height:
-            if self._height_is_adaptable:
+        if self._height_is_adaptable:
+            lines_height = self.lines[-1].bottom - self.content_rect.top
+            if self.content_rect.h != lines_height:
                 self._height_is_adaptable = False
-            self.set_text(self.get_text())
+                self.set_text(self.get_text())
+        else:
+            lines_height = old_size[1]
+            if self.content_rect.h != lines_height:
+                self.set_text(self.get_text())
 
     def set_text(self, text):
 
