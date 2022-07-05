@@ -769,7 +769,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox): 
             need_appear=None,
             need_start_animation=None,
         )
-        self.create_signal("ASLEEP")
+        self.create_signal("SLEEP")
         self.create_signal("WAKE")
 
         """A widget can have this attributes locked"""

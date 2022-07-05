@@ -69,7 +69,7 @@ class Runable(Widget):
         self._is_running = False
         self._is_paused = False
 
-        self.signal.ASLEEP.connect(self.pause, owner=self)
+        self.signal.SLEEP.connect(self.pause, owner=self)
         self.signal.WAKE.connect(self.resume, owner=self)
         self.signal.KILL.connect(lambda: _runables_manager.remove(self), owner=None)
 

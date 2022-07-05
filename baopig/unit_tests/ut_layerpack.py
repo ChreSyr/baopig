@@ -50,7 +50,7 @@ class UT_LayerPack_Zone(Zone):
              width=self.w - s.right - 10, pos_location="left", pos_ref=s, pos_ref_location="right", pos=(10, 0))
 
         # GRID TESTING
-        gridlayer_tester = Zone(self, ("100%", "50%"))
+        gridlayer_tester = Zone(self, size=("100%", "50%"))
         self.default_layer.pack()
         safe_layer2 = Layer(gridlayer_tester, Button, name="safe_layer")
         self.package2 = Zone(gridlayer_tester, padding=10, children_margins=5, pos=(0, 35), size=(300, 300),

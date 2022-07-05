@@ -383,7 +383,7 @@ class Container(ResizableWidget):
         child.hide()
         child._is_asleep = True
         self._children._add(child)
-        child.signal.ASLEEP.emit()
+        child.signal.SLEEP.emit()
 
     def handle_resize(self):
 
