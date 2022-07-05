@@ -19,9 +19,7 @@ class TextEdit(Text, Selector):
         background_color="theme-color-font_opposite",
     )
 
-    def __init__(self, parent, text=None, **kwargs):
-
-        if text is None: text = ""
+    def __init__(self, parent, text="", **kwargs):
 
         Text.__init__(self, parent=parent, text=text, selectable=True, **kwargs)
         Selector.__init__(self, parent)
@@ -457,13 +455,13 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
 
     def write(self, string):
 
-            # Lettres (minuscules et majuscules)
-            text = self.parent.text[:self.char_index] + string + self.parent.text[self.char_index:]
-            if self.parent.accept(text):
+        # Letters (lowercase and uppercase)
+        text = self.parent.text[:self.char_index] + string + self.parent.text[self.char_index:]
+        if self.parent.accept(text):
 
-                if self.parent.is_selected:
-                    self.parent.del_selection_data()
+            if self.parent.is_selected:
+                self.parent.del_selection_data()
 
-                self.line.insert(self.char_index, string)
-                self.config(text_index=self.text_index + len(string))
-
+            self.line.insert(self.char_index, string)
+            self.config(text_index=self.text_index + len(string))
+            # TODO : solve : when a TextEdit is resized, the cursor does not follow its text

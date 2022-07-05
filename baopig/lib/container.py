@@ -313,7 +313,7 @@ class Container(ResizableWidget):
         with paint_lock:
             rect = self._rect_to_update
             self._rect_to_update = None
-            self.surface.fill(self.background_color, rect)
+            self.surface.fill(self.background_color, rect=rect)
             if self._border_width:
                 pygame.draw.rect(self.surface, self._border_color, (0, 0) + self.size, self._border_width * 2 - 1)
 
@@ -363,12 +363,12 @@ class Container(ResizableWidget):
 
         if children_list is None:
             children_list = self.all_children
-        list = tuple(children_list)
+        children = tuple(children_list)
         self.resize(
-            (max(comp.right for comp in list) + self.padding.right
-             if list else self.padding.left + self.padding.right) if horizontally else self.w,
-            (max(comp.bottom for comp in list) + self.padding.bottom
-             if list else self.padding.top + self.padding.bottom) if vertically else self.h
+            (max(comp.right for comp in children) + self.padding.right
+             if children else self.padding.left + self.padding.right) if horizontally else self.w,
+            (max(comp.bottom for comp in children) + self.padding.bottom
+             if children else self.padding.top + self.padding.bottom) if vertically else self.h
         )
 
     def asleep_child(self, child):

@@ -58,7 +58,7 @@ class _Line(Widget):
         self.config(text=text, end='\n', called_by_constructor=True)
 
     def __repr__(self):
-        return "{}(index={}, text={})".format(self.__class__.__name__, self.line_index, self.text)
+        return f"{self.__class__.__name__}(index={self.line_index}, text={self.text})"
 
     def __str__(self):
         return self.text
@@ -499,41 +499,36 @@ class Text(Zone, SelectableWidget):
         height=0,
     )
     STYLE.create(
+        align_mode="left",
         font_file=None,
         font_height=15,
         font_color="theme-color-font",
         font_bold=False,
         font_italic=False,
         font_underline=False,
-        align_mode="left",
-        max_width=None,
+        selectable=True,
 
         # WARNING : the two following style attributes are very consuming when set to False
         height_is_adaptable=None,  # by default, True if height is > 0, False otherwise
         width_is_adaptable=None,
     )
+    STYLE.set_type("align_mode", str)
     STYLE.set_type("font_height", int)
     STYLE.set_type("font_color", Color)
     STYLE.set_type("font_bold", bool)
     STYLE.set_type("font_italic", bool)
     STYLE.set_type("font_underline", bool)
-    STYLE.set_type("align_mode", str)
-    STYLE.set_constraint("font_height", lambda val: val > 0, "a text must have a positive font height")
-    STYLE.set_constraint("font_file", lambda val: (val is None) or isinstance(val, str), "must be None or a string")
+    STYLE.set_type("selectable", bool)
     STYLE.set_constraint("align_mode", lambda val: val in ("left", "center", "right"),
                          "must be 'left', 'center' or 'right'")
+    STYLE.set_constraint("font_height", lambda val: val > 0, "a text must have a positive font height")
+    STYLE.set_constraint("font_file", lambda val: (val is None) or isinstance(val, str), "must be None or a string")
 
-    def __init__(self, parent, text=None, selectable=True, **kwargs):
-
-        assert isinstance(selectable, bool)
+    def __init__(self, parent, text=None, **kwargs):
 
         Zone.__init__(self, parent, **kwargs)
         SelectableWidget.__init__(self, parent)
 
-        # Adaptable size
-        self._max_width = self.style["max_width"]
-        if self._max_width is not None:
-            raise PermissionError
         self._height_is_adaptable = self.style["height_is_adaptable"]
         if self._height_is_adaptable is None:
             self._height_is_adaptable = self.h == 0
@@ -549,15 +544,11 @@ class Text(Zone, SelectableWidget):
 
         self._font = Font(self)
         self._min_width = self.font.get_width("m")
-        self._is_selectable = selectable
+        self._is_selectable = self.style["selectable"]
         self._lines_pos = []
         self._align_mode = self.style["align_mode"]
         self._padding = self.style["padding"]
         self.has_locked.text = False
-
-        # if self.max_width is not None:
-        #     self.resize_width(self.max_width)
-        #     self.lock_width(True)
 
         self.line_selections = Layer(self, _LineSelection, name="line_selections", touchable=False, sort_by_pos=True)
         self.lines = Layer(self, _Line, name="lines", default_sortkey=lambda line: line.line_index)
@@ -567,7 +558,6 @@ class Text(Zone, SelectableWidget):
     font = property(lambda self: self._font)
     height_is_adaptable = property(lambda self: self._height_is_adaptable)
     is_selectable = property(lambda self: self._is_selectable)
-    max_width = property(lambda self: self._max_width)
     padding = property(lambda self: self._padding)
     width_is_adaptable = property(lambda self: self._width_is_adaptable)
 
@@ -593,16 +583,15 @@ class Text(Zone, SelectableWidget):
                 centerx = self.content_rect.centerx
 
         self.lines.sort()
+        # TODO : test with windowed text aligned to the center, content_rect might not be a good solution
         h = self.content_rect.top
         for i, line in enumerate(self.lines):
-
             line._line_index = i
             line.top = h
             h = line.bottom
             if self.align_mode == "left":
                 line.left = self.content_rect.left
             elif self.align_mode == "center":
-                # noinspection PyUnboundLocalVariable
                 line.centerx = centerx
             elif self.align_mode == "right":
                 line.right = self.content_rect.right
@@ -622,6 +611,7 @@ class Text(Zone, SelectableWidget):
             right = max(line.right for line in self.lines)
             self.resize_width(right + self.padding.right)
 
+        # New positions in _lines_pos
         self._lines_pos = []
         for line in self.lines:
             self._lines_pos.append(line.top)

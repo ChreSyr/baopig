@@ -1,20 +1,21 @@
 
 
+# TODO : move to prefabs folder
 from baopig import *
 
 
 class TesterScene(Scene):
 
-    def __init__(self, app, ContentZoneClass):
+    def __init__(self, app, content_zone_class):
 
-        Scene.__init__(self, app, name=str(ContentZoneClass))
+        Scene.__init__(self, app, name=str(content_zone_class))
         self.sections = []
 
         # Menu
         self.menu_zone = Zone(self, size=("50%", 35), pos=(0, 10), name="menu")
 
         # Section
-        self.sections_zone = Zone(self, size=("50%", self.h-self.menu_zone.h-20), background_color="lightgray",
+        self.sections_zone = Zone(self, size=("50%", self.h - self.menu_zone.h - 20), background_color="lightgray",
                                   pos=(0, self.menu_zone.bottom + 10), name="sections")
         GridLayer(self.sections_zone, name="sections_layer", col_width=self.sections_zone.w, nbcols=1)
         self.add_section(title="NO TEST SECTION YET", tests=[])
@@ -38,6 +39,7 @@ class TesterScene(Scene):
         # Back & Try_it_yourself buttons
         GridLayer(self.menu_zone, nbrows=1, children_margins=10)
         Button(self.menu_zone, "< BACK", col=0, command=PrefilledFunction(app.open, "UTMenu_Scene"))
+
         def try_it_yourself():
             if self.try_it_yourself.is_visible:
                 self.try_it_yourself.hide()
@@ -47,11 +49,12 @@ class TesterScene(Scene):
                 self.try_it_yourself.show()
                 self.run_tiy.show()
                 self.sections_zone.hide()
+
         Button(self.menu_zone, "Try it yourself !", col=1, command=try_it_yourself)
 
         # Content
-        self.content = ContentZoneClass(self, size=("50%", self.h - 20), name="content",
-                      pos=(0, 10), sticky="topright")
+        self.content = content_zone_class(self, size=("50%", self.h - 20), name="content", pos=(0, 10),
+                                          sticky="topright")
         if hasattr(self.content, "load_sections"):
             self.content.load_sections()
 
@@ -81,6 +84,7 @@ app.launch()"""
                                              font_file="monospace")
         self.try_it_yourself.console = Text(self.try_it_yourself, width="100%",
                                             font_file="monospace", background_color=(211, 189, 189))
+
         def update():
             window = pygame.Rect(self.try_it_yourself.code.rect)
             window.height = 550
@@ -101,8 +105,8 @@ app.launch()"""
         Text(self.sections_zone, "--- SECTION {} : {} ---".format(len(self.sections), title),
              font_height=self.theme.get_style_for(Text)["font_height"] + 2, font_bold=True,
              row=len(self.sections_zone.all_children), width=self.sections_zone.w)
-        for i, text in enumerate(tests):
-            CheckBox(self.sections_zone, text="TEST {} : ".format(i+1) + text,  # {:0>2} for 01, 02...
+        for i, v in enumerate(tests):
+            CheckBox(self.sections_zone, text=f"TEST {i + 1} : {v}",  # {:0>2} for 01, 02...
                      row=len(self.sections_zone.all_children), width=self.sections_zone.w)
         Text(self.sections_zone, "", row=len(self.sections_zone.all_children))
 
@@ -112,4 +116,3 @@ app.launch()"""
 
     def set_code(self, code):
         self.try_it_yourself.code.set_text(code)
-

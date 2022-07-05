@@ -1,8 +1,9 @@
-
-
 import time
 from baopig.time.stopwatch import _running_stopwatches
 from baopig.time.timer import _running_timers, timer_lock, RepeatingTimer
+
+
+# TODO : baopig.time.init() for chifoumi__server
 
 
 class _TimeManager:
