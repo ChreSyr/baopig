@@ -9,7 +9,7 @@ class Image(ResizableWidget):
 
     # TODO : self.tiled instead of parameter in resize()
 
-    def __init__(self, parent, image, pos=None, w=None, h=None, **kwargs):  # TODO : remove w & h params
+    def __init__(self, parent, image, w=None, h=None, **kwargs):  # TODO : rework w & h params
         """
         Cree une image
 
@@ -29,34 +29,37 @@ class Image(ResizableWidget):
         else:
             surface = image.copy()
 
-        ResizableWidget.__init__(
-            self,
-            parent=parent,
-            surface=surface,
-            pos=pos,
-            **kwargs
-        )
+        ResizableWidget.__init__(self, parent=parent, surface=surface, **kwargs)
+        if self._asked_size[0] is None:
+            self._asked_size = (self.w, self._asked_size[1])
+        if self._asked_size[1] is None:
+            self._asked_size = (self._asked_size[0], self.h)
+
+        self._original = image
 
     def collidemouse_alpha(self):  # TODO
-        pass
+        raise NotImplemented
 
     def resize(self, w, h, tiled=False):
 
+        super().resize(w, h)
+
         if tiled:
 
-            surface = pygame.Surface((w, h), pygame.SRCALPHA)
-            surface.blit(self.surface, (0, 0))
+            surface = self.surface
+            surface.blit(self._original, (0, 0))
+            original_w, original_h = self._original.get_size()
 
-            if w > self.w:
-                for i in range(int(w / self.w)):
-                    surface.blit(self.surface, (self.w * (i + 1), 0))
+            if self.w > original_w:
+                for i in range(int(self.w / original_w)):
+                    surface.blit(self.surface, (original_w * (i + 1), 0))
 
-            if h > self.h:
-                row = surface.subsurface((0, 0, w, self.h)).copy()
-                for i in range(int(h / self.h)):
-                    surface.blit(row, (0, self.h * (i + 1)))
+            if self.h > original_h:
+                row = surface.subsurface((0, 0, self.w, original_h)).copy()
+                for i in range(int(self.h / original_h)):
+                    surface.blit(row, (0, original_h * (i + 1)))
 
             self.set_surface(surface)
 
         else:
-            self.set_surface(pygame.transform.scale(self.surface, (w, h)))
+            self.set_surface(pygame.transform.scale(self._original, self.size))

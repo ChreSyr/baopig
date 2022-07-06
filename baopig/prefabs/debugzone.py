@@ -128,7 +128,7 @@ class DebugZone(Zone, Handler_SceneClose):
             name=self.debug_zone.name + " -> print_text"
         )
 
-        self.parent.signal.RESIZE.connect(self.update, owner=self)
+        self.parent.signal.RESIZE.connect(self.handle_scene_resize, owner=self)
         mouse.signal.MOTION.connect(self.update_pointed_outline, owner=self)
         mouse.signal.DRAG.connect(self.update_pointed_outline, owner=self)
 
@@ -142,6 +142,12 @@ class DebugZone(Zone, Handler_SceneClose):
     def handle_scene_close(self):
 
         self.kill()  # TODO : not kill
+
+    def handle_scene_resize(self):
+
+        self.resize(*self.scene.size)
+        self.debug_zone.resize_width(self.size[0] - 10)
+        self.update_pointed_outline()
 
     def print(self, obj):
 
@@ -168,12 +174,6 @@ class DebugZone(Zone, Handler_SceneClose):
             self.stop_debugging()
         else:
             self.start_debugging()
-
-    def update(self):
-
-        self.resize(*self.parent.size)
-        self.debug_zone.resize_width(self.size[0] - 10)
-        self.update_pointed_outline()
 
     def update_pointed_outline(self):
 

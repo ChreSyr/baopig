@@ -160,7 +160,7 @@ class Container(ResizableWidget):
         if background_image is not None:
             self.set_background_image(background_image)
 
-        self._flip()  # TODO : remove flip_all at application launch, because a Zone created during the process
+        # self._flip()  # TODO : remove flip_all at application launch, because a Zone created during the process
         #        is not correctly printed
 
     children = property(lambda self: self._children_manager.all)

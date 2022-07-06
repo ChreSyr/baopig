@@ -7,22 +7,23 @@ class UT_Sleep_Zone(Zone):
 
         Layer(self, name="zones_layer", children_margins=10)
         z1 = Zone(self, size=("100%", 50), background_color=(150, 150, 150), padding=10, children_margins=5)
-        z2 = Zone(self, size=("100%", 300), background_color=(150, 150, 150))
+        z2 = Zone(self, size=("100%", 250), background_color=(150, 150, 150))
         z3 = Zone(self, size=("100%", 335), background_color=(150, 150, 150))
+        z4 = Zone(self, size=("100%", 200), background_color=(150, 150, 150))
         self.default_layer.pack()
 
         # Z1
         def tog(widg):
             clicked_button = mouse.hovered_comp
-            if widg.is_asleep:
+            if widg.is_dead:
+                clicked_button.text_widget.set_text("state:DEAD")
+            elif widg.is_asleep:
                 widg.wake()
                 clicked_button.text_widget.set_text("state:AWAKE")
             else:
                 if widg.is_alive:
                     widg.sleep()
                     clicked_button.text_widget.set_text("state:ASLEEP")
-            if widg.is_dead:
-                clicked_button.text_widget.set_text("state:DEAD")
 
         main = Text(z1, text="sleepy Text", font_color="blue", background_color="blue4", padding=5, size=(100, 30))
         Button(z1, text="state:AWAKE", command=PrefilledFunction(tog, main), height=30)
@@ -82,7 +83,7 @@ class UT_Sleep_Zone(Zone):
         original = DraggableRectangle(original_zone, color=(116, 0, 32))
         clone = Rectangle(clone_zone, size=("100%", "100%"), pos=(0, - 150 - 35), pos_ref=original, color=(110, 80, 90))
         # TODO : solve: an adaptable size is not linked to the pos_ref but to the parent
-        b = Button(z3, text="state:AWAKE", width="50%", command=PrefilledFunction(tog, clone))
+        b = Button(z3, text="state:AWAKE", width="33%", command=PrefilledFunction(tog, clone))
         b.move_behind(original_zone)
         z3.default_layer.pack()
 
@@ -99,8 +100,23 @@ class UT_Sleep_Zone(Zone):
             else:
                 original.resize(30, 30)
 
-        Button(z3, text="Resize", width="50%", pos_ref=b, pos_ref_location="topright", command=resize)
+        b2 = Button(z3, text="Resize", width="33%", pos_ref=b, pos_ref_location="topright", command=resize)
+
+        def toggle_visibility():
+            clicked_button = mouse.hovered_comp
+            if clone.is_visible:
+                clone.hide()
+                clicked_button.text_widget.set_text("state:HIDDEN")
+            else:
+                clone.show()
+                clicked_button.text_widget.set_text("state:VISIBLE")
+
+        Button(z3, text="state:VISIBLE", width="34%", pos_ref=b2, pos_ref_location="topright",
+               command=toggle_visibility)
         # TODO : solve: focus, hover & link are not updated to the size of their button
+
+        # Z5
+        # TODO : try to asleep a widget from a BoxLayout, and then wake it up
 
     def load_sections(self):
         """
@@ -120,6 +136,7 @@ class UT_Sleep_Zone(Zone):
                 "When a sleeping widget wakes up, if its parent is dead, the widget dies",
                 "When a sleeping widget wakes up, if its parent got resized, the widget reacts",
                 "When a sleeping widget wakes up, if its parent moved, the widget reacts",
+                "Widget.hide() & Widget.show() are alright with sleepy widgets",
             ]
         )
 

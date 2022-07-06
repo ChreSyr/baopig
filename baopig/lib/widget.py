@@ -1,4 +1,5 @@
 # TODO : replace sticky and pos_ref and pos_ref_location by flags ?
+# TODO : smart to use static, interactive, dynamic ?
 
 
 import functools
@@ -762,7 +763,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
         """
         self._is_asleep = False
         self._sleep_memory = Object(
-            need_appear=None,
             parent=None,
         )
         self.create_signal("SLEEP")
@@ -937,17 +937,19 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
         # NOTE : if overriden, be carefull -> you should call super().hide()
         """
 
-        if self.has_locked.visibility: return
+        if self.has_locked.visibility:
+            return
 
         if not self.is_visible:
             return
 
-        if self.is_asleep:
-            self._sleep_memory.need_appear = False
-            return
-
         self._is_visible = False
 
+        # TODO : the mouse manages itself
+        #  -> mouse.hovered_comp.signal.HIDE
+        #  -> mouse.focused_comp.signal.HIDE
+        #  -> mouse.linked_comp.signal.HIDE
+        #  -> mouse.linked_comp.signal.SLEEP
         if self == mouse.linked_comp:
             mouse._unlink()
         elif self.collidemouse():
@@ -1055,12 +1057,9 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
         if self.is_visible:
             return
 
-        if self.is_asleep:
-            self._sleep_memory.need_appear = True
-            return
-
         self._is_visible = True
 
+        # TODO : mouse manages this
         if self.collidemouse():
             mouse.update_hovered_comp()
         self.send_display_request()
@@ -1103,6 +1102,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
             return
 
         self._parent = self._sleep_memory.parent
+        self._sleep_memory.parent = None
 
         if self.parent.is_dead:
             return self.kill()
@@ -1111,12 +1111,5 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
         self.parent._add_child(self)
         self.origin._weak_update_owner_pos()
 
-        if self._sleep_memory.need_appear:
-            self.show()
-
         self.send_paint_request()
-
-        self._sleep_memory.need_appear = None  # TODO : self._sleep_memory.clear()
-        self._sleep_memory.parent = None
-
         self.signal.WAKE.emit()

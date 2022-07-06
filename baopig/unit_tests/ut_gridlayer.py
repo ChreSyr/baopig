@@ -30,15 +30,15 @@ class UT_GridLayer_Zone(Zone):
                 text = "row:{}\ncol:{}".format(row, col)
                 Text(z2, text, row=row, col=col, name=text)
 
-        class DragableRectangle(Rectangle, Draggable):
+        class DraggableRectangle(Rectangle, Draggable):
             def __init__(self, parent, **kwargs):
                 Rectangle.__init__(self, parent, **kwargs)
                 Draggable.__init__(self, parent, **kwargs)
 
-        DragableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30))
+        DraggableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30))
         Text(z2, "HI", col=6, row=0)
         Text(z2, "HI", col=7, row=1)
-        DragableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30), col=8, row=2)
+        DraggableRectangle(parent=z2, color=(130, 49, 128), size=(30, 30), col=8, row=2)
 
         # Z3
         grid = GridLayer(z3, nbrows=5, nbcols=10)
