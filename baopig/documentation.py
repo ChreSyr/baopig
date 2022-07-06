@@ -1,3 +1,6 @@
+from typing import Iterable
+
+
 class Communicative:
     """
     Class for objects who need to emit signals
@@ -95,8 +98,10 @@ class Widget(Communicative):
         hide()  -> the widget is no longer visible
         kill()  -> the widget is permanently deleted
         show()  -> the widget is visible again
-        sleep()  -> the widget is detached from its parent
+        sleep() -> the widget is detached from its parent
         wake()  -> the widget is reattached to its parent
+
+        send_display_request(rect=None) -> sends a request who will update the display
     """
 
     def hide(self):
@@ -121,6 +126,15 @@ class Widget(Communicative):
             Detaches the widget from its parent
             Kills all the connections owned by the widget
             Kills the widget's weakref
+        """
+
+    def send_display_request(self, rect: Iterable[int] | None):
+        """
+        Sends a request who will update the display
+        rect represents a pygame.Rect object
+        rect must be referenced by the widget's parent
+        If rect is not set, the widget's hitbox will be used
+        Only the screen's portion corresponding to rect will be updated
         """
 
     def show(self):
