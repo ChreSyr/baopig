@@ -15,11 +15,8 @@ class MouseEvent(Object):
         mouse.last_event = self
 
     def __str__(self):
-        return "<MouseEvent({}-{} {})>".format(
-            self.type,
-            list(mouse._signals.keys())[list(mouse._signals.values()).index(self.type)],
-            self.__dict__
-        )
+        return f"<MouseEvent({self.type}-" \
+               f"{list(mouse._signals.keys())[list(mouse._signals.values()).index(self.type)]} {self.__dict__})>"
     __repr__ = __str__
 
 
@@ -37,7 +34,6 @@ class _Mouse(Communicative):
     SCROLL = next(iterator)
 
     MOTION = next(iterator)
-    DRAG = next(iterator)
     RELEASEDRAG = next(iterator)
 
     _signals = {
@@ -53,7 +49,6 @@ class _Mouse(Communicative):
         "SCROLL": SCROLL,
 
         "MOTION": MOTION,
-        "DRAG": DRAG,
         "RELEASEDRAG": RELEASEDRAG,
     }
 
@@ -73,7 +68,7 @@ class _Mouse(Communicative):
         # For pygame, the 4 and 5 buttons are wheel up and down,
         # so these buttons are implemented as mouse.SCROLL
 
-        self._pressed_button = None  # TODO : why not a tuple of pressed buttons ?
+        self._pressed_buttons = {}
 
         # [None, 0, 0, 0]  # WARNING : A mouse can have additionnals buttons
 
@@ -96,12 +91,6 @@ class _Mouse(Communicative):
         then the Text is linked
         """
         self._linked_comp = None
-
-        """
-        When a drag occurs, the youngest clicked container is selecting
-        The selection is a rect from drag_origin to mouse.pos
-        """
-        self.drag_origin = None
 
         """
         Permet de savoir si l'utilisateur vient de faire un double-click
@@ -136,8 +125,7 @@ class _Mouse(Communicative):
         return "<Mouse(" + str(self.__dict__) + ")>"
 
     def __str__(self):
-        return "<Mouse('pos': {}, 'pressed_button': {}, 'last_event': {})>" \
-               "".format(self.pos, self.pressed_button, self.last_event)
+        return f"<Mouse(pos={self.pos}, pressed_buttons={self._pressed_buttons}, last_event={self.last_event})>"
 
     pos = property(lambda self: self._pos)
     x = property(lambda self: self._pos[0])
@@ -148,7 +136,6 @@ class _Mouse(Communicative):
     is_hovering_display = property(lambda self: self._is_hovering_display)
     linked_comp = property(lambda self: self._linked_comp)
     hovered_comp = property(lambda self: self._hovered_comp)
-    pressed_button = property(lambda self: self._pressed_button)
 
     def _link(self, comp):
 
@@ -260,36 +247,43 @@ class _Mouse(Communicative):
 
         return comp.abs_rect.referencing(self.pos)
 
-    def is_pressed(self, button):
+    def is_pressed(self, button_id):
+        """Return True if the button with identifier 'button_id' (an integer) is pressed"""
 
-        return button == self.pressed_button
+        try:
+            return bool(self._pressed_buttons[button_id])
+        except KeyError:
+            # Here, the button has never been pressed
+            return 0
 
     def receive(self, event):
 
+        print(event)
+
+        # Unknown & skipable events
         if event.type not in (pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
             LOGGER.warning("Unknown event : {}".format(event))
             return
-
         if event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN):
 
             if event.button not in (1, 2, 3, 4, 5):
-                LOGGER.warning("Unknown button id : {} (event : {})".format(event.button, event))
+                LOGGER.warning(f"Unknown button id : {event.button} (event : {event})")
                 return
 
-            if self.pressed_button is not None and self.pressed_button != event.button:
-                # Another button is already pressed, we skip
-                LOGGER.info("Another button is already pressed, we skip")
-                return
+            # if self._pressed_buttons[event.button] is False:
+            # if self.pressed_button is not None and self.pressed_button != event.button:
+            #     # Another button is already pressed, we skip
+            #     LOGGER.info("Another button is already pressed, we skip")
+            #     return
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button in (4, 5):
                     # It's a wheel end of scrolling, wich is useless
                     return
 
-                if not self.is_pressed(event.button):
-                    # This button's DOWN event have been skiped, so we skip it's UP event
-                    return
-
+                # if not self.is_pressed(event.button):
+                #     # This button's DOWN event have been skiped, so we skip it's UP event
+                #     return
         elif event.type == pygame.MOUSEMOTION:
 
             if event.rel == (0, 0):
@@ -304,7 +298,7 @@ class _Mouse(Communicative):
 
             if event.button not in (4, 5):  # Ignore wheel
                 self.clic_history.append(Object(time=time.time(), button=event.button, pos=event.pos))
-                self._pressed_button = event.button
+                self._pressed_buttons[event.button] = True
 
                 self.has_double_clicked = \
                     self.clic_history[-2].time > self.clic_history[-1].time - .5 and \
@@ -369,12 +363,10 @@ class _Mouse(Communicative):
 
         elif event.type == pygame.MOUSEBUTTONUP:
 
-            # We don't consider an event of a pressed button when another button is already pressed
-            # So this is the prevention
             assert self.is_pressed(event.button)
 
             # ACTUALIZING MOUSE STATE
-            self._pressed_button = None
+            self._pressed_buttons[event.button] = False
 
             # MOUSE EVENTS TRANSMISSION
             if event.button == 1:  # release left button
@@ -398,16 +390,6 @@ class _Mouse(Communicative):
                     pos=self.pos,
                 )
 
-            if self.drag_origin is not None:
-                MouseEvent(
-                    signal="RELEASEDRAG",
-                    pos=self.pos,
-                    origin=self.drag_origin,
-                    total_rel=(self.pos[0] - self.drag_origin[0], self.pos[1] - self.drag_origin[1]),
-                    button=event.button,
-                )
-                self.drag_origin = None
-
             # UPDATING CLICKS, FOCUSES, HOVERS...
 
             if self.linked_comp:
@@ -417,31 +399,20 @@ class _Mouse(Communicative):
 
             # ACTUALIZING MOUSE STATE
             self._pos = event.pos
-            if self.drag_origin is None:
-                # NOTE : Sometimes, pygame.MOUSEMOTION doesn't have attribute 'buttons'
-                if self.pressed_button is not None:
-                    self.drag_origin = (self.pos[0] - event.rel[0], self.pos[1] - event.rel[1])
 
             # MOUSE EVENTS TRANSMISSION
-            if self.drag_origin is None:
-                self.update_hovered_comp()
-                MouseEvent(
-                    signal="MOTION",
-                    pos=self.pos,
-                    rel=event.rel,
-                )
-            else:
-                MouseEvent(
-                    signal="DRAG",
-                    pos=self.pos,
-                    origin=self.drag_origin,
-                    rel=event.rel,
-                    total_rel=(self.pos[0] - self.drag_origin[0], self.pos[1] - self.drag_origin[1]),
-                    button=self.pressed_button
-                )
-                # HANDLINGS
-                if self.pressed_button == 1 and self.linked_comp:  # left button drag
+            MouseEvent(
+                signal="MOTION",
+                pos=self.pos,
+                rel=event.rel,
+            )
+
+            # LINK MOTION or HOVER signals
+            if self.is_pressed(button_id=1):
+                if self.linked_comp:
                     self.linked_comp.signal.LINK_MOTION.emit(self.last_event)
+            else:
+                self.update_hovered_comp()
 
         getattr(self.signal, self.last_event.signal).emit(self.last_event)
 

@@ -243,7 +243,9 @@ class Selector(Container, Linkable):
     def handle_link_motion(self, link_motion_event):
         with paint_lock:
             if self.selection_rect is None:
-                self.start_selection(link_motion_event.origin)
+                origin = link_motion_event.pos[0] - link_motion_event.rel[0], \
+                         link_motion_event.pos[1] - link_motion_event.rel[1]
+                self.start_selection(origin)
             self.end_selection(link_motion_event.pos)
 
     def paste(self, data):

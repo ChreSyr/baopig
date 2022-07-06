@@ -47,12 +47,9 @@ class UT_GridLayer_Zone(Zone):
             def __init__(self, *args, **kwargs):
                 Rectangle.__init__(self, *args, **kwargs)
                 Linkable.__init__(self, *args)
-                def update(*args):
-                    if self.collidemouse() and isinstance(mouse.linked_comp, RemovableRect):
-                        self.kill()
-                self.signal.LINK.connect(self.kill, owner=self)
-                mouse.signal.DRAG.connect(update, owner=None)
-                self.parent.signal.RESIZE.connect(update, owner=self)
+
+            def handle_link(self):
+                self.kill()
         import random
         random_color = lambda: [int(random.random() * 255)] * 2 + [128]
         def toggle_col_size(col_index):

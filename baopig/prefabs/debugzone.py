@@ -130,7 +130,6 @@ class DebugZone(Zone, Handler_SceneClose):
 
         self.parent.signal.RESIZE.connect(self.handle_scene_resize, owner=self)
         mouse.signal.MOTION.connect(self.update_pointed_outline, owner=self)
-        mouse.signal.DRAG.connect(self.update_pointed_outline, owner=self)
 
         self.update_pointed_outline()
         self.debug_zone.adapt(self.debug_zone.default_layer, horizontally=False)
