@@ -454,7 +454,7 @@ class HasProtectedHitbox:
 
     def collidemouse(self):
 
-        return self.abs_hitbox.collidepoint(mouse.pos)
+        return self.is_visible & self.abs_hitbox.collidepoint(mouse.pos)
 
     def lock_height(self, locked=True):
         self.has_locked.height = locked

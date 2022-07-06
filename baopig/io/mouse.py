@@ -157,7 +157,7 @@ class _Mouse(Communicative):
                 for layer in reversed(tuple(cont.layers_manager.touchable_layers)):
                     assert layer.touchable
                     for comp in reversed(layer):
-                        if comp.is_visible and comp.collidemouse():
+                        if comp.collidemouse():
                             if hasattr(comp, "children"):
                                 return get_pointed_comp(comp)
                             return comp
