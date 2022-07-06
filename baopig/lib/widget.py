@@ -386,6 +386,9 @@ class HasProtectedHitbox:
 
     def _move(self, dx, dy):
 
+        if self.is_asleep:
+            raise PermissionError("Asleep widgets cannot move")
+
         old_hitbox = tuple(self.hitbox)
         with paint_lock:
 
@@ -912,9 +915,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
         return self._weakref
 
     def hide(self):
-        """
-        # NOTE : if overriden, be carefull -> you should call super().hide()
-        """
 
         if self.has_locked.visibility:
             return
@@ -938,15 +938,13 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
 
         if not self.is_alive:
             return
+
         with paint_lock:
-            try:
-                self.signal.KILL.emit(self._weakref)
-                if self.parent.is_alive:  # False when called by Widget.wake()
-                    self.parent._remove_child(self)
-                self.disconnect()
-                self._weakref._comp = None
-            except Exception as e:
-                raise e
+            self.signal.KILL.emit(self._weakref)
+            if self.parent.is_alive:  # False when called by Widget.wake()
+                self.parent._remove_child(self)
+            self.disconnect()
+            self._weakref._comp = None
 
         del self
 
@@ -1081,6 +1079,4 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
         self._is_asleep = False
         self.parent._add_child(self)
         self.origin._weak_update_owner_pos()
-
-        self.send_paint_request()
         self.signal.WAKE.emit()

@@ -443,6 +443,7 @@ class Clickable(Linkable, Validable):
             super().handle_keydown(key)
 
     def handle_unlink(self):
+        # TODO : test : if a linked Clickable is hidden, UNLINK is emitted but VALIDATE is not emitted
 
         if self.collidemouse():
             self.validate()

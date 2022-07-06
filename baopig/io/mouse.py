@@ -149,7 +149,7 @@ class _Mouse(Communicative):
             comp.is_linked = True
             self.linked_comp.signal.LINK.emit()
 
-    def _get_pointed_comp(self):
+    def _get_pointed_comp(self):  # TODO : improve
 
         def get_pointed_comp(cont):
 
@@ -250,8 +250,6 @@ class _Mouse(Communicative):
             return 0
 
     def receive(self, event):
-
-        print(event)
 
         # Unknown & skipable events
         if event.type not in (pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
@@ -411,7 +409,9 @@ class _Mouse(Communicative):
 
     def update_hovered_comp(self):
 
-        if self.linked_comp is not None: return
+        if self.linked_comp is not None:
+            return
+
         def first_hoverable_in_family_tree(widget):
             if widget.scene is widget:
                 if hasattr(widget, "is_hovered"):

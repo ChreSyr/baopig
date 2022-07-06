@@ -291,7 +291,12 @@ class _SelectableLine(_Line):
         - A cursor moves while Maj key is pressed
     """
 
-    def __init__(self, *args, **kwargs):
+    # TODO : improve Text creation, with less recursion
+    # NOTE : this is a temporary way to minimize the recursion
+    _selection_ref = lambda self: None  # needed during construction
+    _is_selected = False
+
+    def __init__TBR(self, *args, **kwargs):
 
         self._selection_ref = lambda: None  # needed during construction
 

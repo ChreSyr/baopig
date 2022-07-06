@@ -43,6 +43,7 @@ class _Keyboard:
                 self.maj = self.l_maj or self.r_maj
             # def __str__(self):
             #     return Object.__str__(self)
+
         self._mod = Mod()
         self.last_event = None
 
@@ -51,6 +52,8 @@ class _Keyboard:
         self._is_repeating = False
         self._repeat_first_delay = None
         self._repeat_delay = None
+
+        self.set_repeat(500, 50)
 
     application = property(lambda self: self._application)
     is_repeating = property(lambda self: self._is_repeating)
@@ -127,7 +130,7 @@ class _Keyboard:
 
     def set_repeat(self, first_delay, delay):
         """Control how held keys are repeated, with delays in milliseconds"""
-        # This solve a bug in pygame, who can't repeat two keys
+        # This solves a bug in pygame, who can't repeat two keys
 
         assert first_delay >= 0
         assert delay > 0

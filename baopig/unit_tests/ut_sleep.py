@@ -19,7 +19,10 @@ class UT_Sleep_Zone(Zone):
                 clicked_button.text_widget.set_text("state:DEAD")
             elif widg.is_asleep:
                 widg.wake()
-                clicked_button.text_widget.set_text("state:AWAKE")
+                if widg.is_dead:
+                    clicked_button.text_widget.set_text("state:DEAD")
+                else:
+                    clicked_button.text_widget.set_text("state:AWAKE")
             else:
                 if widg.is_alive:
                     widg.sleep()
