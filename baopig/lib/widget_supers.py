@@ -1,11 +1,12 @@
 import pygame
 from baopig.io import LOGGER, mouse, keyboard
+from baopig.documentation import Hoverable as HoverableDoc
 from baopig.communicative import ApplicationExit
 from baopig.time.timer import RepeatingTimer
 from .widget import Widget
 
 
-class Hoverable(Widget):
+class Hoverable(HoverableDoc, Widget):
 
     def __init__(self, parent, **kwargs):
         Widget.__init__(self, parent, **kwargs)
@@ -54,12 +55,6 @@ class Hoverable(Widget):
 
     indicator = property(lambda self: self._indicator)
     is_hovered = property(lambda self: self._is_hovered)
-
-    def handle_hover(self):
-        """Abstract - called when the widget gets hovered by the mouse"""
-
-    def handle_unhover(self):
-        """Abstract - called when the widget gets unhovered from the mouse"""
 
 
 class _RunablesManager:

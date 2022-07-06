@@ -7,6 +7,7 @@ import pygame
 from baopig.pybao.issomething import *
 from baopig.pybao.objectutilities import Object
 from baopig.io import mouse
+from baopig.documentation import Widget as WidgetDoc
 from baopig.communicative import Communicative
 from .utilities import paint_lock, MetaPaintLocker
 from .style import HasStyle, StyleClass, Theme
@@ -653,7 +654,7 @@ class HasProtectedSurface:
         return self.surface.subsurface(rect).copy()
 
 
-class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, metaclass=MetaPaintLocker):
+class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, metaclass=MetaPaintLocker):
     """
     Abstract class for the elements of the screen
     A component can be visible, hidden, static, interactive, dynamic...
@@ -1021,9 +1022,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
             self.hide()
 
     def show(self):
-        """
-        If the component was awake and hidden, it will appear on the screen
-        """
 
         if self.has_locked.visibility:
             return

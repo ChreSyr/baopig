@@ -3,6 +3,7 @@
 import inspect
 from baopig.pybao.objectutilities import Object
 from baopig.io.logging import LOGGER
+from .documentation import Communicative as CommunicativeDoc
 
 
 class ApplicationExit(Exception):
@@ -98,7 +99,7 @@ class Connection:
             self.owner._connections.remove(self)
 
 
-class Communicative:
+class Communicative(CommunicativeDoc):
 
     def __init__(self):
 
@@ -115,6 +116,6 @@ class Communicative:
         setattr(self.signal, signal_id, Signal(emitter=self, id=signal_id))
 
     def disconnect(self):
-        """Kills all connections whose commands are owned by this Communicative object"""
+
         for con in tuple(self._connections):
             con.kill()
