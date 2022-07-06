@@ -670,7 +670,7 @@ class HasProtectedSurface:
         return self.surface.subsurface(rect).copy()
 
 
-class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox):  # metaclass=MetaPaintLocker
+class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, metaclass=MetaPaintLocker):
     """
     Abstract class for the elements of the screen
     A component can be visible, hidden, static, interactive, dynamic...
