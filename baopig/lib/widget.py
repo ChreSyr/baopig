@@ -946,14 +946,11 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
         self._is_visible = False
 
         # TODO : the mouse manages itself
-        #  -> mouse.hovered_comp.signal.HIDE
         #  -> mouse.focused_comp.signal.HIDE
         #  -> mouse.linked_comp.signal.HIDE
         #  -> mouse.linked_comp.signal.SLEEP
         if self == mouse.linked_comp:
             mouse._unlink()
-        elif self.collidemouse():
-            mouse.update_hovered_comp()
 
         self.send_display_request()
         self.signal.HIDE.emit()
@@ -1025,9 +1022,8 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
 
         # TODO : documentation
         # TODO : rework
-        need_mouse_update = self.collidemouse()
+        # TODO : if Hoverable, mouse.update_hovered_comp() ?
         self.collidemouse = lambda: False
-        if need_mouse_update: mouse.update_hovered_comp()
 
     def set_dirty(self, dirty):
         """
@@ -1058,10 +1054,6 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
             return
 
         self._is_visible = True
-
-        # TODO : mouse manages this
-        if self.collidemouse():
-            mouse.update_hovered_comp()
         self.send_display_request()
         self.signal.SHOW.emit()
 

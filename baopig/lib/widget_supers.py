@@ -5,6 +5,63 @@ from baopig.time.timer import RepeatingTimer
 from .widget import Widget
 
 
+class Hoverable(Widget):
+
+    def __init__(self, parent, **kwargs):
+        Widget.__init__(self, parent, **kwargs)
+
+        self._is_hovered = False
+        self._indicator = None
+
+        self.create_signal("HOVER")
+        self.create_signal("UNHOVER")
+
+        self.signal.HOVER.connect(self.handle_hover, owner=self)
+        self.signal.UNHOVER.connect(self.handle_unhover, owner=self)
+
+        def drop_hover():
+            if self._is_hovered:
+                mouse.update_hovered_comp()
+
+        self.signal.HIDE.connect(drop_hover, owner=self)
+        self.signal.SLEEP.connect(drop_hover, owner=self)
+
+        def drop_hover_on_kill():
+            if self._is_hovered:
+                self.set_nontouchable()
+                mouse.update_hovered_comp()
+
+        self.signal.KILL.connect(drop_hover_on_kill, owner=self)
+
+        def check_hover_gain():
+            if self.collidemouse():
+                mouse.update_hovered_comp()
+
+        self.signal.SHOW.connect(check_hover_gain, owner=self)
+        self.signal.WAKE.connect(check_hover_gain, owner=self)
+
+        def check_hover():
+            if self._is_hovered and not self.collidemouse():
+                mouse.update_hovered_comp()
+            elif self.collidemouse():
+                mouse.update_hovered_comp()
+
+        self.signal.MOTION.connect(check_hover, owner=self)
+        self.signal.RESIZE.connect(check_hover, owner=self)
+
+        if self.collidemouse():
+            mouse.update_hovered_comp()
+
+    indicator = property(lambda self: self._indicator)
+    is_hovered = property(lambda self: self._is_hovered)
+
+    def handle_hover(self):
+        """Abstract - called when the widget gets hovered by the mouse"""
+
+    def handle_unhover(self):
+        """Abstract - called when the widget gets unhovered from the mouse"""
+
+
 class _RunablesManager:
     def __init__(self):
 
@@ -389,34 +446,6 @@ class Clickable(Linkable, Validable):
 
         if self.collidemouse():
             self.validate()
-
-
-class Hoverable(Widget):
-    """
-    Abstract class for widgets who need to handle when they are hovered or unhovered
-    A widget is hovered when the mouse is over it
-    """
-
-    def __init__(self, parent, **kwargs):
-        Widget.__init__(self, parent, **kwargs)
-
-        self._is_hovered = False
-        self._indicator = None
-
-        self.create_signal("HOVER")
-        self.create_signal("UNHOVER")
-
-        self.signal.HOVER.connect(self.handle_hover, owner=self)
-        self.signal.UNHOVER.connect(self.handle_unhover, owner=self)
-
-    indicator = property(lambda self: self._indicator)
-    is_hovered = property(lambda self: self._is_hovered)
-
-    def handle_hover(self):
-        """Stuff to do when the widget gets hovered by mouse"""
-
-    def handle_unhover(self):
-        """Stuff to do when the widget is not hovered by mouse anymore"""
 
 
 class Draggable(Linkable):

@@ -189,37 +189,30 @@ class _Mouse(Communicative):
         self._hover(None)
         self._is_hovering_display = False
 
-    def _hover(self, comp):
+    def _hover(self, widget):
 
-        # if not self.is_hovering_display:
-        #     assert self.hovered_comp is None
-        #     return
-
-        if comp is self.hovered_comp: return
+        if widget is self._hovered_comp:
+            return
 
         # UNHOVER
-        old_hovered = self.hovered_comp
-        if self.hovered_comp is not None:
-            # noinspection PyBroadException
-            try:
-                assert old_hovered.is_hovered
-                old_hovered._is_hovered = False
-            except AssertionError:
-                LOGGER.warning("Hovering error")
+        old_hovered = self._hovered_comp
+        if self._hovered_comp is not None:
+            assert old_hovered.is_hovered
+            old_hovered._is_hovered = False
 
-        self._hovered_comp = comp
+        self._hovered_comp = widget
 
         # HOVER
-        if comp is not None:
-            assert comp.is_visible, repr(comp)
-            assert not comp.is_hovered
-            comp._is_hovered = True
+        if widget is not None:
+            assert widget.is_visible, repr(widget)
+            assert not widget.is_hovered
+            widget._is_hovered = True
 
         # SIGNALS
-        if old_hovered is not None and hasattr(old_hovered.signal, "UNHOVER"):
+        if old_hovered is not None:
             old_hovered.signal.UNHOVER.emit()
-        if comp is not None and hasattr(comp.signal, "HOVER"):
-            comp.signal.HOVER.emit()
+        if widget is not None:
+            widget.signal.HOVER.emit()
 
     def _unlink(self):
         """
