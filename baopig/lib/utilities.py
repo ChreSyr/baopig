@@ -1,10 +1,16 @@
-
 import threading
 import pygame
 
 paint_lock = threading.RLock()
 
+
 # TODO : deproteger les attributs handle_something
+
+
+class MetaPaintLocker(type):
+    def __call__(cls, *args, **kwargs):
+        with paint_lock:
+            return super().__call__(*args, **kwargs)
 
 
 class Color(pygame.Color):

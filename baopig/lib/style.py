@@ -206,9 +206,6 @@ class StyleClass:
 
     def set_type(self, key, type):
 
-        # if type is None:
-        #     self._types[key] = UndefinedType  # prevent from getting super-style constraint
-        #     return
         assert inspect.isclass(type)
         self._types[key] = type
         self.check_type(key)

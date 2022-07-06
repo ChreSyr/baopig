@@ -8,29 +8,8 @@ from baopig.pybao.issomething import *
 from baopig.pybao.objectutilities import Object
 from baopig.io import mouse
 from baopig.communicative import Communicative
-from .utilities import paint_lock
+from .utilities import paint_lock, MetaPaintLocker
 from .style import HasStyle, StyleClass, Theme
-
-
-class MetaPaintLocker(type):
-    def __call__(cls, *args, **kwargs):
-        with paint_lock:
-            widget = super().__call__(*args, **kwargs)
-            if widget.collidemouse():
-                mouse.update_hovered_comp()
-            return widget
-
-
-class MetaUndefinedType(type):
-    def __instancecheck__(self, instance):
-        return True
-
-
-class UndefinedType(metaclass=MetaUndefinedType):
-    """This class is used for undefined style types, since isinstance(obj, UndefinedType) -> True"""
-
-    def __init__(self):
-        raise PermissionError("This class should never be instanciated")
 
 
 class WeakRef:
