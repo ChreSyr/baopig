@@ -65,8 +65,8 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
             if self.parent is self.scene:
                 pygame.display.update(self.hitbox)
             else:
-                self.parent.parent._warn_change(
-                    (self.parent.left + self.hitbox.left, self.parent.top + self.hitbox.top) + tuple(self.hitbox.size)
+                self.parent.send_display_request(
+                    rect=(self.parent.left + self.hitbox.left, self.parent.top + self.hitbox.top) + self.hitbox.size
                 )
 
     def _warn_parent(self, rect):

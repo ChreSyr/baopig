@@ -441,7 +441,7 @@ class HasProtectedHitbox:
             self.origin._reset_asked_pos()
 
             if self.is_visible:
-                self.parent._warn_change(self.hitbox.union(old_hitbox))
+                self.send_display_request(rect=self.hitbox.union(old_hitbox))
 
     def _update_from_parent_movement(self):
 
@@ -564,7 +564,7 @@ class HasProtectedHitbox:
         else:
             self._window = None
 
-        self.parent._warn_change(self.rect)  # rect is to cover all possibilities
+        self.send_display_request(rect=self.rect)  # rect is to cover all possibilities
 
     # TODO : rework
     def config_margin(self, margin=None, left=None, top=None, right=None, bottom=None):
@@ -650,14 +650,14 @@ class HasProtectedSurface:
                 self._set_surface(surface)
                 self.signal.RESIZE.emit(old_size)
 
-                if self.is_visible & self.is_awake:
-                    self.parent._warn_change(self.hitbox.union(old_hitbox))
+                if self.is_visible:
+                    self.send_display_request(rect=self.hitbox.union(old_hitbox))
 
             else:
 
                 self._surface = surface
-                if self.is_visible & self.is_awake:
-                    self.parent._warn_change(self.hitbox)
+                if self.is_visible:
+                    self.send_display_request()
 
             self.signal.NEW_SURF.emit()
 
@@ -866,7 +866,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
 
             def wrapped_func(*args, **kwargs):
                 res = paint(*args, **kwargs)
-                widget.parent._warn_change(widget.hitbox)
+                widget.send_display_request()
                 return res
 
             return wrapped_func
@@ -953,7 +953,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
         elif self.collidemouse():
             mouse.update_hovered_comp()
 
-        self.parent._warn_change(self.hitbox)
+        self.send_display_request()
         self.signal.HIDE.emit()
 
     def kill(self):
@@ -1002,6 +1002,13 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
             with baopig.paint_lock:
                 my_widget.paint()
         """
+
+    def send_display_request(self, rect=None):
+
+        if self._parent is not None:  # False when asleep
+            if rect is None:
+                rect = self.hitbox
+            self._parent._warn_change(rect)
 
     def send_paint_request(self):
 
@@ -1056,9 +1063,7 @@ class Widget(HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, m
 
         if self.collidemouse():
             mouse.update_hovered_comp()
-        self.parent._warn_change(self.hitbox)
-        if self._dirty:
-            self.send_paint_request()
+        self.send_display_request()
         self.signal.SHOW.emit()
 
     def sleep(self):

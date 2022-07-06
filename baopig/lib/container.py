@@ -248,7 +248,7 @@ class Container(ResizableWidget):
         if self.is_hidden:
             return
         self._flip_without_update()
-        self.parent._warn_change(self.hitbox)
+        self.send_display_request()
 
     def _flip_without_update(self):
         """Update all the surface, but don't prevent the parent"""
@@ -354,9 +354,7 @@ class Container(ResizableWidget):
     def _warn_parent(self, rect):
         """Request updates at rects referenced by self"""
 
-        self.parent._warn_change(
-            (self.rect.left + rect[0], self.rect.top + rect[1]) + tuple(rect[2:])
-        )
+        self.send_display_request(rect=(self.rect.left + rect[0], self.rect.top + rect[1]) + tuple(rect[2:]))
 
     def adapt(self, children_list=None, vertically=True, horizontally=True):
         """
