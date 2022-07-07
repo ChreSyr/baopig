@@ -96,6 +96,7 @@ class LayersManager:
         for layer in self._layers:
             if layer.name == layer_name:
                 return layer  # if no layer is found, return None
+        raise IndexError(f"No layer with name : {layer_name}")
 
     def get_level(self, level):
 
