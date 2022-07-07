@@ -234,7 +234,8 @@ class Container(ResizableWidget):
         for cont in self._children_manager.containers:
             cont._container_run()
         for child in self._children_manager.runables:
-            child.run()
+            if child.is_running:
+                child.run()
 
     def _flip(self):
         """Update all the surface"""
