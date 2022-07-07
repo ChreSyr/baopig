@@ -108,7 +108,7 @@ class Application(HasStyle):
                     self.focused_scene.resize(*event.size)
                 else:
                     # We need an update
-                    self.focused_scene.paint()
+                    self.refresh()
 
             # DEFAULT SHORTKEYS
             if event.type == pygame.KEYDOWN:
@@ -373,7 +373,7 @@ class Application(HasStyle):
         if only_containers is False, send a paintrequest to every focused_scene's components
         """
         # TODO : refresh & screenshot buttons by default
-        self.focused_scene.paint(recursive=True, only_containers=False)
+        self.focused_scene._container_refresh(recursive=True, only_containers=False)
 
     def set_caption(self, title, icontitle=""):
 

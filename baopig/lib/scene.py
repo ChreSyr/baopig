@@ -150,7 +150,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             app._update_display()
             self._container_open()
             self.handle_scene_open()
-            self.paint(recursive=True)
+            self._container_refresh(recursive=True)
 
         LOGGER.debug("Open scene : {}".format(self))
 

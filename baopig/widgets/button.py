@@ -161,7 +161,7 @@ class AbstractButton(Container, Clickable, Hoverable):
                 if self.has_locked("visibility"):
                     raise NotImplementedError
                 self.show()
-            self.paint()  # cannot paint if not visible
+            self._flip_without_update()
             if hidden:
                 self.hide()
             self.hover_sail.surface.blit(self.surface, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)

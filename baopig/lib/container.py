@@ -199,6 +199,7 @@ class Container(ResizableWidget):
             child.handle_scene_open()
 
     def _container_paint(self):
+        """ Executes paint requests """
 
         for cont in self._children_manager.containers:
             cont._container_paint()
@@ -216,6 +217,19 @@ class Container(ResizableWidget):
             rect = self._update_rect()
             if rect:
                 self._warn_parent(rect)
+
+    def _container_refresh(self, recursive=False, only_containers=True, with_update=True):
+
+        if recursive:
+            for child in self.children:
+                if isinstance(child, Container):
+                    child._container_refresh(recursive, only_containers, with_update=False)
+                elif not only_containers:
+                    child.paint()
+        if with_update:
+            self._flip()
+        else:
+            self._flip_without_update()
 
     def _container_run(self):
 
@@ -394,33 +408,6 @@ class Container(ResizableWidget):
             layer.pack(*args, **kwargs)
         if adapt:
             self.adapt(self.children)
-
-    def paint(self, recursive=False, only_containers=True, with_update=True):  # TODO : find a way to remove these
-
-        if recursive:
-            for child in self.children:
-                if isinstance(child, Container):
-                    child.paint(recursive, only_containers, with_update=False)
-                elif not only_containers:
-                    child.paint()
-        if with_update:
-            self._flip()
-        else:
-            self._flip_without_update()
-
-    def resize_TBR(self, w, h):
-
-        if self.has_locked.width:
-            w = self.w
-        if self.has_locked.height:
-            h = self.h
-        if (w, h) == self.size:
-            return
-
-        need_alpha = pygame.SRCALPHA if self.background_color.has_transparency() else 0
-        with paint_lock:
-            super().set_surface(pygame.Surface((w, h), need_alpha))
-            self._flip_without_update()
 
     def set_always_dirty(self):
         """Lock self.dirty to 2, cannot go back"""
