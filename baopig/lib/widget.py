@@ -644,8 +644,7 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
 
         # Sleep
         self._is_asleep = False
-        # TODO : self._sleep_parent_ref = lambda: None
-        self._sleep_memory = Object(parent=None)
+        self._sleep_parent_ref = lambda: None
         self.create_signal("SLEEP")
         self.create_signal("WAKE")
 
@@ -800,7 +799,7 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
 
         with paint_lock:
             self.signal.KILL.emit(self._weakref)
-            if self.parent.is_alive:  # False when called by Widget.wake()
+            if self.parent is not None:  # False when called by Widget.wake()
                 self.parent._remove_child(self)
             self.disconnect()
             self._weakref._ref = None
@@ -862,7 +861,7 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         assert self in self.parent.children
 
         self.parent._remove_child(self)
-        self._sleep_memory.__setattr__("parent", self.parent)
+        self._sleep_parent_ref = self.parent.get_weakref()
         self._parent = None
         self._is_asleep = True
         self.signal.SLEEP.emit()
@@ -872,10 +871,9 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         if self.is_awake:
             return
 
-        self._parent = self._sleep_memory.parent
-        self._sleep_memory.parent = None
-
-        if self.parent.is_dead:
+        self._parent = self._sleep_parent_ref()
+        self._sleep_parent_ref = lambda: None
+        if self.parent is None:
             return self.kill()
 
         self._is_asleep = False
