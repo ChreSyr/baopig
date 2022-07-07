@@ -149,8 +149,9 @@ class Container(ResizableWidget):
         self._padding = self.style["padding"]
         self._content_rect = BoxRect(self.auto_rect, self.padding)
 
-        if self.is_hidden:
-            self.set_dirty(1)
+        # if self.is_hidden:
+        #     self.set_dirty(1)
+        # TODO : test to create a hidden button and then let it show
 
         # BACKGROUND
         self._background_color = self.style["background_color"]
@@ -181,8 +182,6 @@ class Container(ResizableWidget):
 
     def _add_child(self, child):
         self._children_manager.add(child)
-        if child.dirty:
-            self._dirty_child(child, child.dirty)
 
     def _container_close(self):
 
@@ -213,10 +212,9 @@ class Container(ResizableWidget):
                         self._children_to_paint.remove(child)
                     # LOGGER.debug("Painting {} from container {}".format(child, self))
 
-        if self.dirty == 0:  # else, paint() is called by parent
-            rect = self._update_rect()
-            if rect:
-                self._warn_parent(rect)
+        rect = self._update_rect()
+        if rect:
+            self._warn_parent(rect)
 
     def _container_refresh(self, recursive=False, only_containers=True, with_update=True):
 
@@ -237,24 +235,6 @@ class Container(ResizableWidget):
             cont._container_run()
         for child in self._children_manager.runables:
             child.run()
-
-    def _dirty_child(self, child, dirty):
-        """
-        Should only be called by Widget.send_paint_request()
-        """
-        # try:
-        #     assert (child in self.children) or child is self  # for scenes
-        # except AssertionError as e:
-        #     raise e
-        if child not in self.children:
-            raise PermissionError(f"{child} not in {self}")
-        assert dirty in (0, 1, 2)
-
-        child._dirty = dirty
-        if dirty:
-            self._children_to_paint.add(child)
-        elif child in self._children_to_paint:
-            self._children_to_paint.remove(child)
 
     def _flip(self):
         """Update all the surface"""
@@ -409,18 +389,10 @@ class Container(ResizableWidget):
         if adapt:
             self.adapt(self.children)
 
-    def set_always_dirty(self):
-        """Lock self.dirty to 2, cannot go back"""
-
-        self.set_dirty(2)
-        self.set_dirty = lambda dirty: None
-        self._warn_change = lambda rect: None
-        # WARNING : this function is dirty...
-
     def set_background_color(self, *args, **kwargs):
 
         self._background_color = Color(*args, **kwargs)
-        self.send_paint_request()
+        self._warn_change(self.auto_hitbox)  # TODO : test it
 
     def set_background_image(self, surf, background_adapt=True):
         """

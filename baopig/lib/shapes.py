@@ -4,12 +4,12 @@ import pygame
 
 from baopig.pybao.issomething import *
 from .layer import Layer
-from .widget_supers import ResizableWidget
+from .widget_supers import ResizableWidget, Paintable
 from .utilities import Color, paint_lock
 from .widget import Widget
 
 
-class Rectangle(ResizableWidget):
+class Rectangle(ResizableWidget, Paintable):
     """
     A Widget who is just a rectangle filled with one color
 
@@ -36,6 +36,7 @@ class Rectangle(ResizableWidget):
     def __init__(self, parent, **kwargs):
 
         ResizableWidget.__init__(self, parent, **kwargs)
+        Paintable.__init__(self, parent)
 
         self._color = self.style["color"]
         self._border_color = self.style["border_color"]
@@ -61,12 +62,10 @@ class Rectangle(ResizableWidget):
         self.send_paint_request()
 
     def paint(self):
-        """
-        If size is set, this method resizes the Rectangle
-        """
         self.surface.fill(self.color)
         if self.border_color is not None:
             pygame.draw.rect(self.surface, self.border_color, (0, 0) + self.size, self.border_width * 2 - 1)
+        self.send_display_request()
 
     def set_color(self, color=None):
 

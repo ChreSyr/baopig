@@ -134,7 +134,6 @@ class DebugZone(Zone, Handler_SceneClose):
         self.update_pointed_outline()
         self.debug_zone.adapt(self.debug_zone.default_layer, horizontally=False)
         self.set_nontouchable()
-        self.set_always_dirty()
 
     is_debugging = property(lambda self: self.is_awake)
 

@@ -35,7 +35,7 @@ class ProgressBar(Rectangle, Runable):
         self.surface.fill((0, 0, 0, 0))
         pygame.draw.rect(self.surface, self.color, (0, 0, self.progression * self.w, self.h))
         pygame.draw.rect(self.surface, self.border_color, self.auto_hitbox, self.border_width * 2 - 1)
-        # self.set_surface(surface)
+        self.send_display_request()
 
     def run(self):
         self._progression = (float(self.get_progress()) - self.min) / (self.max - self.min)

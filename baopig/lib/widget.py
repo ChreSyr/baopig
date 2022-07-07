@@ -2,7 +2,6 @@
 # TODO : smart to use static, interactive, dynamic ?
 
 
-import functools
 import pygame
 from baopig.pybao.issomething import *
 from baopig.pybao.objectutilities import Object
@@ -650,18 +649,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         self.create_signal("HIDE")
 
         """
-        dirty is True while the component's surface have not been updated
-        
-        Particularly usefull when a hidden component got updated
-        We wait until it get visible before rendering it
-        
-        0 : don't need to be updated
-        1 : need to be updated once
-        2 : need to be updated as much as possible
-        """
-        self._dirty = 0
-
-        """
         A sleeping widget is not attached to its parent.
         If nothing connects it to its application, the garbage collector will delete it.
         """
@@ -765,18 +752,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         if options:
             raise ValueError(f"Unused options : {options}")
 
-        def paint_decorator(widget, paint):
-            functools.wraps(paint)
-
-            def wrapped_func(*args, **kwargs):
-                res = paint(*args, **kwargs)
-                widget.send_display_request()
-                return res
-
-            return wrapped_func
-
-        self.paint = paint_decorator(self, self.paint)  # TODO : Paintable
-
     def __repr__(self):
         """
         Called by repr(self)
@@ -796,7 +771,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
     # GETTERS ON PROTECTED FIELDS
     app = application = property(lambda self: self._app)  # TODO : remove application ?
     col = property(lambda self: self._col)
-    dirty = property(lambda self: self._dirty)
     is_alive = property(lambda self: self._weakref._comp is not None)
     is_asleep = property(lambda self: self._is_asleep)
     is_awake = property(lambda self: not self._is_asleep)
@@ -868,49 +842,12 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
 
         del self
 
-    def paint(self):
-        """
-        This method is made for being overriden
-
-        In your implementation, you can update the component's surface.
-        If you use send_paint_request(), this method will be called when the next frame is rendered
-        In fact, you can use paint() at any moment, but it is more efficient
-        to update it through send_paint_request() if it is changing very often
-
-        WARNING : never call this method without paint_lock
-
-        Example:
-            import baopig
-            ...
-            with baopig.paint_lock:
-                my_widget.paint()
-        """
-
     def send_display_request(self, rect=None):
 
         if self._parent is not None:  # False when asleep
             if rect is None:
                 rect = self.hitbox
             self._parent._warn_change(rect)
-
-    def send_paint_request(self):  # TODO : Paintable
-
-        if self._dirty == 0:
-            if self.is_asleep:  # the widget has no parent
-                self._dirty = 1
-            else:
-                self.parent._dirty_child(self, 1)
-
-    def set_dirty(self, dirty):
-        """
-        Works as pygame.DirtySprite :
-
-        if set to 1, it is repainted and then set to 0 again
-        if set to 2 then it is always dirty (repainted each scene, flag is not reset)
-        0 means that it is not dirty and therefor not repainted again
-        """
-
-        self.parent._dirty_child(self, dirty)
 
     def set_lock(self, **kwargs):
         """
