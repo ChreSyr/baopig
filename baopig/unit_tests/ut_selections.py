@@ -50,8 +50,7 @@ class UT_Selections_Zone(SelectorZone):
     def __init__(self, *args, **kwargs):
         SelectorZone.__init__(self, *args, **kwargs)
 
-        z = SelectorZone(self, size=(self.w / 3, self.h - 20), background_color="gray",
-                         pos=("50%", 10), loc="midtop")
+        z = SelectorZone(self, size=(self.w / 3, self.h - 20), background_color="gray", midtop=("50%", 10))
         z.set_style_for(SelectionRect, border_color="red", color=(255, 0, 0, 40))
         SelectableRectangle(z, (10, 10))
         SelectableRectangle(z, (50, 10))
@@ -60,7 +59,7 @@ class UT_Selections_Zone(SelectorZone):
         TextEdit(z, width=z.w - 20, pos=(10, 75))  # TODO : Scrollable
 
         z2 = SelectorZone(z, size=(z.w - 20, (z.h - 40) / 3), background_color=(128, 128, 128),
-                          pos=(10, "50%"), loc="midleft", can_select=False)
+                          midleft=(10, "50%"), can_select=False)
         SelectableRectangle(z2, (10, 10))
         SelectableRectangle(z2, (50, 10))
         SelectableRectangle(z2, (90, 10))

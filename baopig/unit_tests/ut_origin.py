@@ -27,13 +27,13 @@ class UT_Origin_Zone(Zone):
         # Prisonner at center of the magical show
         z = DragableZone(self, sticky="midtop", size=(100, 100), background_color=(40, 34, 34), name="bottom")
         z.move_behind(b)
-        DragableRectangle(z, color=(0, 128, 128), size=(30, 30), pos=z.auto.center, loc="center", ref=b)
+        DragableRectangle(z, color=(0, 128, 128), size=(30, 30), center=z.auto.center, ref=b)
 
         # Prisonner inside magical show, at center of its zone
-        z = DragableZone(self, loc="topright", refloc="topright",
+        z = DragableZone(self, sticky="topright",
                          size=(100, 100), background_color=(40, 34, 34), name="bottomright")
         z.move_behind(b)
-        r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), pos=z.auto.center, loc="center")
+        r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), center=z.auto.center)
 
         def handle_motion(z, b, r, dx, dy):
             rect = pygame.Rect(b.abs)
@@ -46,17 +46,17 @@ class UT_Origin_Zone(Zone):
 
         # PRISONNER
         z = DragableZone(self, sticky="midright", size=(100, 100), background_color=(0, 64, 64), name="right")
-        r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), pos=z.auto.center, loc="center")
-        wb = Rectangle(z, pos=("50%", "50%"), loc="center", color=(0, 0, 0, 0),
+        r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), center=z.auto.center)
+        wb = Rectangle(z, center=("50%", "50%"), color=(0, 0, 0, 0),
                        size=[z.w - 20] * 2, border_color=(0, 0, 0), border_width=1, touchable=False)
         r.set_window(wb.rect)
 
         # CLOCK
-        z2 = DragableZone(self, pos=("-50%", 186), loc="midtop", refloc="topright",
+        z2 = DragableZone(self, midtop=("-50%", 186), refloc="topright",
                           size=(350, 350), background_color=(140, 140, 140), name="z3")
-        z3 = DragableZone(z2, pos=(0, 0), loc="center", refloc="center",
+        z3 = DragableZone(z2, sticky="center",
                           size=(250, 250), background_color=(150, 150, 150), name="z2")
-        ref = DragableRectangle(z3, pos=("50%", "50%"), loc="center", ref=self,
+        ref = DragableRectangle(z3, center=("50%", "50%"), ref=self,
                                 color=(128, 128, 0), size=(30, 30), name="ref")
         import math
         radius = 100
@@ -83,10 +83,8 @@ class UT_Origin_Zone(Zone):
         DragableRectangle(self, pos=("50%", "50%"), ref=r1, color=(75, 75, 25), size=(40, 40))
 
         # CROSS
-        c1 = Rectangle(self, color=(0, 0, 0), size=(6, 20),
-                       pos=(0, 0), loc="center", refloc="center")
-        c2 = Rectangle(self, color=(0, 0, 0), size=(20, 6),
-                       pos=(0, 0), loc="center", refloc="center")
+        Rectangle(self, color=(0, 0, 0), size=(6, 20), sticky="center")
+        Rectangle(self, color=(0, 0, 0), size=(20, 6), sticky="center")
 
     def load_sections(self):
         self.parent.add_section(

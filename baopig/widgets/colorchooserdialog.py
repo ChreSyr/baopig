@@ -162,7 +162,7 @@ class ColorDialogFrame(DialogFrame):
         )
         self.color_text = Text(
             self, str(self.color),
-            pos=(0, -10), loc="midbottom",
+            midbottom=(0, -10),
             ref=self.color_rect, refloc="midtop"
         )
 

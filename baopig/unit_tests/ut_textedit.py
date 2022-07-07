@@ -17,9 +17,8 @@ class UT_TextEdit_Zone(Zone):
 
         text = TextEdit(self.zone2, width=self.zone2.w - 20, pos=(10, 10))
 
-        self.b = Button(self.zone2, text="RUN", pos=text.topright, command=lambda: exec(text.text),
+        self.b = Button(self.zone2, text="RUN", topright=text.topright, command=lambda: exec(text.text),
                         catching_errors=True)
-        self.b.origin.config(loc="topright")
         text.signal.RESIZE.connect(lambda: self.b.origin.config(pos=text.topright), owner=self.b)
         text.signal.MOTION.connect(lambda: self.b.origin.config(pos=text.topright), owner=self.b)
 

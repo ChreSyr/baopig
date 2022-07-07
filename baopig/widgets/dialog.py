@@ -75,7 +75,7 @@ class DialogFrame(Zone):
         self.title_label = Text(
             self, dialog.title,
             font_height=38,
-            pos=("50%", 40), loc="center"
+            center=("50%", 40),
         )
         bottom = self.title_label.bottom
         if dialog.description is not None:

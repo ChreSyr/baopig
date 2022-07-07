@@ -613,18 +613,12 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         if hasattr(self, "_weakref"):  # Widget.__init__() has already been called
             return
 
-        if name is None:
-            name = "NoName"
-        if isinstance(layer, str):
-            layer = parent.layers_manager.get_layer(layer)
-
         assert hasattr(parent, "_warn_change")
-        assert isinstance(name, str)
         assert surface is not None
 
         # name is a string who may help to identify the widget
         # It is defined here, so it's in first place in self.__dict__ (should)
-        self._name = name
+        self._name = name if name else "NoName"
 
         HasStyle.__init__(self, parent, options=kwargs)
         Communicative.__init__(self)
@@ -680,24 +674,23 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
             self._col = col
             self._row = row
 
-        # sticky is a shortcut :
-        #     sticky="center" <=> loc="center", refloc="center"
+        # SHORTCUT
+        # NOTE : Can only use one shortcut
         if "sticky" in kwargs:
-            assert self.style["loc"] == self.style["refloc"] == "topleft", \
-                "Cannot use parameter sticky with parameters loc and refloc"
+            # sticky="center" <=> loc="center", refloc="center"
+            # assert self.style["loc"] == self.style["refloc"] == "topleft", \
+            #     "Cannot use parameter sticky with parameters loc and refloc"
             sticky = Location(kwargs.pop("sticky"))
             self.style.modify(loc=sticky, refloc=sticky)
-
-        # other shortcuts :
-        #     center=(200, 45) <=> pos=(200, 45), loc="center"
-        # Works for every location
-        for key in tuple(kwargs.keys()):
-            if key in HasProtectedHitbox.HITBOX_ATTRIBUTES:
-                assert self.style["pos"] == (0, 0) and self.style["loc"] == "topleft", \
-                    "Cannot use location shortcut with parameters pos and loc"
-                location = key
-                self.style.modify(pos=kwargs.pop(key), loc=location)
-                break  # TODO : error if more than only one key
+        else:
+            # center=(200, 45) <=> pos=(200, 45), loc="center"
+            # Works for every location
+            for key in tuple(kwargs.keys()):
+                if key in HasProtectedHitbox.HITBOX_ATTRIBUTES:
+                    # assert self.style["pos"] == (0, 0) and self.style["loc"] == "topleft", \
+                    #     "Cannot use location shortcut with parameters pos and loc"
+                    self.style.modify(pos=kwargs.pop(key), loc=key)
+                    break
 
         # LAYOUT
         if layer is None:
@@ -705,6 +698,8 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
                 layer = parent.layers_manager.find_layer_for(self, layer_level)
         elif layer_level is not None:
             raise PermissionError("Cannot define a layer AND a layer_level")
+        elif isinstance(layer, str):
+            layer = parent.layers_manager.get_layer(layer)
         self._layer = layer
 
         # INITIALIZATIONS

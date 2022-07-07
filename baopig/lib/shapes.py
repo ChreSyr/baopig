@@ -231,7 +231,7 @@ class Circle(Widget):
         if border_width > 1: raise NotImplemented
         surf = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(surf, color, (radius, radius), radius, border_width)
-        Widget.__init__(self, parent, surface=surf, pos=center, loc="center", **kwargs)
+        Widget.__init__(self, parent, surface=surf, center=center, **kwargs)
 
         self._color = color
         self._radius = radius
