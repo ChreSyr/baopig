@@ -107,70 +107,22 @@ class Highlighter(Rectangle):
 
     def __init__(self, parent, target, **kwargs):
 
-        if "pos_ref" in kwargs:
-            raise PermissionError("Use 'target' instead of 'pos_ref'")
+        if "ref" in kwargs:
+            raise PermissionError("Use 'target' instead of 'ref'")
         if "size" in kwargs:
             raise PermissionError("A Highlighter's' size depends on its target")
 
-        # assert target.parent is parent
-        # if parent.parent == parent:  # TODO : move to debug_zone.py
-        #     parent = target  # target is a scene
-
-        Rectangle.__init__(self, parent, pos_ref=target, size=target.size, **kwargs)
+        Rectangle.__init__(self, parent, ref=target, size=target.size, **kwargs)
 
         self._target_ref = target.get_weakref()
         self.set_nontouchable()
-        self.target.signal.RESIZE.connect(self.handle_targetresize, owner=self)
+
+        def handle_targetresize():
+            self.resize(*self.target.size)
+
+        self.target.signal.RESIZE.connect(handle_targetresize, owner=self)
 
     target = property(lambda self: self._target_ref())
-
-    def config_TBR(self, target=None, color=None, width=None):
-
-        with paint_lock:
-
-            if type(target) is tuple:  # old_size from RESIZE signal
-                target = None
-
-            if target is not None:
-                try:
-                    self.target.signal.RESIZE.disconnect(self.config)
-                except AttributeError:
-                    pass  # self.target = None
-                self._target_ref = target.get_weakref()
-                self.target.signal.RESIZE.connect(self.config, owner=self)
-                w = self.width if width is None else width
-                self.origin.config(pos=(-w + 1, -w + 1), reference=self.target, from_hitbox=True)
-
-            if color is not None:
-                assert is_color(color)
-                self._color = color
-
-            if width is not None:
-                assert 0 <= width
-                self._width = width
-
-            size = (self.target.hitbox.w + self.width * 2 - 2, self.target.hitbox.h + self.width * 2 - 2)
-            if size != self.size:
-                surface = pygame.Surface(size, pygame.SRCALPHA)
-                pygame.draw.rect(surface, self.color, (0, 0) + size, self.width * 2 - 1)
-                self.set_surface(surface)
-
-    def set_target_TBR(self, target, width):
-
-        self.origin.config()
-
-        try:
-            self.target.signal.RESIZE.disconnect(self.config)
-        except AttributeError:
-            pass  # self.target = None
-        self._target_ref = target.get_weakref()
-        self.target.signal.RESIZE.connect(self.config, owner=self)
-        w = self.width if width is None else width
-        self.origin.config(pos=(-w + 1, -w + 1), reference=self.target, from_hitbox=True)
-
-    def handle_targetresize(self):
-
-        self.resize(*self.target.size)
 
 
 class Sail(Rectangle):
@@ -279,7 +231,7 @@ class Circle(Widget):
         if border_width > 1: raise NotImplemented
         surf = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(surf, color, (radius, radius), radius, border_width)
-        Widget.__init__(self, parent, surface=surf, pos=center, pos_location="center", **kwargs)
+        Widget.__init__(self, parent, surface=surf, pos=center, loc="center", **kwargs)
 
         self._color = color
         self._radius = radius

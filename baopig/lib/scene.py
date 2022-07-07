@@ -20,29 +20,24 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         background_color="theme-color-scene_background",
     )
 
-    def __init__(self, application, size=None, can_select=True, **options):
+    def __init__(self, application, size=None, can_select=True, **kwargs):
 
-        if "name" not in options:
-            options["name"] = self.__class__.__name__
+        if "name" not in kwargs:
+            kwargs["name"] = self.__class__.__name__
         self._application = self._app = application
 
-        if "theme" in options:
-            theme = options.pop("theme")
+        if "theme" in kwargs:
+            theme = kwargs.pop("theme")
             if not isinstance(theme, str):  # theme name
                 assert isinstance(theme, Theme)
                 if not theme.issubtheme(application.theme):
                     raise PermissionError("Must be an application sub-theme")
         else:
             theme = application.theme.subtheme()
-        self.inherit_style(theme)
 
-        Zone.__init__(
-            self,
-            parent=self,
-            pos=(0, 0),
-            size=application.default_size if size is None else size,
-            **options
-        )
+        self._theme = theme
+        Zone.__init__(self, parent=self, pos=(0, 0), size=application.default_size if size is None else size,
+                      **kwargs)
         Selector.__init__(self, parent=self, can_select=can_select)
 
         # self._mode = 0

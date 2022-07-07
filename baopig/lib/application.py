@@ -20,8 +20,11 @@ class Application(HasStyle):
 
     def __init__(self, name=None, theme=None, size=None, mode=pygame.RESIZABLE):
 
-        if name is None: name = self.__class__.__name__
-        if theme is None: theme = Theme()
+        if name is None:
+            name = self.__class__.__name__
+        if theme is None:
+            theme = Theme()
+
         HasStyle.__init__(self, theme)
 
         pygame.init()

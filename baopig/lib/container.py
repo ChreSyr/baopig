@@ -4,7 +4,7 @@ from baopig.pybao.objectutilities import *
 from .imagewidget import Image
 from .layer import Layer
 from .layersmanager import LayersManager
-from .widget_supers import ResizableWidget, Runable
+from .widget_supers import Paintable, ResizableWidget, Runable
 from .utilities import *
 
 
@@ -200,6 +200,8 @@ class Container(ResizableWidget):
     def _container_paint(self):
         """ Executes paint requests """
 
+        # TODO : solve :     for cont in self._children_manager.containers:
+        #                RuntimeError: Set changed size during iteration
         for cont in self._children_manager.containers:
             cont._container_paint()
 
@@ -223,7 +225,8 @@ class Container(ResizableWidget):
                 if isinstance(child, Container):
                     child._container_refresh(recursive, only_containers, with_update=False)
                 elif not only_containers:
-                    child.paint()
+                    if isinstance(child, Paintable):
+                        child.paint()
         if with_update:
             self._flip()
         else:

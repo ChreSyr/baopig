@@ -8,27 +8,23 @@ class ButtonText(Text):
     STYLE = Text.STYLE.substyle()
     STYLE.modify(
         align_mode="left",
-        pos_location="center",
-        pos_ref_location="center",
+        loc="center",
+        refloc="center",
+        height_is_adaptable=True,
+        width_is_adaptable=True,
     )
 
-    def __init__(self, button, text, **options):
+    def __init__(self, button, text, **kwargs):
 
         assert isinstance(button, AbstractButton)
-        self.inherit_style(button, options=options)
+
+        Text.__init__(self, button, text=text, selectable=False, **kwargs)
+
+        assert self.width_is_adaptable and self.height_is_adaptable
+
         content_rect = button.content_rect
-
-        if content_rect.height < self.style["font_height"]:
-            self.style.modify(font_height=content_rect.height)
-            # raise ValueError("This text has a too high font for the text area : "
-            #                  f"{self.style['font_height']} (maximum={content_rect.height})")
-        Text.__init__(
-            self, button,
-            text=text,
-            selectable=False,
-            **options
-        )
-
+        if content_rect.height < self.font.height:
+            self.font.config(height=content_rect.height)  # changing the font will automatically update the text
         while self.width > content_rect.width:
             if self.font.height == 2:
                 raise ValueError(f"This text is too long for the text area : {text} (area={content_rect})")
@@ -59,21 +55,17 @@ class AbstractButton(Container, Clickable, Hoverable):
         catching_errors=False,
     )
 
-    def __init__(self, parent, command=None, name=None,
-                 background_color=None, catching_errors=None, hover=None, link=None, focus=None, **options):
+    def __init__(self, parent, command=None, hover=None, link=None, focus=None, **kwargs):
 
-        self.inherit_style(parent, options, background_color=background_color, catching_errors=catching_errors)
-
-        if command is None:
-            command = lambda: None
-
-        assert callable(command), "command must be callable"
-
-        Container.__init__(self, parent=parent, name=name, **options)
+        Container.__init__(self, parent, **kwargs)
         Hoverable.__init__(self, parent)
         Clickable.__init__(self, parent, catching_errors=self.style["catching_errors"])
 
-        self.command = command  # non protected field
+        if command is None:
+            self.command = lambda: None
+        else:
+            self.command = command  # non protected field
+            assert callable(command), "command must be callable"
 
         if self.default_layer is None:
             Layer(self)  # TODO : usefull ?
@@ -153,7 +145,8 @@ class AbstractButton(Container, Clickable, Hoverable):
         self.disable_sail.hide()
         self.disable_sail.swap_layer(self.above_lines)
 
-        if isinstance(hover, int) and hover != -1:
+        if isinstance(hover, int) and hover != -1 and False:  # TODO : hover_alpha=False
+            # Adapts the hover sail to the surface -> alpha pixels are not hovered
             hidden = self.is_hidden
             if hidden:
                 if self.has_locked("visibility"):
@@ -172,7 +165,7 @@ class AbstractButton(Container, Clickable, Hoverable):
     def handle_enable(self):
 
         self.disable_sail.hide()
-        self.hover_sail.lock_visibility(locked=False)
+        self.hover_sail.set_lock(visibility=False)
         if self.is_hovered:
             self.hover_sail.show()
 
@@ -209,16 +202,10 @@ class Button(AbstractButton):
 
     text = property(lambda self: self.text_widget.text)
 
-    def __init__(self, parent, text=None,
-                 command=None, background_color=None, **kwargs):
+    def __init__(self, parent, text=None, **kwargs):
 
-        AbstractButton.__init__(
-            self,
-            parent=parent,
-            command=command,
-            background_color=background_color,
-            **kwargs
-        )
+        AbstractButton.__init__(self, parent, **kwargs)
+
         if text is not None:
             assert isinstance(text, str)
             self.text_widget = self.style["text_class"](self, text=text, **self.style["text_style"])

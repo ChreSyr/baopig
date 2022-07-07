@@ -318,8 +318,9 @@ class GridLayer(Layer):
         cell_rect = self.get_cell_rect(widget.row, widget.col)
         widget.set_window(cell_rect)
         widget.set_lock(origin=False)
-        if widget.sticky is not None:
-            widget.origin.config(pos=getattr(pygame.Rect(cell_rect), widget.sticky), location=widget.sticky)
+        if widget.origin.location is not None:
+            widget.origin.config(pos=getattr(pygame.Rect(cell_rect), widget.origin.location),
+                                 loc=widget.origin.location)
         else:
             widget.origin.config(pos=cell_rect[:2])
         widget.set_lock(origin=True)
@@ -340,6 +341,10 @@ class GridLayer(Layer):
 
     def add(self, widget):
 
+        if widget.origin.reference is not self.container:
+            raise PermissionError("Cannot use other ref than parent in a GridLayer")
+        if widget.origin.reference_location != "topleft":
+            raise PermissionError("Cannot use other refloc than 'topleft' in a GridLayer")
         if (widget.col is None) or (widget.row is None):
             raise PermissionError(
                 "You must define at least the row or the column in order to insert a widget in a GridLayer")
@@ -353,8 +358,6 @@ class GridLayer(Layer):
                 self._nbrows = None
 
             if self._data[widget.row][widget.col] is not None:
-                stucker = self._data[widget.row][widget.col]
-                test = stucker == widget
                 raise PermissionError("Cannot insert {} at positon : row={}, col={}, because {} is already there"
                                       "".format(widget, widget.row, widget.col, self._data[widget.row][widget.col]))
 
@@ -368,17 +371,10 @@ class GridLayer(Layer):
             if new_w:
                 col._update_width()
 
-            widget.set_lock(origin=False)  # the grid layer has to be the only one who gives a position to the widget
-            if widget.sticky is not None:
-                pos = getattr(pygame.Rect(self.get_cell_rect(widget.row, widget.col)), widget.sticky)
-                loc = widget.sticky
-            else:
-                pos = self.get_cell_rect(widget.row, widget.col)[:2]
-                loc = "topleft"
-            assert widget.origin.reference is self.container
-            widget.origin.config(pos=pos, location=loc, reference_location="topleft", locked=True)
             if new_h or new_w or len(row) == 1 or len(col) == 1:
                 self.pack()
+            else:
+                self._update_widget(widget)
 
             if widget.window is None:
                 widget.set_window(row.get_cell_rect(widget.col))

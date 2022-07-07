@@ -8,11 +8,11 @@ from .text import Text
 class SliderBloc(Rectangle):
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
-        width=-1,  # use length and wideness instead
-        height=-1,  # use length and wideness instead
+        width=1,  # use length and wideness instead
+        height=1,  # use length and wideness instead
         border_width=3,
-        pos_location="left",
-        pos_ref_location="left",
+        loc="midleft",
+        refloc="midleft",
     )
     STYLE.create(
         length=16,
@@ -22,13 +22,14 @@ class SliderBloc(Rectangle):
     def __init__(self, slider):
         assert isinstance(slider, Slider)
 
-        self._border_width = 0
-        self.inherit_style(slider)  # anticipated inheritance
-        self._border_width = self.style["border_width"]
-        # TODO : if the slider goes vertically, switch length and wideness in the following line
-        self.style.modify(width=self.style["length"], height=self.style["wideness"])
+        # self._border_width = 0
+        # self.inherit_style_(slider)  # anticipated inheritance
+        # self._border_width = self.style["border_width"]
+        # # TODO : if the slider goes vertically, switch length and wideness in the following line
+        # self.style.modify(width=self.style["length"], height=self.style["wideness"])
 
         Rectangle.__init__(self, slider)
+        self.resize(w=self.style["length"], h=self.style["wideness"])
 
         self._max_index = None  # TODO : remove
 
@@ -42,10 +43,10 @@ class SliderBloc(Rectangle):
 class SliderBar(Rectangle):
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
-        pos_location="center",
-        pos_ref_location="center",
-        width=-1,  # TODO : delete, but is it possible ? maybe not
-        height=-1,  # TODO : delete
+        loc="center",
+        refloc="center",
+        width=1,  # TODO : delete, but is it possible ? maybe not
+        height=1,  # TODO : delete
         color=(0, 0, 0, 64),
         border_width=1,
     )
@@ -59,12 +60,12 @@ class SliderBar(Rectangle):
     def __init__(self, slider):
         assert isinstance(slider, Slider)
 
-        style = slider.get_style_for(self.__class__)
-        self.inherit_style(slider)
+        # style = slider.get_style_for(self.__class__)
+        # self.inherit_style_(slider)
         # TODO : if the slider goes vertically, switch length and wideness in the following line
-        self.style.modify(width=style["length"], height=style["wideness"])
 
         Rectangle.__init__(self, slider)
+        self.resize(w=self.style["length"], h=self.style["wideness"])
 
 
 class Slider(Container, Linkable, Hoverable):
@@ -72,8 +73,8 @@ class Slider(Container, Linkable, Hoverable):
 
     STYLE = Container.STYLE.substyle()
     STYLE.modify(
-        width=-1,  # don't use them
-        height=-1,  # don't use them
+        width=1,  # don't use them
+        height=1,  # don't use them
     )
     # NOTE : On peut facilement se tromper en laissant width et height alors qu'on devrait utiliser bar_size
     STYLE.create(
@@ -88,13 +89,8 @@ class Slider(Container, Linkable, Hoverable):
     STYLE.set_constraint("bloc_class", lambda val: issubclass(val, SliderBloc))
     STYLE.set_constraint("bar_class", lambda val: issubclass(val, SliderBar))
 
-    def __init__(self, parent, minval, maxval, bar_size=None,
-                 defaultval=None, step=None, title=None, printed_title=False, **options):
-
-        if "size" in options:
-            raise PermissionError("Use bar_size instead of size")
-
-        self.inherit_style(parent, options)
+    def __init__(self, parent, minval, maxval,
+                 defaultval=None, step=None, title=None, printed_title=False, **kwargs):
 
         if defaultval is None:
             defaultval = minval
@@ -106,13 +102,7 @@ class Slider(Container, Linkable, Hoverable):
         if step is not None:
             assert step > 0
 
-        if bar_size is not None:  # TODO : bar_style
-            self.set_style_for(self.style["bar_class"], width=bar_size[0], height=bar_size[1])
-
-        bar_style = self.get_style_for(self.style["bar_class"])
-        # TODO : if the slider goes vertically, switch length and wideness in the following line
-        self.style.modify(width=bar_style["length"], height=bar_style["wideness"])
-        Container.__init__(self, parent, **options)
+        Container.__init__(self, parent, **kwargs)
         Linkable.__init__(self, parent)
         Hoverable.__init__(self, parent)
 

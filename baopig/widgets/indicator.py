@@ -9,16 +9,16 @@ def _init_loc(location):
 
     assert location in ("top", "bottom", "left", "right")
     if location == "top":
-        loc_opposite = "bottom"
+        loc_opposite = "midbottom"
         pos = (0, -5)
     elif location == "bottom":
-        loc_opposite = "top"
+        loc_opposite = "midtop"
         pos = (0, 5)
     elif location == "left":
-        loc_opposite = "right"
+        loc_opposite = "midright"
         pos = (-5, 0)
     elif location == "right":
-        loc_opposite = "left"
+        loc_opposite = "midleft"
         pos = (5, 0)
     else:
         raise ValueError(f"location must be 'top', 'bottom', 'left' or 'right'. Wrong value : {location}")
@@ -28,7 +28,7 @@ def _init_loc(location):
 
 class Indicator(Text):
 
-    def __init__(self, widget, text, indicator=None, location="top", **kwargs):
+    def __init__(self, widget, text, indicator=None, loc="top", **kwargs):
         """Create a Text above the widget when hovered"""
 
         assert isinstance(widget, Hoverable), "Indicator can only indicate Hoverable widgets"
@@ -38,16 +38,17 @@ class Indicator(Text):
             widget._indicator = indicator
             raise NotImplementedError
 
-        pos, loc_opposite = _init_loc(location)
+        pos, loc_opposite = _init_loc(loc)
+        loc = "mid" + loc
+        kwargs["loc"] = loc_opposite
 
         Text.__init__(
-            self, widget.parent, text, font_color=(255, 255, 255), font_height=15,
-            pos=pos, pos_location=loc_opposite, pos_ref=widget, pos_ref_location=location,
+            self, widget.parent, text, font_color=(255, 255, 255), font_height=15, pos=pos,
+            ref=widget, refloc=loc, referenced_by_hitbox=True,
             background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False, layer_level=2, **kwargs
         )
 
         widget._indicator = self
-        self.origin.config(from_hitbox=True)
         widget.signal.HOVER.connect(self.wake, owner=self)
         widget.signal.UNHOVER.connect(self.sleep, owner=self)
         if not widget.is_hovered:
@@ -56,7 +57,7 @@ class Indicator(Text):
 
 class DynamicIndicator(DynamicText):
 
-    def __init__(self, widget, get_text, indicator=None, location="top", **kwargs):
+    def __init__(self, widget, get_text, indicator=None, loc="top", **kwargs):
         """Create a DynamicText above the widget when hovered"""
 
         if widget._indicator is not None:
@@ -65,16 +66,17 @@ class DynamicIndicator(DynamicText):
             widget._indicator = indicator
             raise NotImplementedError
 
-        pos, loc_opposite = _init_loc(location)
+        pos, loc_opposite = _init_loc(loc)
+        loc = "mid" + loc
+        kwargs["loc"] = loc_opposite
 
         DynamicText.__init__(
-            self, widget.parent, get_text, font_color=(255, 255, 255), font_height=15,
-            pos=pos, pos_location=loc_opposite, pos_ref=widget, pos_ref_location=location,
+            self, widget.parent, get_text, font_color=(255, 255, 255), font_height=15, pos=pos,
+            ref=widget, refloc=loc, referenced_by_hitbox=True,
             background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False, layer_level=2, **kwargs
         )
 
         widget._indicator = self
-        self.origin.config(from_hitbox=True)
         widget.signal.HOVER.connect(self.wake, owner=self)
         widget.signal.UNHOVER.connect(self.sleep, owner=self)
         if not widget.is_hovered:

@@ -14,6 +14,7 @@ class UT_LayerPack_Zone(Zone):
         self.package = Zone(classiclayer_tester, padding=10, children_margins=5, pos=(0, 35), size=(300, 300),
                             background_color=(90, 90, 80))
         Layer(self.package)
+
         def add():
             zone = Zone(self.package, name="zone", background_color="green4", padding=3, children_margins=3,
                         pos=(random.randint(0, 200), random.randint(0, 200)))
@@ -22,40 +23,49 @@ class UT_LayerPack_Zone(Zone):
             Button(zone, "REMOVE", command=zone.kill)
             zone.default_layer.pack()
             zone.adapt(zone.default_layer)
+
         Button(classiclayer_tester, "ADD", command=add)
         b = Button(classiclayer_tester, "PACK", command=self.package.pack)
-        Indicator(b, "NOTE : By default, pack() sorts widgets by position", location="bottom", width=200)
+        b.set_window((b.left, b.top, b.w, 20), follow_movements=True)  # TODO : remove, here for some tests
+        Indicator(b, "NOTE : By default, pack() sorts widgets by position", loc="bottom", width=200)
         Button(classiclayer_tester, "CLEAR", command=self.package.default_layer.clear)
         safe_layer.pack(axis="horizontal")
         Text(classiclayer_tester, pos=(330, 10), text="Testing Layer.pack()", font_height=30)
 
         s = Slider(classiclayer_tester, pos=(330, 80), step=1, minval=0, maxval=100, title="padding.left",
-                   defaultval=self.package.padding.left, printed_title=True, bar_size=(150, 100))
+                   defaultval=self.package.padding.left, printed_title=True, size=(150, 100))
+
         def new_padding(val):
             self.package.padding._left = val
+
         s.signal.NEW_VAL.connect(new_padding, owner=None)
 
         s = Slider(classiclayer_tester, pos=(330, 120), step=1, minval=0, maxval=100, title="children_margins.top",
-                   defaultval=self.package.children_margins.top, printed_title=True, bar_size=(150, 100))
+                   defaultval=self.package.children_margins.top, printed_title=True, size=(150, 100))
+
         def new_childrenmargins_top(val):
             self.package.children_margins._top = val
+
         s.signal.NEW_VAL.connect(new_childrenmargins_top, owner=None)
 
         s = Slider(classiclayer_tester, pos=(330, 160), step=1, minval=0, maxval=100, title="children_margins.bottom",
-                   defaultval=self.package.children_margins.bottom, printed_title=True, bar_size=(150, 100))
+                   defaultval=self.package.children_margins.bottom, printed_title=True, size=(150, 100))
+
         def new_childrenmargins_bottom(val):
             self.package.children_margins._bottom = val
+
         s.signal.NEW_VAL.connect(new_childrenmargins_bottom, owner=None)
-        Text(classiclayer_tester, "NOTE : Currently, only children_margins.top and children_margins.left are being used",
-             width=self.w - s.right - 10, pos_location="left", pos_ref=s, pos_ref_location="right", pos=(10, 0))
+        Text(classiclayer_tester, "NOTE : Only children_margins.top and children_margins.left are being used",
+             width=self.w - s.right - 10, ref=s, refloc="midright", midleft=(10, 0))
 
         # GRID TESTING
         gridlayer_tester = Zone(self, size=("100%", "50%"))
         self.default_layer.pack()
         safe_layer2 = Layer(gridlayer_tester, Button, name="safe_layer")
         self.package2 = Zone(gridlayer_tester, padding=10, children_margins=5, pos=(0, 35), size=(300, 300),
-                            background_color=(90, 90, 80))
+                             background_color=(90, 90, 80))
         GridLayer(self.package2, nbrows=10, nbcols=10)
+
         def add():
 
             for i in range(10):
@@ -82,25 +92,25 @@ class UT_LayerPack_Zone(Zone):
 
         sliders_layer = Layer(gridlayer_tester, children_margins=25)
         s = Slider(gridlayer_tester, layer=sliders_layer, step=1, minval=0, maxval=100, title="padding.left",
-                   defaultval=self.package2.padding.left, printed_title=True, bar_size=(150, 100))
+                   defaultval=self.package2.padding.left, printed_title=True, size=(150, 100))
         def new_paddingleft(val):
             self.package2.padding._left = val
         s.signal.NEW_VAL.connect(new_paddingleft, owner=None)
 
         s = Slider(gridlayer_tester, layer=sliders_layer, step=1, minval=0, maxval=100, title="padding.top",
-                   defaultval=self.package2.padding.top, printed_title=True, bar_size=(150, 100))
+                   defaultval=self.package2.padding.top, printed_title=True, size=(150, 100))
         def new_paddingtop(val):
             self.package2.padding._top = val
         s.signal.NEW_VAL.connect(new_paddingtop, owner=None)
 
         s = Slider(gridlayer_tester, layer=sliders_layer, step=1, minval=0, maxval=100, title="children_margins.left",
-                   defaultval=self.package2.children_margins.left, printed_title=True, bar_size=(150, 100))
+                   defaultval=self.package2.children_margins.left, printed_title=True, size=(150, 100))
         def new_childrenmargins_left(val):
             self.package2.children_margins._left = val
         s.signal.NEW_VAL.connect(new_childrenmargins_left, owner=None)
 
         s = Slider(gridlayer_tester, layer=sliders_layer, step=1, minval=0, maxval=100, title="children_margins.top",
-                   defaultval=self.package2.children_margins.top, printed_title=True, bar_size=(150, 100))
+                   defaultval=self.package2.children_margins.top, printed_title=True, size=(150, 100))
         def new_childrenmargins_top(val):
             self.package2.children_margins._top = val
         s.signal.NEW_VAL.connect(new_childrenmargins_top, owner=None)

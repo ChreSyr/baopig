@@ -7,8 +7,8 @@ class UT_ColorChooserDialog_Zone(Zone):
         Zone.__init__(self, *args, **kwargs)
 
         colorchooser = ColorChooserDialog(self.application)
-        Button(self, "Wich color ?", sticky="top", pos=(0, 10), command=colorchooser.open)
-        text = Text(self, "Color : None", sticky="top", pos=(0, 60))
+        Button(self, "Wich color ?", sticky="midtop", pos=(0, 10), command=colorchooser.open)
+        text = Text(self, "Color : None", sticky="midtop", pos=(0, 60))
         colorchooser.signal.ANSWERED.connect(lambda color: text.set_text("Color : " + str(color)), owner=None)
 
 

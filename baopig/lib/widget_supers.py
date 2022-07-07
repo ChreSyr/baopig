@@ -6,7 +6,7 @@ from baopig.documentation import Paintable as PaintableDoc
 from baopig.documentation import Runable as RunableDoc
 from baopig.communicative import ApplicationExit
 from baopig.time.timer import RepeatingTimer
-from .widget import Widget
+from .widget import Widget, HasStyle
 
 
 class Hoverable(HoverableDoc, Widget):
@@ -388,7 +388,7 @@ class Draggable(Linkable):
         self.move(*link_motion_event.rel)
 
 
-class ResizableWidget(Widget):  # TODO : solve : try_it_yourself.code is not resized
+class ResizableWidget(Widget):
     """Class for widgets who can be resized"""
 
     STYLE = Widget.STYLE.substyle()
@@ -400,7 +400,7 @@ class ResizableWidget(Widget):  # TODO : solve : try_it_yourself.code is not res
     def __init__(self, parent, size=None, **kwargs):
         """NOTE : can be size=(50, 45) or width=50, height=45"""
 
-        self.inherit_style(parent, options=kwargs)
+        HasStyle.__init__(self, parent, options=kwargs)
 
         if size is None:
             self._asked_size = self.style["width"], self.style["height"]

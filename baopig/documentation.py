@@ -56,6 +56,13 @@ class Widget(Communicative):
     A widget has only one parent (baopig bio-logic, hmmm...)
     A widget has to initialize its surface at its creation
 
+    :Constructor:
+    -------------
+        parent: Container       -> the widget's parent
+        surface: pygame.Surface -> the widget's image
+        visible: bool           -> if False, the widget's hide() method is called
+        **style: keyword args   -> the widget's style attributes
+
     :Signals:
     ---------
         HIDE: emitted when the widget's visibility state goes from visible to hidden
@@ -66,16 +73,22 @@ class Widget(Communicative):
 
     :Attributes:
     ------------
+
+        :Style attributes:
+        -----------------------
+            pos: Iterable[int]         -> the origin's position
+            loc: Location        -> the origin's location on the widget's rect
+            ref: Container | None      -> the origin's position reference, if None, set to parent
+            refloc: Location     -> the origin's position reference location, from the reference's rect
+            referenced_by_hitbox: bool -> if True, origin is referenced by the ref's hitbox  # TODO : tests
+            sticky: Location     -> if set, overrides pos_loc & refloc # TODO
+
         parent: Container -> the manager
 
         surface: pygame.Surface -> the widget's appearance
-        rect: pygame.Rect:      -> the widget's size
-        hitbox: pygame.Rect:    -> the widget's size on the screen
-
-        pos: tuple  # TODO
-        pos_loc: WidgetLocation
-        pos_ref: Widget
-        pos_ref_loc: WidgetLocation
+        rect: pygame.Rect       -> the widget's size
+        hitbox: pygame.Rect     -> the widget's size on the screen
+        origin: object          -> the widget's position manager. See documentation at TODO
 
         is_alive: bool   -> True if the widget has not been killed
         is_asleep: bool  -> True if the widget is asleep
@@ -86,8 +99,8 @@ class Widget(Communicative):
 
     :Methods:
     ---------
-        set_pos(pos=None, pos_loc=None, pos_ref_loc=None) -> moves the widget  # TODO
-            # pos = pos + pos_ref.abs.pos_ref_loc - parent.abs.topleft
+        set_pos(pos=None, pos_loc=None, refloc=None) -> moves the widget  # TODO
+            # pos = pos + ref.abs.refloc - parent.abs.topleft
             # rect.pos_loc = pos
             # signal.MOTION.emit()
 
@@ -190,6 +203,7 @@ class Hoverable(Widget):
     ------------
         is_hovered: bool     -> True if the mouse is hovering the widget
         indicator: Indicator -> the widget's indicator, not always set
+        # TODO : why is there a ref ? cannot have multiple indicators ?
 
     :Methods:
     ---------

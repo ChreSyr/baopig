@@ -9,12 +9,6 @@ from .dialog import Dialog, DialogFrame, DialogAnswerButton
 
 class ColorSliderBloc(SliderBloc):
 
-    # STYLE = SliderBloc.STYLE.substyle()
-    # STYLE.modify(
-    #     pos_location = "left",
-    #     pos_ref_location = "left",
-    # )
-
     def paint(self):
         self.surface.fill(self.border_color)
         pygame.draw.rect(
@@ -51,7 +45,7 @@ class ColorSliderBar(SliderBar):
 class ColorSlider(Slider):
     STYLE = Slider.STYLE.substyle()
     STYLE.modify(
-        pos_location="left",
+        loc="midleft",
         bloc_class=ColorSliderBloc,
         bar_class=ColorSliderBar,
     )
@@ -96,7 +90,7 @@ class ColorSlider(Slider):
 class ColorEntry(NumEntry):
     STYLE = NumEntry.STYLE.substyle()
     STYLE.modify(
-        pos_location="left",
+        loc="midleft",
         width=40,
     )
 
@@ -132,9 +126,9 @@ class ColorDialogFrame(DialogFrame):
         height=360,
     )
 
-    def __init__(self, dialog, style=None):
+    def __init__(self, dialog, **kwargs):
 
-        DialogFrame.__init__(self, dialog, style)
+        DialogFrame.__init__(self, dialog, **kwargs)
         self.color = Color(0, 0, 0)
 
         self.is_updating = False
@@ -168,45 +162,44 @@ class ColorDialogFrame(DialogFrame):
         )
         self.color_text = Text(
             self, str(self.color),
-            pos=(0, -10), pos_location="bottom",
-            pos_ref=self.color_rect, pos_ref_location="top"
+            pos=(0, -10), loc="midbottom",
+            ref=self.color_rect, refloc="midtop"
         )
 
         if True:
             # RED
-            self.red_label = Text(self, "Red :", pos=(self.label_x, self.red_y), pos_location="left")
+            self.red_label = Text(self, "Red :", midleft=(self.label_x, self.red_y))
             self.red_entry = ColorEntry(self, "r", 255, self.red_y)
             self.red_slider = ColorSlider(self, "r", self.red_y)
 
             # GREEN
-            self.green_label = Text(self, "Green :", pos=(self.label_x, self.green_y), pos_location="left")
+            self.green_label = Text(self, "Green :", midleft=(self.label_x, self.green_y))
             self.green_entry = ColorEntry(self, "g", 255, self.green_y)
             self.green_slider = ColorSlider(self, "g", self.green_y)
 
             # BLUE
-            self.blue_label = Text(self, "Blue :", pos=(self.label_x, self.blue_y), pos_location="left")
+            self.blue_label = Text(self, "Blue :", midleft=(self.label_x, self.blue_y))
             self.blue_entry = ColorEntry(self, "b", 255, self.blue_y)
             self.blue_slider = ColorSlider(self, "b", self.blue_y)
 
         if True:
             # HUE
-            self.hue_label = Text(self, "Hue :", pos=(self.label_x, self.hue_y), pos_location="left")
+            self.hue_label = Text(self, "Hue :", midleft=(self.label_x, self.hue_y))
             self.hue_entry = ColorEntry(self, "h", 359, self.hue_y)
             self.hue_slider = ColorSlider(self, "h", self.hue_y, maxval=359)
 
             # SATURATION
-            self.saturation_label = Text(self, "Saturation :", pos=(self.label_x, self.saturation_y),
-                                         pos_location="left")
+            self.saturation_label = Text(self, "Saturation :", midleft=(self.label_x, self.saturation_y))
             self.saturation_entry = ColorEntry(self, "s", 100, self.saturation_y)
             self.saturation_slider = ColorSlider(self, "s", self.saturation_y, maxval=100)
 
             # SATURATION
-            self.value_label = Text(self, "Value :", pos=(self.label_x, self.value_y), pos_location="left")
+            self.value_label = Text(self, "Value :", midleft=(self.label_x, self.value_y))
             self.value_entry = ColorEntry(self, "v", 100, self.value_y)
             self.value_slider = ColorSlider(self, "v", self.value_y, maxval=100)
 
             # SATURATION
-            self.lightness_label = Text(self, "Lightness :", pos=(self.label_x, self.lightness_y), pos_location="left")
+            self.lightness_label = Text(self, "Lightness :", midleft=(self.label_x, self.lightness_y))
             self.lightness_entry = ColorEntry(self, "l", 100, self.lightness_y)
             self.lightness_slider = ColorSlider(self, "l", self.lightness_y, maxval=100)
 

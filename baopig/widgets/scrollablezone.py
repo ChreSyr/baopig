@@ -14,32 +14,34 @@ class ScrollSlider(Slider):
 
         assert isinstance(scroller, Scrollable)
 
-        self.inherit_style(scroller, style)
-        assert self.style["height"] == 0, \
-            "You cannot define height on a ScrollSlider, it is automatically generated"
+        # self.inherit_style_(scroller, style)
+        # assert self.style["height"] == 0, \
+        #     "You cannot define height on a ScrollSlider, it is automatically generated"
 
-        border = MarginType(self.theme[SliderBar]["border_width"])
-        scroller_size = scroller.window[2:]
-        width = self.style["width"]
+        # border = MarginType(self.theme[SliderBar]["border_width"])
+        # scroller_size = scroller.window[2:]
+        # width = self.style["width"]
         self._parent = scroller  # needed in get_length()
         self._axis = axis  # needed in get_length()
-        length = self.get_length()
+        # length = self.get_length()
         if axis == "x":
-            bloc_style = {"width": length, "height": width}
-            pos = (0, border.bottom)
-            sticky = "bottom"
-            size = (scroller_size[0] + border.left + border.right, width)
+            # bloc_style = {"width": length, "height": width}
+            # pos = (0, border.bottom)
+            pos = (0, 0)
+            sticky = "midbottom"
+            # size = (scroller_size[0] + border.left + border.right, width)
         else:
-            bloc_style = {"width": width, "height": length}
-            pos = (border.right, 0)
-            sticky = "right"
-            size = (width, scroller_size[1] + border.top + border.bottom)
-        bloc_style["border_width"] = 0
-        self.set_style_for(SliderBloc, **bloc_style)
+            # bloc_style = {"width": width, "height": length}
+            # pos = (border.right, 0)
+            pos = (0, 0)
+            sticky = "midright"
+            # size = (width, scroller_size[1] + border.top + border.bottom)
+        # bloc_style["border_width"] = 0
+        # self.set_style_for(SliderBloc, **bloc_style)
 
         Slider.__init__(
             self, scroller, 0, 100, step=1e-9, axis=axis,
-            pos=pos, sticky=sticky, bar_size=size, pos_from_ref_hitbox=True,
+            pos=pos, sticky=sticky, referenced_by_hitbox=True,
             layer_level=LayersManager.FOREGROUND
         )
 

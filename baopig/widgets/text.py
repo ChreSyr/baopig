@@ -7,7 +7,7 @@ from baopig.lib import *
 
 class _Line(Widget):
     """
-    A Line is a widget who only have text on its surface
+    A Line is a component who only have text on its surface
     It has a transparent background
     It has an end string who is the separator between this line and the next one
 
@@ -264,6 +264,7 @@ class _Line(Widget):
             surface = pygame.Surface((surf_w, self.font.height), pygame.SRCALPHA)
             surface.blit(font_render, (0, 0))
             self.set_surface(surface)
+            # self._asked_size = surface.get_size()
             self.parent._pack()
 
     def update_char_pos(self):
@@ -727,6 +728,15 @@ class Text(Zone, SelectableWidget):
 
         if self._width_is_adaptable:
             lines_width = max(line.w for line in self.lines)
+
+            """
+            
+            right = max(line.right for line in self.lines)
+            bottom = max(line.bottom for line in self.lines)
+            assert bottom == self.lines[-1].bottom
+            self.resize(w=right + self.padding.right, h=bottom + self.padding.bottom)
+            """
+
             if self.content_rect.w != lines_width:
                 self._width_is_adaptable = False
                 self.set_text(self.get_text())

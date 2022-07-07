@@ -24,8 +24,8 @@ class DialogButtonsZone(Zone):
     STYLE = Zone.STYLE.substyle()
     STYLE.modify(
         pos=(0, -30),
-        pos_location="bottom",
-        pos_ref_location="bottom",
+        loc="midbottom",
+        refloc="midbottom",
         background_color=(0, 0, 0, 60),
     )
 
@@ -42,7 +42,7 @@ class DialogButtonsZone(Zone):
                   row_height=46, col_width=int(self.w / min(len(choices), 3)))
         for i, choice in enumerate(choices):
             assert isinstance(choice, str), "Other types are not implemented"
-            self.dialog.style["answerbutton_class"](self, choice, col=i % 3, row=i // 3, sticky="center")
+            self.dialog.style["answerbutton_class"](self, choice, col=i % 3, row=i // 3, loc="center")
 
     def get_dialog(self):
         dialog = self.parent
@@ -59,24 +59,23 @@ class DialogFrame(Zone):
     STYLE = Zone.STYLE.substyle()
     STYLE.modify(
         pos=("50%", "50%"),
-        pos_location="center",
+        loc="center",
         width=450,
         height=300,
         background_color="theme-color-dialog_background",
     )
 
-    def __init__(self, dialog, style):
+    def __init__(self, dialog, **kwargs):
         assert isinstance(dialog, Dialog)
 
-        self.inherit_style(dialog, style)
-        Zone.__init__(self, dialog)
+        Zone.__init__(self, dialog, **kwargs)
 
         self.buttons_zone = dialog.style["buttonszone_class"](self)
 
         self.title_label = Text(
             self, dialog.title,
             font_height=38,
-            pos=("50%", 40), pos_location="center"
+            pos=("50%", 40), loc="center"
         )
         bottom = self.title_label.bottom
         if dialog.description is not None:
@@ -120,14 +119,7 @@ class Dialog(Scene):
     STYLE.set_constraint("answerbutton_class", lambda val: issubclass(val, DialogAnswerButton),
                          "must be a subclass of DialogAnswerButton")
 
-    def __init__(self, app, title=None, choices=None, description=None, default_choice_index=0,
-                 frame_style=None, one_shot=False, background_image=None, **kwargs):
-
-        self.inherit_style(
-            app,
-            title=title, choices=choices, description=description,
-            default_choice_index=default_choice_index
-        )
+    def __init__(self, app, one_shot=False, background_image=None, **kwargs):
 
         Scene.__init__(self, app, **kwargs)
 
@@ -141,7 +133,7 @@ class Dialog(Scene):
                 self.style["dialogframe_class"],
                 background_image=background_image,
             )
-        self.frame = self.style["dialogframe_class"](self, frame_style)  # TODO : a class style cannot be a parameter
+        self.frame = self.style["dialogframe_class"](self)  # TODO : a class style cannot be a parameter
 
         self.answer = None
         self.create_signal("ANSWERED")

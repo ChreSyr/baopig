@@ -26,7 +26,7 @@ class DebugZone(Zone, Handler_SceneClose):
             size=(self.w - 10, h),
             background_color=(255, 255, 255, 145),
             name=self.name + " -> debug_zone",
-            pos=(5, -5), pos_location="bottomleft", pos_ref_location="bottomleft"
+            bottomleft=(5, -5), refloc="bottomleft"
         )
 
         presentators_zone = Zone(

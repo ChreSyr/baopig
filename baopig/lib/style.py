@@ -386,12 +386,11 @@ class Theme:
         if kwargs:
             raise KeyError(f"These are not color keys : {kwargs.keys()} (color keys={self.colors_dict.keys()})")
 
-    def set_style_for(self, *widget_classes, **style):
+    def set_style_for(self, widget_class, **style):
 
-        for widget_class in widget_classes:
-            if widget_class not in self._all_styles:
-                self._all_styles[widget_class] = widget_class.STYLE.substyle()
-            self._all_styles[widget_class].modify(**style)
+        if widget_class not in self._all_styles:
+            self._all_styles[widget_class] = widget_class.STYLE.substyle()
+        self._all_styles[widget_class].modify(**style)
 
     def subtheme(self):
         return SubTheme(self)
@@ -427,12 +426,11 @@ class SubTheme(Theme):
     def issubtheme(self, theme):
         return theme is self._super
 
-    def set_style_for(self, *widget_classes, **style):
+    def set_style_for(self, widget_class, **style):
 
-        for widget_class in widget_classes:
-            if widget_class not in self._all_styles:
-                self._all_styles[widget_class] = self._super.get_style_for(widget_class).substyle()
-            self._all_styles[widget_class].modify(**style)
+        if widget_class not in self._all_styles:
+            self._all_styles[widget_class] = self._super.get_style_for(widget_class).substyle()
+        self._all_styles[widget_class].modify(**style)
 
 
 class DarkTheme(Theme):
@@ -475,14 +473,40 @@ class HasStyle:
     WARNING : you cannot change a widget's theme or style after its creation
     """
 
-    def __init__(self, theme):
+    STYLE = StyleClass()
+
+    def __init__(self, arg, options=None):
+
         if hasattr(self, "_style"):  # previously called 'inherit_style()' for an anticipated style
             return
-        if isinstance(theme, str):
-            theme = all_themes[theme]
+
+        if isinstance(arg, Theme):
+            theme = arg
+        elif isinstance(arg, str):
+            theme = all_themes[arg]
+        else:
+            parent = arg
+            self._parent = parent
+
+            if "theme" in options:  # here, theme is the parent widget
+                theme = options.pop("theme")
+                if isinstance(theme, str):
+                    theme = all_themes[theme]
+                if not theme.issubtheme(parent.theme):
+                    raise PermissionError("Must be an parent sub-theme")
+            else:
+                theme = parent.theme.subtheme()
 
         self._theme = theme
         self._style = InstanciatedStyle(self)
+
+        if options:
+            style_attributes = {}
+            for key, val in tuple(options.items()):
+                if (val is not None) and (key in self.STYLE):
+                    style_attributes[key] = options.pop(key)
+            if style_attributes:
+                self.style.modify(**style_attributes)
 
     style = property(lambda self: self._style)
     theme = property(lambda self: self._theme)
@@ -496,36 +520,6 @@ class HasStyle:
         if not hasattr(self, "_theme"):
             raise PermissionError("You must inherit style before using it")
         return self.theme.get_style_for(widget_class)
-
-    def inherit_style(self, theme, options=None, **kwargs):
-        """
-        In dict options, if a key is a style attribute, remove the item from options and apply to self.style
-        In dict kwargs, remove every items with value at None and apply others to self.style
-        """
-        if hasattr(theme, "_parent"):
-            self._parent = theme
-        if options and "theme" in options:  # here, theme is the parent widget
-            assert not isinstance(theme, Theme)
-            supertheme = theme.theme
-            theme = options.pop("theme")
-            assert isinstance(theme, Theme)
-            if not theme.issubtheme(supertheme):
-                raise PermissionError("Must be an parent sub-theme")
-        elif isinstance(theme, str):
-            theme = all_themes[theme]
-        elif not isinstance(theme, Theme):  # theme can be the parent widget
-            theme = theme.theme.subtheme()
-        HasStyle.__init__(self, theme)
-
-        if options:
-            for key, val in tuple(options.items()):
-                if (val is not None) and (key in self.STYLE):
-                    kwargs[key] = options.pop(key)
-        if kwargs:
-            def function(item):
-                return item[1] is not None
-            kwargs = dict(filter(function, kwargs.items()))
-            self.style.modify(**kwargs)
 
     def set_style_for(self, *widget_classes, **kwargs):
         """

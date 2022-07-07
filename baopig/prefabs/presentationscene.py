@@ -56,6 +56,6 @@ class UTMenu_Scene(Scene):
                 def open_testerscene(zc):
                     TesterScene(app, zc).open()
                 Button(self, row=len(self.default_layer), text=zone_class.__name__[3:-5],  # discards 'UT_' and '_Zone'
-                       command=PrefilledFunction(open_testerscene, zone_class), catching_errors=True)
+                       command=PrefilledFunction(open_testerscene, zone_class), catching_errors=False)  # TODO : True
             except AttributeError:
                 pass

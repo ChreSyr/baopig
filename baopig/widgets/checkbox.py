@@ -16,8 +16,8 @@ class CheckMark(Rectangle):
     def __init__(self, checkbox):
 
         # mid = checkbox.height / 2
-        Rectangle.__init__(self, checkbox, pos=(0, 0), pos_location="center",
-                           pos_ref=checkbox.checkmarkframe, pos_ref_location="center")
+        Rectangle.__init__(self, checkbox, pos=(0, 0), loc="center",
+                           ref=checkbox.checkmarkframe, refloc="center")
 
 
 class CheckMarkFrame(Rectangle):
@@ -33,7 +33,7 @@ class CheckMarkFrame(Rectangle):
     def __init__(self, checkbox):
 
         mid = checkbox.height / 2
-        Rectangle.__init__(self, checkbox, pos=(checkbox.padding.left, mid), pos_location="midleft")
+        Rectangle.__init__(self, checkbox, pos=(checkbox.padding.left, mid), loc="midleft")
 
 
 class CheckBox(Button):
@@ -44,7 +44,7 @@ class CheckBox(Button):
         width=100,
         height=35,
         background_color=(0, 0, 0, 0),
-        text_style={"font_height": 15, "pos_location": "left", "pos_ref_location": "left"},
+        text_style={"font_height": 15, "loc": "midleft", "refloc": "midleft"},
         padding=2,
         children_margins=10,
     )

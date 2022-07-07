@@ -1,4 +1,4 @@
-# TODO : replace sticky and pos_ref and pos_ref_location by flags ?
+# TODO : replace sticky and ref and refloc by flags ?
 # TODO : smart to use static, interactive, dynamic ?
 
 
@@ -25,7 +25,7 @@ class _Origin:
     An Origin is referenced by its parent
     When the parent moves, the widget follows
 
-    A Origin coordinate can be given in different ways:
+    An Origin coordinate can be given in different ways:
         - x = 4         sets x to 4 pixels
         - x = '10%'     sets x to self.parent.width * 10 / 100 (automatically updated)
 
@@ -38,32 +38,40 @@ class _Origin:
         """
         asked_pos is the distance between reference at reference_location and owner at location
         """
-        self._owner_ref = owner.get_weakref()
         self._asked_pos = owner.style["pos"]
-        self._from_hitbox = owner.style["pos_from_ref_hitbox"]
-        self._location = owner.style["pos_location"]
-        # We need to initialize reference before config
-        reference = owner.style["pos_ref"]
+        self._location = owner.style["loc"]
+        reference = owner.style["ref"]
+        self._reference_location = owner.style["refloc"]
+        self._referenced_by_hitbox = owner.style["referenced_by_hitbox"]
+
         if reference is None:
             reference = owner.parent
+        self._owner_ref = owner.get_weakref()
         self._reference_ref = reference.get_weakref()
+
         self.reference.signal.RESIZE.connect(self._weak_update_owner_pos, owner=self.owner)
         if self.reference != owner.parent:
             self.reference.signal.MOTION.connect(self._weak_update_owner_pos, owner=self.owner)
-        self._reference_location = owner.style["pos_ref_location"]
 
     def __str__(self):
         return f"Origin(asked_pos={self.asked_pos}, location={self.location}, reference={self.reference}, " \
-               f"reference_location={self.reference_location}, from_hitbox={self.from_hitbox}, " \
+               f"reference_location={self.reference_location}, referenced_by_hitbox={self.referenced_by_hitbox}, " \
                f"is_locked={self.is_locked})"
 
     asked_pos = property(lambda self: self._asked_pos)
-    from_hitbox = property(lambda self: self._from_hitbox)
+    referenced_by_hitbox = property(lambda self: self._referenced_by_hitbox)
     is_locked = property(lambda self: self.owner.has_locked("origin"))
     location = property(lambda self: self._location)
     owner = property(lambda self: self._owner_ref())
     reference = property(lambda self: self._reference_ref())
     reference_location = property(lambda self: self._reference_location)
+
+    def _get_sticky(self):
+        if self.location == self.reference_location:
+            return self.location
+        return None
+
+    sticky = property(_get_sticky)
 
     def _reset_asked_pos(self):
         """
@@ -119,7 +127,7 @@ class _Origin:
         except ValueError:
             raise TypeError("Wrong position value : {} (see documentation above)".format(coord))
 
-    def config(self, pos=None, location=None, reference_location=None, from_hitbox=None, locked=None):
+    def config(self, pos=None, loc=None, refloc=None, referenced_by_hitbox=None, sticky=None, locked=None):
 
         if locked is False:
             self.owner.set_lock(origin=False)
@@ -127,14 +135,19 @@ class _Origin:
         if self.is_locked:
             raise PermissionError("This origin is locked")
 
-        if location is not None:
-            self._location = WidgetLocation(location)
+        if sticky is not None:
+            assert loc is None
+            assert refloc is None
+            loc = refloc = sticky
 
-        if reference_location is not None:
-            self._reference_location = WidgetLocation(reference_location)
+        if loc is not None:
+            self._location = Location(loc)
 
-        if from_hitbox is not None:
-            self._from_hitbox = bool(from_hitbox)
+        if refloc is not None:
+            self._reference_location = Location(refloc)
+
+        if referenced_by_hitbox is not None:
+            self._referenced_by_hitbox = bool(referenced_by_hitbox)
 
         if pos is not None:
             assert _Origin.accept(pos), f"Wrong position value : {pos} (see documentation above)"
@@ -149,7 +162,7 @@ class _Origin:
 
         pos = []
 
-        if self.from_hitbox:  # from the reference hitbox
+        if self.referenced_by_hitbox:
 
             # Percentage translation of asked_pos
             for i, c in enumerate(self._asked_pos):
@@ -202,24 +215,18 @@ class _Window(tuple):
     follow_movements = False
 
 
-class WidgetLocation(str):
-    ACCEPTED = ("topleft", "midtop", "topright",
-                "midleft", "center", "midright",
-                "bottomleft", "midbottom", "bottomright")
+class Location(str):
+    ACCEPTED = (
+        "topleft", "midtop", "topright",
+        "midleft", "center", "midright",
+        "bottomleft", "midbottom", "bottomright",
+    )
 
     def __new__(cls, location):
-
-        if location == "left":
-            location = "midleft"
-        elif location == "top":
-            location = "midtop"
-        elif location == "right":
-            location = "midright"
-        elif location == "bottom":
-            location = "midbottom"
-        elif location not in WidgetLocation.ACCEPTED:
+        if location not in Location.ACCEPTED:
             raise ValueError(f"Wrong value for location : '{location}', "
-                             f"must be one of {WidgetLocation.ACCEPTED}")
+                             f"must be one of {Location.ACCEPTED}")
+
         return str.__new__(cls, location)
 
 
@@ -279,6 +286,14 @@ class HasProtectedHitbox:
     """
     The pos parameter is in fact the origin, who will often coincide with the topleft
     """
+    HITBOX_ATTRIBUTES = (
+        "topleft", "midtop", "topright",
+        "midleft", "center", "midright",
+        "bottomleft", "midbottom", "bottomright",
+        "top", "left", "right", "bottom",
+        "centerx", "centery", "x", "y",
+        "pos",  # pos = topleft
+    )
 
     def __init__(self):
         """
@@ -315,7 +330,7 @@ class HasProtectedHitbox:
                                         midleft,      center,     midright,
                                         bottomleft,   midbottom,  bottomright
         
-        Exemple : origin.location = midright
+        Example : origin.location = midright
                   if the new size is 10 more pixel on the width, then the origin is on the right,
                   so we add the 10 new pixels to the left 
         """
@@ -581,85 +596,60 @@ class HasProtectedSurface:
 
 
 class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, metaclass=MetaPaintLocker):
-
-    STYLE = StyleClass()
+    STYLE = HasStyle.STYLE
     STYLE.create(
         pos=(0, 0),
-        pos_location="topleft",
-        pos_ref=None,  # default is parent
-        pos_ref_location="topleft",
-        pos_from_ref_hitbox=False,
+        loc="topleft",
+        ref=None,  # default is parent
+        refloc="topleft",
+        referenced_by_hitbox=False,
     )
-    STYLE.set_type("pos_location", WidgetLocation)
-    STYLE.set_type("pos_ref_location", WidgetLocation)
+    STYLE.set_type("loc", Location)
+    STYLE.set_type("refloc", Location)
 
-    def __init__(self, parent, surface=None, pos=None, layer=None, name=None, row=None, col=None, **options):
+    def __init__(self, parent, surface=None, layer=None, layer_level=None, name=None, row=None, col=None,
+                 visible=True, touchable=True, **kwargs):
 
         if hasattr(self, "_weakref"):  # Widget.__init__() has already been called
             return
 
-        if name is None: name = "NoName"
-        if isinstance(layer, str): layer = parent.layers_manager.get_layer(layer)
+        if name is None:
+            name = "NoName"
+        if isinstance(layer, str):
+            layer = parent.layers_manager.get_layer(layer)
 
         assert hasattr(parent, "_warn_change")
         assert isinstance(name, str)
+        assert surface is not None
 
-        """name is a string who may help to identify the widget"""
-        # defined here so 'name' is first in self.__dict__
+        # name is a string who may help to identify the widget
+        # It is defined here, so it's in first place in self.__dict__ (should)
         self._name = name
 
-        if "theme" in options:
-            theme = options.pop("theme")
-            assert isinstance(theme, Theme)
-            if not theme.issubtheme(parent.theme):
-                raise PermissionError("Must be an parent sub-theme")
-        else:
-            theme = parent.theme.subtheme()
-
-        HasStyle.__init__(self, theme)
-
-        if "style" in options:  # TODO : why ???
-            style = options.pop("style")
-            if style:
-                self.style.modify(**style)
-
+        HasStyle.__init__(self, parent, options=kwargs)
         Communicative.__init__(self)
         HasProtectedSurface.__init__(self, surface)
 
-        """parent is the Container who contains this Widget"""
+        # NOTE : Since self is a parent's child, it doesn't need to use a weakref
         self._parent = parent
-
-        """app is the Application who manages the scenes"""
         self._app = parent.app
 
-        """a weakref will return None after widget.kill()"""
+        # weakref will return None after widget.kill()
         self._weakref = WeakRef(self)
 
-        """
-        A visible widget will be rendered on screen
-        An invisible widget will not be rendered
-        
-        At appearing, self.signal.SHOW is emitted
-        At disappearing, self.signal.HIDE is emitted
-        """
-        self._is_visible = True
-        if "visible" in options:
-            self._is_visible = options.pop("visible")
+        # Visibility
+        self._is_visible = visible
         self.create_signal("SHOW")
         self.create_signal("HIDE")
 
-        """
-        A sleeping widget is not attached to its parent.
-        If nothing connects it to its application, the garbage collector will delete it.
-        """
+        # Sleep
         self._is_asleep = False
-        self._sleep_memory = Object(
-            parent=None,
-        )
+        # TODO : self._sleep_parent_ref = lambda: None
+        self._sleep_memory = Object(parent=None)
         self.create_signal("SLEEP")
         self.create_signal("WAKE")
 
-        """A widget can have this attributes locked"""
+        # Locks
         self._has_locked = Object(
             origin=False,
             width=False,
@@ -668,89 +658,65 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
             visibility=False,
         )
 
-        """
-        A Widget have a lot of relations with other widgets, it is hard to remove
-        all of them in order to delete the widget
-        
-        Here's why listof_packedfunctions parameter :
-        When a widget own a method stored in a PackedFunction, if it don't directly
-        own the PackedFunction, we need to remember that the widget is the method
-        owner and in wich PackedFunction that method is stored. This being done, we can
-        remove the method from the PackedFunction in order to properly kill the widget
-        """
         self.create_signal("KILL")
 
-        """
-        The scene is always the same
-        Since self is a scene's child, it doesn't need to only keep a weakref to it
-        """
+        # NOTE : Since self is a scene's child, it doesn't need to use a weakref
         self.__scene = parent.scene
 
-        if pos:
-            self.style.modify(pos=pos)
         self._col = None
         self._row = None
         if (col is not None) or (row is not None):
-            """col and row attributes are destinated for GridLayer"""
-            if (pos is not None) or \
-                    ("pos_location" in options) or \
-                    ("pos_ref" in options) or \
-                    ("pos_ref_location" in options):
+            """col and row attributes are dedicated to GridLayer"""
+            if (self.style["pos"] != (0, 0)) or \
+                    (self.style["ref"] is not None) or \
+                    (self.style["refloc"] != "topleft"):
                 raise PermissionError("When the layer manages the widget's position, "
-                                      "all you can define is row, col and sticky")
-            if col is None: col = 0
-            if row is None: row = 0
+                                      "all you can define is row, col and loc")
+            if col is None:
+                col = 0
+            if row is None:
+                row = 0
             assert isinstance(col, int) and col >= 0
             assert isinstance(row, int) and row >= 0
             self._col = col
             self._row = row
-        self._sticky = None
-        if "sticky" in options:
-            self._sticky = WidgetLocation(options.pop("sticky"))
-            self.style.modify(
-                pos_location=self._sticky,
-                pos_ref_location=self._sticky
-            )
-        if "pos_location" in options:  # TODO : did inherit_style made this useless ?
-            self.style.modify(pos_location=options.pop("pos_location"))
-        if "pos_ref" in options:
-            self.style.modify(pos_ref=options.pop("pos_ref"))
-        if "pos_ref_location" in options:
-            self.style.modify(pos_ref_location=options.pop("pos_ref_location"))
 
-        # TODO : center=(34, 45) instead of pos=(34, 45), pos_location="center"
+        # sticky is a shortcut :
+        #     sticky="center" <=> loc="center", refloc="center"
+        if "sticky" in kwargs:
+            assert self.style["loc"] == self.style["refloc"] == "topleft", \
+                "Cannot use parameter sticky with parameters loc and refloc"
+            sticky = Location(kwargs.pop("sticky"))
+            self.style.modify(loc=sticky, refloc=sticky)
 
-        """
-        A widget is stored inside its parent, at one layer. A layer is identified
-        via a string name. Default layer is defined by the parent. You can change a
-        widget layer via container.layer(widget, layer_name) where layer_name
-        references an existing layer.
-        """
-        layer_level = None
-        if "layer_level" in options:
-            assert layer is None, "Cannot define a layer AND a layer_level"
-            layer_level = options.pop("layer_level")
-        if layer is None and parent is not self:
-            layer = parent.layers_manager.find_layer_for(self, layer_level)
+        # other shortcuts :
+        #     center=(200, 45) <=> pos=(200, 45), loc="center"
+        # Works for every location
+        for key in tuple(kwargs.keys()):
+            if key in HasProtectedHitbox.HITBOX_ATTRIBUTES:
+                assert self.style["pos"] == (0, 0) and self.style["loc"] == "topleft", \
+                    "Cannot use location shortcut with parameters pos and loc"
+                location = key
+                self.style.modify(pos=kwargs.pop(key), loc=location)
+                break  # TODO : error if more than only one key
+
+        # LAYOUT
+        if layer is None:
+            if parent is not self:  # scene prevention
+                layer = parent.layers_manager.find_layer_for(self, layer_level)
+        elif layer_level is not None:
+            raise PermissionError("Cannot define a layer AND a layer_level")
         self._layer = layer
-        # if col is not None:  # or col and row are at None, or they both are defined
-        #     self.layer.
 
         # INITIALIZATIONS
         HasProtectedHitbox.__init__(self)
         parent._add_child(self)
 
-        if "touchable" in options:
-            if options["touchable"] is False:
-                self.set_nontouchable()
-            options.pop("touchable")
+        if touchable is False:
+            self.set_nontouchable()
 
-        if "top" in options:  # TODO
-            top = options.pop("top")
-            self.top = top
-
-        if options:
-            raise ValueError(f"Unused options : {options}")
+        if kwargs:
+            raise ValueError(f"Unused options : {kwargs}")
 
     def __repr__(self):
         """
@@ -782,7 +748,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
     parent = property(lambda self: self._parent)
     row = property(lambda self: self._row)
     scene = property(lambda self: self.__scene)
-    sticky = property(lambda self: self._sticky)
 
     def get_weakref(self, callback=None):
         """

@@ -75,7 +75,7 @@ class UT_GridLayer_Zone(Zone):
                             Button(z3, "TOG", row=row, col=col, size=(30, 30), catching_errors=True,
                                    command=PrefilledFunction(toggle_row_size, row))
                         else:
-                            RemovableRect(z3, color=random_color(), size=(30, 30), col=col, row=row, sticky="center")
+                            RemovableRect(z3, color=random_color(), size=(30, 30), col=col, row=row, loc="center")
         Button(z3, "ADD", row=0, col=0, command=add_rect, width=30, height=30)
         def fix():
             if grid.cols_are_adaptable:
@@ -90,13 +90,14 @@ class UT_GridLayer_Zone(Zone):
         grid4 = GridLayer(z4, Rectangle, nbrows=4, nbcols=10, row_height=30, col_width=30)
         for row in range(grid4.nbrows):
             for col in range(grid4.nbcols):
-                Rectangle(z4, color=(130, 49, 128), row=row, col=col, size=(16, 16), sticky="topright")
+                Rectangle(z4, color=(130, 49, 128), row=row, col=col, size=(16, 16), loc="topright")
 
         buttons_layer = GridLayer(z4, nbrows=3, nbcols=3)
         def click():
-            from baopig.lib.widget import WidgetLocation
             for w in grid4:
-                w._sticky = WidgetLocation(mouse.hovered_widget.text_widget.text)  # TODO : origin.config(sticky=...)
+                w.set_lock(origin=False)  # TODO : remove ?
+                w.origin.config(loc=mouse.hovered_widget.text_widget.text)
+                w.set_lock(origin=True)
             grid4.pack()
         Button(z4, row=0, col=0, command=click, text="topleft")
         Button(z4, row=1, col=0, command=click, text="midleft")

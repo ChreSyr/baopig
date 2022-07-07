@@ -34,7 +34,7 @@ class TesterScene(Scene):
                     output_file.seek(0)
                     output = output_file.read()
                     self.try_it_yourself.console.set_text(str(output))
-        self.run_tiy = Button(self, "RUN", command=run, sticky="topright", pos_ref=self.menu_zone, visible=False)
+        self.run_tiy = Button(self, "RUN", command=run, sticky="topright", ref=self.menu_zone, visible=False)
 
         # Back & Try_it_yourself buttons
         GridLayer(self.menu_zone, nbrows=1, children_margins=10)
