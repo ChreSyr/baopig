@@ -13,23 +13,23 @@ from .style import HasStyle, StyleClass, Theme
 
 
 class WeakRef:
-    def __init__(self, comp):
-        self._comp = comp
+    def __init__(self, ref):
+        self._ref = ref
 
     def __call__(self):
-        return self._comp
+        return self._ref
 
 
 class _Origin:
     """
     An Origin is referenced by its parent
-    When the parent moves, the component follows
+    When the parent moves, the widget follows
 
     A Origin coordinate can be given in different ways:
         - x = 4         sets x to 4 pixels
         - x = '10%'     sets x to self.parent.width * 10 / 100 (automatically updated)
 
-    WARNING : A component with a dynamic origin (pourcentage position) cannot be manually
+    WARNING : A widget with a dynamic origin (pourcentage position) cannot be manually
               moved by any other way than redefining the origin
     """
 
@@ -284,20 +284,20 @@ class HasProtectedHitbox:
         """
         rect is the surface hitbox, relative to the parent
         abs_rect is the rect relative to the application (also called 'abs')
-        auto_rect is the rect relative to the component itself -> topleft = (0, 0) (also called 'auto')
+        auto_rect is the rect relative to the widget itself -> topleft = (0, 0) (also called 'auto')
         window is the rect inside wich the surface can be seen, relative to the parent
         hitbox is the result of clipping rect and window.
         If window is set to None, the hitbox will equal to the rect
         abs_hitbox is the hitbox relative to the application
-        auto_hitbox is the hitbox relative to the component itself
+        auto_hitbox is the hitbox relative to the widget itself
         """
 
         """
-        MOTION is emitted when the absolute position of the component.rect moves
+        MOTION is emitted when the absolute position of the widget.rect moves
         It sends two parameters : dx and dy
-        WARNING : the dx and dy are the motion of the component.rect ! This means, when the
-                  component's parent moves, a MOTION.emit(dx=0, dy=0) is probalby raised.
-                  In facts, if the component.origin.reference is not the parent, the motion
+        WARNING : the dx and dy are the motion of the widget.rect ! This means, when the
+                  widget's parent moves, a MOTION.emit(dx=0, dy=0) is probalby raised.
+                  In facts, if the widget.origin.reference is not the parent, the motion
                   won't be dx=0, dy=0
         NOTE : an hitbox cannot move and be resized in the same time
         """
@@ -305,10 +305,10 @@ class HasProtectedHitbox:
 
         """
         Change a surface via set_surface(...) is the only way to change a cmponent size
-        Changing size will emit self.signal.RESIZE if the component is visible
-        A component with locked size cannot be resized, but the surface can change
+        Changing size will emit self.signal.RESIZE if the widget is visible
+        A widget with locked size cannot be resized, but the surface can change
         
-        When a component is resized, we need a point of reference (called origin) whose pixel
+        When a widget is resized, we need a point of reference (called origin) whose pixel
         will not move
         
         origin.location can be one of : topleft,      midtop,     topright,
@@ -521,9 +521,9 @@ class HasProtectedSurface:
         assert isinstance(surface, pygame.Surface)
 
         """
-        surface is the component's image
+        surface is the widget's image
 
-        Duing the component life, the size of surface can NOT differ from
+        Duing the widget life, the size of surface can NOT differ from
         the size of the hitbox, it is protected thanks to this classe methods and ProtectedSurface
         
         NEW_SURF is emitted right after set_surface()
@@ -554,11 +554,11 @@ class HasProtectedSurface:
 
         if self._has_locked.height and self.rect.height != surface.get_height():
             raise PermissionError(
-                "Wrong surface : {} (this component's surface height is locked at {})".format(surface, self.h))
+                "Wrong surface : {} (this widget's surface height is locked at {})".format(surface, self.h))
 
         if self._has_locked.width and self.rect.width != surface.get_width():
             raise PermissionError(
-                "Wrong surface : {} (this component's surface width is locked at {})".format(surface, self.w))
+                "Wrong surface : {} (this widget's surface width is locked at {})".format(surface, self.w))
 
         with paint_lock:
             if self.rect.size != surface.get_size():
@@ -604,7 +604,7 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         assert hasattr(parent, "_warn_change")
         assert isinstance(name, str)
 
-        """name is a string who may help to identify components"""
+        """name is a string who may help to identify the widget"""
         # defined here so 'name' is first in self.__dict__
         self._name = name
 
@@ -636,8 +636,8 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         self._weakref = WeakRef(self)
 
         """
-        A visible component will be rendered on screen
-        An invisible component will not be rendered
+        A visible widget will be rendered on screen
+        An invisible widget will not be rendered
         
         At appearing, self.signal.SHOW is emitted
         At disappearing, self.signal.HIDE is emitted
@@ -669,14 +669,14 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         )
 
         """
-        A Widget have a lot of relations with other components, it is hard to remove
-        all of them in order to delete the component
+        A Widget have a lot of relations with other widgets, it is hard to remove
+        all of them in order to delete the widget
         
         Here's why listof_packedfunctions parameter :
-        When a component own a method stored in a PackedFunction, if it don't directly
-        own the PackedFunction, we need to remember that the component is the method
+        When a widget own a method stored in a PackedFunction, if it don't directly
+        own the PackedFunction, we need to remember that the widget is the method
         owner and in wich PackedFunction that method is stored. This being done, we can
-        remove the method from the PackedFunction in order to properly kill the component
+        remove the method from the PackedFunction in order to properly kill the widget
         """
         self.create_signal("KILL")
 
@@ -721,9 +721,9 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         # TODO : center=(34, 45) instead of pos=(34, 45), pos_location="center"
 
         """
-        A component is stored inside its parent, at one layer. A layer is identified
+        A widget is stored inside its parent, at one layer. A layer is identified
         via a string name. Default layer is defined by the parent. You can change a
-        component layer via container.layer(component, layer_name) where layer_name
+        widget layer via container.layer(widget, layer_name) where layer_name
         references an existing layer.
         """
         layer_level = None
@@ -759,7 +759,7 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         :return: str
         """
         # This complicated string creation is avoiding the o.__repr__()
-        # in order to avoid representation of components
+        # in order to avoid representation of widgets
         return f"<{self.__class__.__name__}(name='{self.name}', parent='{self.parent.name}', hitbox={self.hitbox})>"
 
     def __str__(self):
@@ -771,10 +771,10 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
     # GETTERS ON PROTECTED FIELDS
     app = application = property(lambda self: self._app)  # TODO : remove application ?
     col = property(lambda self: self._col)
-    is_alive = property(lambda self: self._weakref._comp is not None)
+    is_alive = property(lambda self: self._weakref._ref is not None)
     is_asleep = property(lambda self: self._is_asleep)
     is_awake = property(lambda self: not self._is_asleep)
-    is_dead = property(lambda self: self._weakref._comp is None)
+    is_dead = property(lambda self: self._weakref._ref is None)
     is_hidden = property(lambda self: not self._is_visible)
     is_visible = property(lambda self: self._is_visible)
     layer = property(lambda self: self._layer)
@@ -787,14 +787,14 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
     def get_weakref(self, callback=None):
         """
         A weakref is a reference to an object
-        callback is a function called when the component die
+        callback is a function called when the widget die
 
         Example :
-            weak_ref = my_comp.get_weakref()
-            my_comp2 = weak_ref()
-            my_comp is my_comp2 -> return True
-            del my_comp
-            print(my_comp2) -> return None
+            weak_ref = my_widget.get_weakref()
+            my_widget2 = weak_ref()
+            my_widget is my_widget2 -> return True
+            del my_widget
+            print(my_widget2) -> return None
         """
         if callback is not None:
             assert callable(callback)
@@ -819,10 +819,10 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         self._is_visible = False
 
         # TODO : the mouse manages itself
-        #  -> mouse.focused_comp.signal.HIDE
-        #  -> mouse.linked_comp.signal.HIDE
-        #  -> mouse.linked_comp.signal.SLEEP
-        if self == mouse.linked_comp:
+        #  -> mouse.focused_widget.signal.HIDE
+        #  -> mouse.linked_widget.signal.HIDE
+        #  -> mouse.linked_widget.signal.SLEEP
+        if self == mouse.linked_widget:
             mouse._unlink()
 
         self.send_display_request()
@@ -838,7 +838,7 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
             if self.parent.is_alive:  # False when called by Widget.wake()
                 self.parent._remove_child(self)
             self.disconnect()
-            self._weakref._comp = None
+            self._weakref._ref = None
 
         del self
 
@@ -875,7 +875,7 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
 
         # TODO : documentation
         # TODO : rework
-        # TODO : if Hoverable, mouse.update_hovered_comp() ?
+        # TODO : if Hoverable, mouse.update_hovered_widget() ?
         self.collidemouse = lambda: False
 
     def show(self):
@@ -919,13 +919,13 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         self.signal.WAKE.emit()
 
     # TODO : move these methods to Layer
-    def move_behind(self, comp):
+    def move_behind(self, widget):
 
-        self.layer.move_comp1_behind_comp2(comp1=self, comp2=comp)
+        self.layer.move_widget1_behind_widget2(widget1=self, widget2=widget)
 
-    def move_in_front_of(self, comp):
+    def move_in_front_of(self, widget):
 
-        self.layer.move_comp1_in_front_of_comp2(comp1=self, comp2=comp)
+        self.layer.move_widget1_in_front_of_widget2(widget1=self, widget2=widget)
 
     def swap_layer(self, layer):
 

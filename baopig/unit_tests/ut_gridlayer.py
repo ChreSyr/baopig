@@ -96,7 +96,7 @@ class UT_GridLayer_Zone(Zone):
         def click():
             from baopig.lib.widget import WidgetLocation
             for w in grid4:
-                w._sticky = WidgetLocation(mouse.hovered_comp.text_widget.text)  # TODO : origin.config(sticky=...)
+                w._sticky = WidgetLocation(mouse.hovered_widget.text_widget.text)  # TODO : origin.config(sticky=...)
             grid4.pack()
         Button(z4, row=0, col=0, command=click, text="topleft")
         Button(z4, row=1, col=0, command=click, text="midleft")
@@ -113,16 +113,16 @@ class UT_GridLayer_Zone(Zone):
         self.parent.add_section(
             title="Selector",
             tests=[
-                "Any component from a GridLayer requires 'row' and 'col' attributes",
-                "Can't define 'pos' attribute of components who will be stored in a grid",
+                "Any widget from a GridLayer requires 'row' and 'col' attributes",
+                "Can't define 'pos' attribute of widgets who will be stored in a grid",
                 "Default behavior is to create rows and columns automatically",
-                "When the nbrows is set, we can't add a component who would like to go outside, same for nbcols",
-                "A row without defined height adapts to its components, 0 if empty, same for columns",
+                "When the nbrows is set, we can't add a widget who would like to go outside, same for nbcols",
+                "A row without defined height adapts to its children, 0 if empty, same for columns",
                 "We can set a default size for rows and columns",
-                "A component's hitbox is always inside its cell -> the cell defines the window",
+                "A widget's hitbox is always inside its cell -> the cell defines the window",
                 "We can resize a row without any visual bug inside the row, same for columns -> the window is updated",
                 "Resizing a row moves the rows located below, same for columns",
-                "Components in a grid can't manage their position themselves (non-dragable)",
+                "Widgets in a grid can't manage their position themselves (non-dragable)",
             ]
         )
 

@@ -67,21 +67,21 @@ class DebugZone(Zone, Handler_SceneClose):
                 pos=(0, mouse_pos_presentator.top),
                 name="mouse_pos_tracker")
 
-            pointed_comp_presentator = Text(
+            pointed_widget_presentator = Text(
                 parent=presentators_zone,
                 text="Hovered : ",
                 pos=(0, mouse_pos_presentator.bottom),
-                name="pointed_comp_presentator")
+                name="pointed_widget_presentator")
 
             # CLASS TRACKER
             class_presentator = Text(
                 parent=presentators_zone,
                 text="- class : ",
-                pos=(0, pointed_comp_presentator.bottom),
+                pos=(0, pointed_widget_presentator.bottom),
                 name="class_presentator")
             DynamicText(
                 parent=trackers_zone,
-                get_text=lambda: mouse.pointed_comp.__class__.__name__ if mouse.pointed_comp else None,
+                get_text=lambda: mouse.pointed_widget.__class__.__name__ if mouse.pointed_widget else None,
                 pos=(0, class_presentator.top),
                 name="class_tracker")
 
@@ -93,7 +93,7 @@ class DebugZone(Zone, Handler_SceneClose):
                 name="name_presentator")
             DynamicText(
                 parent=trackers_zone,
-                get_text=lambda: mouse.pointed_comp.name if mouse.pointed_comp else None,
+                get_text=lambda: mouse.pointed_widget.name if mouse.pointed_widget else None,
                 pos=(0, name_presentator.top),
                 name="name_tracker")
 
@@ -105,7 +105,7 @@ class DebugZone(Zone, Handler_SceneClose):
                 name="hitbox_presentator")
             DynamicText(
                 parent=trackers_zone,
-                get_text=lambda: mouse.pointed_comp.hitbox if mouse.pointed_comp else None,
+                get_text=lambda: mouse.pointed_widget.hitbox if mouse.pointed_widget else None,
                 pos=(0, hitbox_presentator.top),
                 name="hitbox_tracker")
 
@@ -117,7 +117,7 @@ class DebugZone(Zone, Handler_SceneClose):
                 name="parent_presentator")
             DynamicText(
                 parent=trackers_zone,
-                get_text=lambda: mouse.pointed_comp.parent if mouse.pointed_comp else None,
+                get_text=lambda: mouse.pointed_widget.parent if mouse.pointed_widget else None,
                 pos=(0, parent_presentator.top),
                 name="parent_tracker")
 
@@ -178,7 +178,7 @@ class DebugZone(Zone, Handler_SceneClose):
         if self.is_asleep:
             return
 
-        pointed = mouse.pointed_comp
+        pointed = mouse.pointed_widget
         if pointed:
             if self._pointed == pointed:
                 return

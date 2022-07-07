@@ -7,8 +7,8 @@ from .widget import Widget, Communicative
 class Layer(Communicative):
     """
     A Layer is a manager who contains some of its container's children.
-    Every component is stored in one of its parent's layers.
-    The positions of components inside a layer define the overlay : first behind, last in front.
+    Every widget is stored in one of its parent's layers.
+    The positions of widgets inside a layer define the overlay : first behind, last in front.
     Each layer can be overlaid in the foreground, the main ground or the background.
     2 layers from the same ground are overlaid depending on their weight : a weight of 0 means it needs
     to stand behind a layer with weight 6. The default weight is 2.
@@ -19,15 +19,15 @@ class Layer(Communicative):
         """
         :param container: the Container who owns the layer
         :param name: an unic identifier for the layer
-        :param filter: a class or list of class from wich every layer's component must herit
+        :param filter: a class or list of class from wich every layer's widget must herit
         :param level: inside the container's layers : lowest behind greatest in front, default to MAINGROUND
         :param weight: inside the layer's level : lowest behind greatest in front, default to 2
         :param padding: space between the widgets and the container. If None, set to the container's padding
         :param children_margins: space between 2 widgets. If None, set to the container's children_margins
         :param default_sortkey: default key fo layer.sort(). if set, at each append, the layer will be sorted
-        :param sort_by_pos: if set, the default sortkey will be a function who sort components by y then x
-        :param touchable: components of non-touchable layer are not hoverable
-        :param maxlen: the maximum numbers of components the layer can contain
+        :param sort_by_pos: if set, the default sortkey will be a function who sort children by y then x
+        :param touchable: children of non-touchable layer are not hoverable
+        :param maxlen: the maximum numbers of children the layer can contain
         """  # TODO : start_pos
 
         if name is None: name = "UnnamedLayer{}".format(len(container.layers))
@@ -57,7 +57,7 @@ class Layer(Communicative):
         # NOTE : adaptable, container, name, touchable and level are not editable, because you
         #        need to know what kind of layer you want since its creation
         self._is_adaptable = bool(adaptable)
-        self._comps = WeakTypedList(*filter)
+        self._widgets = WeakTypedList(*filter)
         self._container = container
         self._filter = filter
         self._name = name
@@ -74,28 +74,28 @@ class Layer(Communicative):
         self.layers_manager._add_layer(self)
 
     def __add__(self, other):
-        return self._comps + other
+        return self._widgets + other
 
     def __bool__(self):
-        return bool(self._comps)
+        return bool(self._widgets)
 
     def __contains__(self, item):
-        return self._comps.__contains__(item)
+        return self._widgets.__contains__(item)
 
     def __getitem__(self, item):
-        return self._comps.__getitem__(item)
+        return self._widgets.__getitem__(item)
 
     def __iter__(self):
-        return self._comps.__iter__()
+        return self._widgets.__iter__()
 
     def __len__(self):
-        return self._comps.__len__()
+        return self._widgets.__len__()
 
     def __repr__(self):
-        return "{}(name:{}, index:{}, filter:{}, touchable:{}, level:{}, weight:{}, components:{})".format(
+        return "{}(name:{}, index:{}, filter:{}, touchable:{}, level:{}, weight:{}, children:{})".format(
             # "Widgets" if self.touchable else "",
             self.__class__.__name__, self.name, self._layer_index, self._filter, self.touchable,
-            self.level, self.weight, self._comps)
+            self.level, self.weight, self._widgets)
 
     children_margins = property(lambda self: self._children_margins)
     container = property(lambda self: self._container)
@@ -109,20 +109,20 @@ class Layer(Communicative):
     touchable = property(lambda self: self._touchable)
     weight = property(lambda self: self._weight)
 
-    def accept(self, comp):
+    def accept(self, widget):
 
-        if self.maxlen and self.maxlen <= len(self._comps): return False
-        return self._comps.accept(comp)
+        if self.maxlen and self.maxlen <= len(self._widgets): return False
+        return self._widgets.accept(widget)
 
-    def add(self, comp):
+    def add(self, widget):
         """
         WARNING : This method should only be called by the LayersManager: cont.layers_manager
         You can override this function in order to define special behaviors
         """
-        if self.maxlen and self.maxlen <= len(self._comps):
+        if self.maxlen and self.maxlen <= len(self._widgets):
             raise PermissionError("The layer is full (maxlen:{})".format(self.maxlen))
 
-        self._comps.append(comp)
+        self._widgets.append(widget)
         if self.default_sortkey:
             self.sort()
 
@@ -131,45 +131,46 @@ class Layer(Communicative):
 
     def clear(self):
 
-        for comp in tuple(self._comps):
-            comp.kill()
+        for widget in tuple(self._widgets):
+            widget.kill()
 
-    def get_visible_comps(self):
-        for comp in self._comps:
-            if comp.is_visible:
-                yield comp
-    visible = property(get_visible_comps)
+    def get_visible_widgets(self):
+        for widget in self._widgets:
+            if widget.is_visible:
+                yield widget
 
-    def index(self, comp):
-        return self._comps.index(comp)
+    visible = property(get_visible_widgets)
+
+    def index(self, widget):
+        return self._widgets.index(widget)
 
     def kill(self):
 
         self.clear()
         self.layers_manager._remove_layer(self)
 
-    def move_comp1_behind_comp2(self, comp1, comp2):
-        assert comp1 in self._comps, "{} not in {}".format(comp1, self)
-        assert comp2 in self._comps, "{} not in {}".format(comp2, self)
-        self.overlay(self.index(comp2), comp1)
+    def move_widget1_behind_widget2(self, widget1, widget2):
+        assert widget1 in self._widgets, "{} not in {}".format(widget1, self)
+        assert widget2 in self._widgets, "{} not in {}".format(widget2, self)
+        self.overlay(self.index(widget2), widget1)
 
-    def move_comp1_in_front_of_comp2(self, comp1, comp2):
-        assert comp1 in self, "{} not in {}".format(comp1, self)
-        assert comp2 in self, "{} not in {}".format(comp2, self)
-        self.overlay(self.index(comp2) + 1, comp1)
-        # self._remove(comp1)
-        # super().insert(self.index(comp2) + 1, comp1)
-        # self._warn_change(comp1.hitbox)
+    def move_widget1_in_front_of_widget2(self, widget1, widget2):
+        assert widget1 in self, "{} not in {}".format(widget1, self)
+        assert widget2 in self, "{} not in {}".format(widget2, self)
+        self.overlay(self.index(widget2) + 1, widget1)
+        # self._remove(widget1)
+        # super().insert(self.index(widget2) + 1, widget1)
+        # self._warn_change(widget1.hitbox)
 
-    def overlay(self, index, comp):
+    def overlay(self, index, widget):
         """
-        Move a component at index
+        Move a widget at index
         """
 
-        assert comp in self._comps
-        self._comps.remove(comp)
-        self._comps.insert(index, comp)
-        self.container._warn_change(comp.hitbox)
+        assert widget in self._widgets
+        self._widgets.remove(widget)
+        self._widgets.insert(index, widget)
+        self.container._warn_change(widget.hitbox)
 
     def pack(self, key=None, axis="vertical", children_margins=None, padding=None, start_pos=(0, 0)):
         """
@@ -187,43 +188,43 @@ class Layer(Communicative):
 
         left, top = padding.left + start_pos[0], padding.top + start_pos[1]
         if axis == "horizontal":
-            for comp in sorted_children:
-                if comp.has_locked("origin"):
+            for widget in sorted_children:
+                if widget.has_locked("origin"):
                     raise PermissionError("Cannot pack a layer who contains locked children")
-                if comp.window is not None:
-                    comp.topleft = (left - comp.window[0], top - comp.window[1])
+                if widget.window is not None:
+                    widget.topleft = (left - widget.window[0], top - widget.window[1])
                 else:
-                    comp.topleft = (left, top)
-                left = comp.hitbox.right + children_margins.left
+                    widget.topleft = (left, top)
+                left = widget.hitbox.right + children_margins.left
         elif axis == "vertical":
-            for comp in sorted_children:
-                if comp.has_locked("origin"):
+            for widget in sorted_children:
+                if widget.has_locked("origin"):
                     raise PermissionError("Cannot pack a layer who contains locked children")
-                if comp.window is not None:
-                    comp.topleft = (left - comp.window[0], top - comp.window[1])
+                if widget.window is not None:
+                    widget.topleft = (left - widget.window[0], top - widget.window[1])
                 else:
-                    comp.topleft = (left, top)
-                top = comp.hitbox.bottom + children_margins.top
+                    widget.topleft = (left, top)
+                top = widget.hitbox.bottom + children_margins.top
         else:
             raise ValueError(f"axis must be either 'horizontal' or 'vertical', not {axis}")
 
-    def remove(self, comp):
+    def remove(self, widget):
         """
         WARNING : This method should only be called by the LayersManager: cont.layers_manager
         You can override this function in order to define special behaviors
         """
-        self._comps.remove(comp)
+        self._widgets.remove(widget)
 
         if self.is_adaptable:
             self.container.adapt(self)
 
     def set_filter(self, filter):
 
-        self._comps.set_ItemsClass(filter)
+        self._widgets.set_ItemsClass(filter)
 
     def set_maxlen(self, maxlen):
 
-        assert isinstance(maxlen, int) and len(self._comps) <= maxlen
+        assert isinstance(maxlen, int) and len(self._widgets) <= maxlen
         self._maxlen = maxlen
 
     def set_weight(self, weight):
@@ -241,4 +242,4 @@ class Layer(Communicative):
         if key is None: key = self.default_sortkey
         if key is None:  # No sort key defined
             return
-        self._comps.sort(key=key)
+        self._widgets.sort(key=key)

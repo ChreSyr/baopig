@@ -178,11 +178,11 @@ class Application(HasStyle):
                     LOGGER.info("Screenchot !")
 
             # TRANSMITTING EVENT
-            if event.type in (pygame.KEYDOWN, pygame.KEYUP) and self.focused_scene.focused_comp is not None:
+            if event.type in (pygame.KEYDOWN, pygame.KEYUP) and self.focused_scene.focused_widget is not None:
                 if event.type == pygame.KEYDOWN:
-                    self.focused_scene.focused_comp.signal.KEYDOWN.emit(event.key)
+                    self.focused_scene.focused_widget.signal.KEYDOWN.emit(event.key)
                 else:
-                    self.focused_scene.focused_comp.signal.KEYUP.emit(event.key)
+                    self.focused_scene.focused_widget.signal.KEYUP.emit(event.key)
 
             # Events optionnal treatment
             if self.focused_scene.is_enabled:
@@ -308,7 +308,7 @@ class Application(HasStyle):
             mouse._release_all()
             keyboard._release_all()
             while not until(): pass
-            mouse.update_hovered_comp()
+            mouse.update_hovered_widget()
             self._time_manager.resume()
             self.painter._can_draw.set()
 
@@ -370,7 +370,7 @@ class Application(HasStyle):
     def refresh(self):
         """
         Send a paintrequest to every container in focused_scene
-        if only_containers is False, send a paintrequest to every focused_scene's components
+        if only_containers is False, sends a paintrequest to every focused_scene's children
         """
         # TODO : refresh & screenshot buttons by default
         self.focused_scene._container_refresh(recursive=True, only_containers=False)

@@ -7,7 +7,7 @@ from baopig.lib import *
 
 class _Line(Widget):
     """
-    A Line is a component who only have text on its surface
+    A Line is a widget who only have text on its surface
     It has a transparent background
     It has an end string who is the separator between this line and the next one
 

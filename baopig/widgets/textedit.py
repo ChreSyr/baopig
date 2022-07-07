@@ -268,8 +268,8 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         if self.char_index == len(self.line.text_with_end):
             LOGGER.warning("Tricky cursor position")
 
-        if self.get_weakref()._comp is None:
-            LOGGER.warning('This component should be dead :', self)
+        if self.get_weakref()._ref is None:
+            LOGGER.warning('This widget should be dead :', self)
 
         old_pos = self.topleft
         self.y = self.line.y

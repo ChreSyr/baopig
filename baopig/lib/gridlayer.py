@@ -19,25 +19,25 @@ class RowOrCol:
 
     def __contains__(self, item):
 
-        for comp in self.icomponents:
-            if comp is item:
+        for widget in self.ichildren:
+            if widget is item:
                 return True
         return False
 
     def __len__(self):
 
         length = 0
-        for _ in self.icomponents:
+        for _ in self.ichildren:
             length += 1
         return length
 
-    components = property(lambda self: tuple(comp for comp in self if comp is not None))
-    icomponents = property(lambda self: (comp for comp in self if comp is not None))
+    children = property(lambda self: tuple(widget for widget in self if widget is not None))
+    ichildren = property(lambda self: (widget for widget in self if widget is not None))
     is_first = property(lambda self: self._index == 0)
 
     def is_empty(self):
 
-        for _ in self.icomponents:
+        for _ in self.ichildren:
             return False
         return True
 
@@ -83,8 +83,8 @@ class Column(RowOrCol):
         NOTE : this is a heavy function, try to call it when you are sure it will change something
         """
 
-        for comp in self.icomponents:
-            self._grid._update_comp(comp)
+        for widget in self.ichildren:
+            self._grid._update_widget(widget)
 
         if not self.is_last:
             self.get_next_col()._update_left(self.left + self.get_width() + self._grid.children_margins.left)
@@ -95,8 +95,8 @@ class Column(RowOrCol):
         if dx == 0:
             return
         self._left = left
-        for comp in self.icomponents:
-            self._grid._update_comp(comp)
+        for widget in self.ichildren:
+            self._grid._update_widget(widget)
 
         if not self.is_last:
             self.get_next_col()._update_left(left + self.get_width() + self._grid.children_margins.left)
@@ -129,12 +129,12 @@ class Column(RowOrCol):
         if self.is_empty():
             return 0
 
-        return max(comp.rect.w for comp in self if comp is not None)
+        return max(widget.rect.w for widget in self if widget is not None)
 
     def set_width(self, width):
         """
         Set the col's width
-        If width is None, the col will adapt to its widest component
+        If width is None, the col will adapt to its widest widget
         """
         assert (width is None) or isinstance(width, (int, float)) and width >= 0
         if not self._grid.cols_are_adaptable:
@@ -184,8 +184,8 @@ class Row(RowOrCol):
         Adapt the row height to the required height
         """
 
-        for comp in self.icomponents:
-            self._grid._update_comp(comp)
+        for widget in self.ichildren:
+            self._grid._update_widget(widget)
 
         if not self.is_last:
             self.get_next_row()._update_top(self.top + self.get_height() + self._grid.children_margins.top)
@@ -199,8 +199,8 @@ class Row(RowOrCol):
         if dy == 0:
             return
         self._top = top
-        for comp in self.icomponents:
-            self._grid._update_comp(comp)
+        for widget in self.ichildren:
+            self._grid._update_widget(widget)
 
         if not self.is_last:
             self.get_next_row()._update_top(top + self.get_height() + self._grid.children_margins.top)
@@ -219,7 +219,7 @@ class Row(RowOrCol):
         if self.is_empty():
             return 0
 
-        return max(comp.rect.h for comp in self if comp is not None)
+        return max(widget.rect.h for widget in self if widget is not None)
 
     def get_next_row(self):
 
@@ -238,7 +238,7 @@ class Row(RowOrCol):
     def set_height(self, height):
         """
         Set the row's height
-        If height is None, the row will adapt to its hightest component
+        If height is None, the row will adapt to its hightest widget
         """
         assert (height is None) or isinstance(height, (int, float)) and height >= 0
         if not self._grid.rows_are_adaptable:
@@ -249,10 +249,10 @@ class Row(RowOrCol):
 
 class GridLayer(Layer):
     """
-    A GridLayer is a Layer who places its components itself, depending on their
+    A GridLayer is a Layer who places its children itself, depending on their
     attributes 'row' and 'col'
 
-    If nbrows is None, adding a component will create missing rows if needed
+    If nbrows is None, adding a widget will create missing rows if needed
     nbcols works the same
 
     A GridLayer dimension (row or column) have two implicit modes : adaptable and fixed
@@ -270,7 +270,7 @@ class GridLayer(Layer):
     grid.get_row(3).set_height(None)   # This row gets the adaptable mode
     grid.get_row(4).set_height(45)     # This row gets the fixed mode
 
-    Two components can't fit in the same cell
+    Two widgets can't fit in the same cell
 
     WARNING : manipulating a grid with multi-threading might cause issues
     """
@@ -313,16 +313,16 @@ class GridLayer(Layer):
     rows = property(lambda self: self._rows)
     rows_are_adaptable = property(lambda self: self._row_height is None)
 
-    def _update_comp(self, comp):
+    def _update_widget(self, widget):
         """Updates window & position"""
-        cell_rect = self.get_cell_rect(comp.row, comp.col)
-        comp.set_window(cell_rect)
-        comp.set_lock(origin=False)
-        if comp.sticky is not None:
-            comp.origin.config(pos=getattr(pygame.Rect(cell_rect), comp.sticky), location=comp.sticky)
+        cell_rect = self.get_cell_rect(widget.row, widget.col)
+        widget.set_window(cell_rect)
+        widget.set_lock(origin=False)
+        if widget.sticky is not None:
+            widget.origin.config(pos=getattr(pygame.Rect(cell_rect), widget.sticky), location=widget.sticky)
         else:
-            comp.origin.config(pos=cell_rect[:2])
-        comp.set_lock(origin=True)
+            widget.origin.config(pos=cell_rect[:2])
+        widget.set_lock(origin=True)
 
     def _update_size(self):
 
@@ -332,61 +332,61 @@ class GridLayer(Layer):
             for col in self.cols:
                 col._update_width()
 
-    def accept(self, comp):
+    def accept(self, widget):
         """You must define at least the row or the column in order to insert a widget in a grid layer"""
-        if (comp.col is None) or (comp.row is None):
+        if (widget.col is None) or (widget.row is None):
             return False
-        return super().accept(comp)
+        return super().accept(widget)
 
-    def add(self, comp):
+    def add(self, widget):
 
-        if (comp.col is None) or (comp.row is None):
+        if (widget.col is None) or (widget.row is None):
             raise PermissionError(
                 "You must define at least the row or the column in order to insert a widget in a GridLayer")
         try:
-            super().add(comp)
-            if self._nbcols is None and len(self.cols)-1 < comp.col:
-                self.set_nbcols(comp.col+1)
+            super().add(widget)
+            if self._nbcols is None and len(self.cols) - 1 < widget.col:
+                self.set_nbcols(widget.col + 1)
                 self._nbcols = None
-            if self._nbrows is None and len(self.rows)-1 < comp.row:
-                self.set_nbrows(comp.row+1)
+            if self._nbrows is None and len(self.rows) - 1 < widget.row:
+                self.set_nbrows(widget.row + 1)
                 self._nbrows = None
 
-            if self._data[comp.row][comp.col] is not None:
-                stucker = self._data[comp.row][comp.col]
-                test = stucker == comp
+            if self._data[widget.row][widget.col] is not None:
+                stucker = self._data[widget.row][widget.col]
+                test = stucker == widget
                 raise PermissionError("Cannot insert {} at positon : row={}, col={}, because {} is already there"
-                                      "".format(comp, comp.row, comp.col, self._data[comp.row][comp.col]))
+                                      "".format(widget, widget.row, widget.col, self._data[widget.row][widget.col]))
 
-            row = self.rows[comp.row]
-            col = self.cols[comp.col]
-            new_h = row.is_adaptable and comp.height > row.get_height()
-            new_w = col.is_adaptable and comp.width > col.get_width()
-            self._data[comp.row][comp.col] = comp
+            row = self.rows[widget.row]
+            col = self.cols[widget.col]
+            new_h = row.is_adaptable and widget.height > row.get_height()
+            new_w = col.is_adaptable and widget.width > col.get_width()
+            self._data[widget.row][widget.col] = widget
             if new_h:
                 row._update_height()
             if new_w:
                 col._update_width()
 
-            comp.set_lock(origin=False)  # the grid layer has to be the only one who gives a position to the widget
-            if comp.sticky is not None:
-                pos = getattr(pygame.Rect(self.get_cell_rect(comp.row, comp.col)), comp.sticky)
-                loc = comp.sticky
+            widget.set_lock(origin=False)  # the grid layer has to be the only one who gives a position to the widget
+            if widget.sticky is not None:
+                pos = getattr(pygame.Rect(self.get_cell_rect(widget.row, widget.col)), widget.sticky)
+                loc = widget.sticky
             else:
-                pos = self.get_cell_rect(comp.row, comp.col)[:2]
+                pos = self.get_cell_rect(widget.row, widget.col)[:2]
                 loc = "topleft"
-            assert comp.origin.reference is self.container
-            comp.origin.config(pos=pos, location=loc, reference_location="topleft", locked=True)
+            assert widget.origin.reference is self.container
+            widget.origin.config(pos=pos, location=loc, reference_location="topleft", locked=True)
             if new_h or new_w or len(row) == 1 or len(col) == 1:
                 self.pack()
 
-            if comp.window is None:
-                comp.set_window(row.get_cell_rect(comp.col))
+            if widget.window is None:
+                widget.set_window(row.get_cell_rect(widget.col))
 
             # don't need owner because, if the grid is killed,
-            # it means the container is killed, so the comp is also killed
-            comp.signal.RESIZE.connect(self._update_size, owner=self)
-            comp.signal.KILL.connect(self._update_size, owner=self)
+            # it means the container is killed, so the widget is also killed
+            widget.signal.RESIZE.connect(self._update_size, owner=self)
+            widget.signal.KILL.connect(self._update_size, owner=self)
 
         except Exception as e:
             raise e
@@ -406,24 +406,24 @@ class GridLayer(Layer):
         if self.rows_are_adaptable or self.cols_are_adaptable:
             self.pack()
         else:
-            self._update_comp(widget)
+            self._update_widget(widget)
 
-    def remove(self, comp):
+    def remove(self, widget):
 
-        super().remove(comp)
-        assert self._data[comp.row][comp.col] is comp
+        super().remove(widget)
+        assert self._data[widget.row][widget.col] is widget
 
-        col = self.get_col(comp.col)
-        row = self.get_row(comp.row)
+        col = self.get_col(widget.col)
+        row = self.get_row(widget.row)
         old_col_width, old_row_height = None, None  # warning shut down
         if col.is_adaptable:
             old_col_width = col.get_width()
         if row.is_adaptable:
             old_row_height = row.get_height()
 
-        comp.signal.RESIZE.disconnect(self._update_size)
-        comp.signal.KILL.disconnect(self._update_size)
-        self._data[comp.row][comp.col] = None
+        widget.signal.RESIZE.disconnect(self._update_size)
+        widget.signal.KILL.disconnect(self._update_size)
+        self._data[widget.row][widget.col] = None
 
         if col.is_adaptable and (old_col_width != col.get_width()):
             col._update_width()
@@ -471,8 +471,8 @@ class GridLayer(Layer):
                 else:
                     row._top = row.get_previous_row().bottom + self.children_margins.top
 
-                for comp in row.icomponents:
-                    self._update_comp(comp)
+                for widget in row.ichildren:
+                    self._update_widget(widget)
 
     def set_col_width(self, width):
 
@@ -486,7 +486,7 @@ class GridLayer(Layer):
     def set_nbcols(self, nbcols):
         """
         Set the number of columns
-        If nbcols is None, adding a component will create missing columns if needed
+        If nbcols is None, adding a widget will create missing columns if needed
         """
         assert isinstance(nbcols, int) and nbcols > 0, nbcols
         if nbcols is not None:
@@ -504,7 +504,7 @@ class GridLayer(Layer):
     def set_nbrows(self, nbrows):
         """
         Set the number of rows
-        If nbrows is None, adding a component will create missing rows if needed
+        If nbrows is None, adding a widget will create missing rows if needed
         """
         assert isinstance(nbrows, int) and nbrows > 0
         if nbrows is not None:
@@ -543,5 +543,5 @@ class GridLayer(Layer):
         if self.rows_are_adaptable or self.cols_are_adaptable:
             self.pack()
         else:
-            self._update_comp(widget1)
-            self._update_comp(widget2)
+            self._update_widget(widget1)
+            self._update_widget(widget2)

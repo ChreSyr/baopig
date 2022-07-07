@@ -139,7 +139,7 @@ class SelectionRect(Rectangle):
 
 class Selector(Container, Linkable):
     """
-    Abstract class for components who need to handle when they are linked
+    Abstract class for containers who need to handle when they are linked
     and then, while the mouse is still pressed, to handle the mouse drag in
     order to simulate a rect from the link origin to the link position and
     select every SelectableWidget object who collide with this rect
@@ -159,9 +159,9 @@ class Selector(Container, Linkable):
         self.signal.DEFOCUS.connect(self.close_selection, owner=self)
 
     def _get_iselected(self):
-        for comp in self.selectables:
-            if comp.is_selected:
-                yield comp
+        for widget in self.selectables:
+            if widget.is_selected:
+                yield widget
 
     _iselected = property(_get_iselected)
     can_select = property(lambda self: self._can_select)

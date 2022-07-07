@@ -83,8 +83,6 @@ class AbstractButton(Container, Clickable, Hoverable):
         self._hover_sail_ref = lambda: None
         self._link_sail_ref = lambda: None
         self._focus_rect_ref = lambda: None
-        # Layer(self, name="nontouchable_layer", touchable=False)
-        # self.text_component.swap_layer("nontouchable_layer")
 
         if hover != -1:
             if hover is None: hover = 63

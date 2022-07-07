@@ -49,7 +49,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         self._asked_size = self.size
         self._mode_before_fullscreen = None
         self._size_before_fullscreen = None
-        self._focused_comp_ref = lambda: None
+        self._focused_widget_ref = lambda: None
 
     def __str__(self):
 
@@ -59,7 +59,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
     abs_top = 0  # End of recursive call
     application = property(lambda self: self._application)
     asked_size = property(lambda self: self._asked_size)
-    focused_comp = property(lambda self: self._focused_comp_ref())
+    focused_widget = property(lambda self: self._focused_widget_ref())
     # mode = property(lambda self: self._mode)
     painter = property(lambda self: self._application._painter)
     scene = property(lambda self: self)  # End of recursive call
@@ -84,10 +84,10 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
     def _focus(self, widget):
 
-        if widget == self.focused_comp: return
+        if widget == self.focused_widget: return
 
         # DEFOCUS
-        old_focused = self.focused_comp
+        old_focused = self.focused_widget
         if old_focused is not None:
             assert old_focused.is_focused
             old_focused._is_focused = False
@@ -100,7 +100,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
         # FOCUS
         widget._is_focused = True
-        self._focused_comp_ref = widget.get_weakref()  # (lambda: None) if widget is None else
+        self._focused_widget_ref = widget.get_weakref()  # (lambda: None) if widget is None else
 
         if old_focused is not None: old_focused.signal.DEFOCUS.emit()
         widget.signal.FOCUS.emit()
@@ -130,7 +130,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
                 child.kill()
             self.disconnect()
             self.signal.KILL.emit(self._weakref)
-            self._weakref._comp = None
+            self._weakref._ref = None
             self.app.scenes.remove(self)
 
         del self

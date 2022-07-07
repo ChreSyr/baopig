@@ -127,13 +127,13 @@ class UT_Hoverable_Zone(Zone):
 
     def load_sections(self):
         self.parent.add_section(
-            title="mouse manages mouse.hovered_comp",
+            title="mouse manages mouse.hovered_widget",
             tests=[
-                "When the mouse moves, the hovered_comp is updated",
+                "When the mouse moves, the hovered_widget is updated",
             ]
         )
         self.parent.add_section(
-            title="Hoverable can manage mouse.hovered_comp",
+            title="Hoverable can manage mouse.hovered_widget",
             tests=[
                 "When a hovered Hoverable disappears (hide, sleep, kill), it drops the hover",
                 "When a hovered Hoverable moves or get resized, if needed, it drops the hover",

@@ -84,13 +84,13 @@ class _Mouse(Communicative):
         When the mouse is hovering a Text inside a Button inside a Zone inside a Scene,
         then the Text is hovered
         """
-        self._hovered_comp = None
+        self._hovered_widget = None
 
         """
         When the mouse click on a Text inside a Button inside a Zone inside a Scene,
         then the Text is linked
         """
-        self._linked_comp = None
+        self._linked_widget = None
 
         """
         Permet de savoir si l'utilisateur vient de faire un double-click
@@ -134,45 +134,45 @@ class _Mouse(Communicative):
     application = property(lambda self: self._application)
     scene = property(lambda self: self._application._focused_scene)
     is_hovering_display = property(lambda self: self._is_hovering_display)
-    linked_comp = property(lambda self: self._linked_comp)
-    hovered_comp = property(lambda self: self._hovered_comp)
+    linked_widget = property(lambda self: self._linked_widget)
+    hovered_widget = property(lambda self: self._hovered_widget)
 
-    def _link(self, comp):
+    def _link(self, widget):
 
         assert self.is_hovering_display
-        assert self.linked_comp is None
+        assert self.linked_widget is None
 
-        if comp is not None:
-            assert not comp.is_linked
+        if widget is not None:
+            assert not widget.is_linked
 
-            self._linked_comp = comp
-            comp.is_linked = True
-            self.linked_comp.signal.LINK.emit()
+            self._linked_widget = widget
+            widget.is_linked = True
+            self.linked_widget.signal.LINK.emit()
 
-    def _get_pointed_comp(self):  # TODO : improve
+    def _get_pointed_widget(self):  # TODO : improve
 
-        def get_pointed_comp(cont):
+        def get_pointed_widget(cont):
 
             if cont.collidemouse():
                 for layer in reversed(tuple(cont.layers_manager.touchable_layers)):
                     assert layer.touchable
-                    for comp in reversed(layer):
-                        if comp.collidemouse():
-                            if hasattr(comp, "children"):
-                                return get_pointed_comp(comp)
-                            return comp
+                    for child in reversed(layer):
+                        if child.collidemouse():
+                            if hasattr(child, "children"):
+                                return get_pointed_widget(child)
+                            return child
                 return cont
 
-        return get_pointed_comp(self.scene)
+        return get_pointed_widget(self.scene)
 
-    pointed_comp = property(_get_pointed_comp)
+    pointed_widget = property(_get_pointed_widget)
 
     def _hover_display(self):
 
         if self.is_hovering_display:
             return
         self._is_hovering_display = True
-        self.update_hovered_comp()
+        self.update_hovered_widget()
 
     def _release_all(self):
         """
@@ -191,16 +191,16 @@ class _Mouse(Communicative):
 
     def _hover(self, widget):
 
-        if widget is self._hovered_comp:
+        if widget is self._hovered_widget:
             return
 
         # UNHOVER
-        old_hovered = self._hovered_comp
-        if self._hovered_comp is not None:
+        old_hovered = self._hovered_widget
+        if self._hovered_widget is not None:
             assert old_hovered.is_hovered
             old_hovered._is_hovered = False
 
-        self._hovered_comp = widget
+        self._hovered_widget = widget
 
         # HOVER
         if widget is not None:
@@ -216,29 +216,29 @@ class _Mouse(Communicative):
 
     def _unlink(self):
         """
-        This method unlink a Linkable component from the mouse
+        This method unlinks a Linkable widget from the mouse
 
-        It can exceptionnaly be called when a clicked component disappears
-        Then the component calls itself this function, trougth Linkable.unlink()
+        It can exceptionnaly be called when a clicked widget disappears
+        Then the widget calls itself this function, trougth Linkable.unlink()
         """
 
         try:
-            assert self.linked_comp.is_linked or self.linked_comp.is_dead
+            assert self.linked_widget.is_linked or self.linked_widget.is_dead
         except AssertionError as e:
             raise e
 
-        comp = self.linked_comp
-        self._linked_comp = None
+        widget = self.linked_widget
+        self._linked_widget = None
 
-        if comp.is_alive:
-            comp.is_linked = False
-            comp.signal.UNLINK.emit()
-        # While the mouse left button was press, we didn't update hovered_comp
-        self.update_hovered_comp()
+        if widget.is_alive:
+            widget.is_linked = False
+            widget.signal.UNLINK.emit()
+        # While the mouse left button was press, we didn't update hovered_widget
+        self.update_hovered_widget()
 
-    def get_pos_relative_to(self, comp):
+    def get_pos_relative_to(self, widget):
 
-        return comp.abs_rect.referencing(self.pos)
+        return widget.abs_rect.referencing(self.pos)
 
     def is_pressed(self, button_id):
         """Return True if the button with identifier 'button_id' (an integer) is pressed"""
@@ -314,7 +314,7 @@ class _Mouse(Communicative):
                     return first_focusable_in_family_tree(widget.parent)
 
                 # Le focus passe avant le link parce que Linkable est une sous-class de Focusable
-                pointed = self._get_pointed_comp()
+                pointed = self._get_pointed_widget()
                 focused = first_focusable_in_family_tree(pointed)
                 self.scene._focus(focused)
                 if hasattr(focused, "is_linked"):
@@ -344,13 +344,13 @@ class _Mouse(Communicative):
                     signal="SCROLL",
                     direction=1,
                 )
-                self.update_hovered_comp()
+                self.update_hovered_widget()
             elif event.button == 5:
                 MouseEvent(
                     signal="SCROLL",
                     direction=-1,
                 )
-                self.update_hovered_comp()
+                self.update_hovered_widget()
 
         elif event.type == pygame.MOUSEBUTTONUP:
 
@@ -383,7 +383,7 @@ class _Mouse(Communicative):
 
             # UPDATING CLICKS, FOCUSES, HOVERS...
 
-            if self.linked_comp:
+            if self.linked_widget:
                 self._unlink()
 
         elif event.type == pygame.MOUSEMOTION:
@@ -400,16 +400,16 @@ class _Mouse(Communicative):
 
             # LINK MOTION or HOVER signals
             if self.is_pressed(button_id=1):
-                if self.linked_comp:
-                    self.linked_comp.signal.LINK_MOTION.emit(self.last_event)
+                if self.linked_widget:
+                    self.linked_widget.signal.LINK_MOTION.emit(self.last_event)
             else:
-                self.update_hovered_comp()
+                self.update_hovered_widget()
 
         getattr(self.signal, self.last_event.signal).emit(self.last_event)
 
-    def update_hovered_comp(self):
+    def update_hovered_widget(self):
 
-        if self.linked_comp is not None:
+        if self.linked_widget is not None:
             return
 
         def first_hoverable_in_family_tree(widget):
@@ -421,7 +421,8 @@ class _Mouse(Communicative):
                 return widget
             else:
                 return first_hoverable_in_family_tree(widget.parent)
-        pointed = self._get_pointed_comp()
+
+        pointed = self._get_pointed_widget()
         if pointed is None:
             self._hover(None)
         else:

@@ -14,7 +14,7 @@ class UT_Sleep_Zone(Zone):
 
         # Z1
         def tog(widg):
-            clicked_button = mouse.hovered_comp
+            clicked_button = mouse.hovered_widget
             if widg.is_dead:
                 clicked_button.text_widget.set_text("state:DEAD")
             elif widg.is_asleep:
@@ -106,7 +106,7 @@ class UT_Sleep_Zone(Zone):
         b2 = Button(z3, text="Resize", width="33%", pos_ref=b, pos_ref_location="topright", command=resize)
 
         def toggle_visibility():
-            clicked_button = mouse.hovered_comp
+            clicked_button = mouse.hovered_widget
             if clone.is_visible:
                 clone.hide()
                 clicked_button.text_widget.set_text("state:HIDDEN")

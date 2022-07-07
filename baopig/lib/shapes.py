@@ -139,7 +139,7 @@ class Highlighter(Rectangle):
                 self._target_ref = target.get_weakref()
                 self.target.signal.RESIZE.connect(self.config, owner=self)
                 w = self.width if width is None else width
-                self.origin.config(pos=(-w + 1, -w + 1), reference_comp=self.target, from_hitbox=True)
+                self.origin.config(pos=(-w + 1, -w + 1), reference=self.target, from_hitbox=True)
 
             if color is not None:
                 assert is_color(color)
@@ -155,7 +155,7 @@ class Highlighter(Rectangle):
                 pygame.draw.rect(surface, self.color, (0, 0) + size, self.width * 2 - 1)
                 self.set_surface(surface)
 
-    def set_target(self, target, width):
+    def set_target_TBR(self, target, width):
 
         self.origin.config()
 
@@ -166,7 +166,7 @@ class Highlighter(Rectangle):
         self._target_ref = target.get_weakref()
         self.target.signal.RESIZE.connect(self.config, owner=self)
         w = self.width if width is None else width
-        self.origin.config(pos=(-w + 1, -w + 1), reference_comp=self.target, from_hitbox=True)
+        self.origin.config(pos=(-w + 1, -w + 1), reference=self.target, from_hitbox=True)
 
     def handle_targetresize(self):
 

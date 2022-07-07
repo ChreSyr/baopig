@@ -23,7 +23,7 @@ class Hoverable(HoverableDoc, Widget):
 
         def drop_hover():
             if self._is_hovered:
-                mouse.update_hovered_comp()
+                mouse.update_hovered_widget()
 
         self.signal.HIDE.connect(drop_hover, owner=self)
         self.signal.SLEEP.connect(drop_hover, owner=self)
@@ -31,28 +31,28 @@ class Hoverable(HoverableDoc, Widget):
         def drop_hover_on_kill():
             if self._is_hovered:
                 self.set_nontouchable()
-                mouse.update_hovered_comp()
+                mouse.update_hovered_widget()
 
         self.signal.KILL.connect(drop_hover_on_kill, owner=self)
 
         def check_hover_gain():
             if self.collidemouse():
-                mouse.update_hovered_comp()
+                mouse.update_hovered_widget()
 
         self.signal.SHOW.connect(check_hover_gain, owner=self)
         self.signal.WAKE.connect(check_hover_gain, owner=self)
 
         def check_hover():
             if self._is_hovered and not self.collidemouse():
-                mouse.update_hovered_comp()
+                mouse.update_hovered_widget()
             elif self.collidemouse():
-                mouse.update_hovered_comp()
+                mouse.update_hovered_widget()
 
         self.signal.MOTION.connect(check_hover, owner=self)
         self.signal.RESIZE.connect(check_hover, owner=self)
 
         if self.collidemouse():
-            mouse.update_hovered_comp()
+            mouse.update_hovered_widget()
 
     indicator = property(lambda self: self._indicator)
     is_hovered = property(lambda self: self._is_hovered)
@@ -65,9 +65,9 @@ class Paintable(Widget):
         Widget.__init__(self, parent, **kwargs)
 
         """
-        dirty is True while the component's surface have not been updated
+        dirty is True while the widget's surface have not been updated
         
-        Particularly usefull when a hidden component got updated
+        Particularly usefull when a hidden widget got updated
         We wait until it get visible before rendering it
         
         0 : don't need to be updated
@@ -89,7 +89,7 @@ class Paintable(Widget):
         """
         This method is made for being overriden
 
-        In your implementation, you can update the component's surface.
+        In your implementation, you can update the widget's surface.
         If you use send_paint_request(), this method will be called when the next frame is rendered
         In fact, you can use paint() at any moment, but it is more efficient
         to update it through send_paint_request() if it is changing very often
@@ -345,7 +345,7 @@ class Focusable(Enablable):
 
     When the mouse click on a Text inside a Button inside a focusable Zone inside a Scene,
     then only the youngest Focusable is focused
-    Here, it is the Button -> display.focused_comp = Button
+    Here, it is the Button -> display.focused_widget = Button
     """
 
     def __init__(self, parent, **kwargs):
@@ -448,7 +448,7 @@ class Linkable(Focusable):
     WARNING : If a Linkable parent contains a Linkable child, and the LEFT BUTTON
               DOWN has occured on the child, then only the child will be linked
 
-    NOTE : when a widget is linked, you can access it via mouse.linked_comp
+    NOTE : when a widget is linked, you can access it via mouse.linked_widget
     """
 
     def __init__(self, parent, **kwargs):
@@ -474,7 +474,7 @@ class Linkable(Focusable):
 
     def unlink(self):
         """Send a request for unlinking this widget"""
-        if self is not mouse.linked_comp:
+        if self is not mouse.linked_widget:
             raise PermissionError(f"{self} is not linked")
         mouse._unlink()
 
@@ -580,7 +580,7 @@ class ResizableWidget(Widget):  # TODO : solve : try_it_yourself.code is not res
         """Stuff to do when the widget is resized"""
 
     def resize(self, w, h):
-        """Sets up the new component's surface"""
+        """Sets up the new widget's surface"""
 
         if self.has_locked("width"):
             raise PermissionError("Cannot resize : the width is locked")
