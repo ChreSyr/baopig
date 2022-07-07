@@ -8,7 +8,6 @@ from baopig.communicative import ApplicationExit
 from baopig.io import keyboard, mouse, LOGGER
 from .style import HasStyle, Theme, StyleClass
 from .widget import Widget
-from .widget_supers import _runables_manager
 from .utilities import *
 
 
@@ -42,7 +41,6 @@ class Application(HasStyle):
         self._caption = self.name
         self._painter = None  # To be set in self.launch()
         self._time_manager = None  # To be set in self.launch()
-        self._runables_manager = _runables_manager
 
         # debug attributes
         self._debug_averagefps = False
@@ -205,7 +203,6 @@ class Application(HasStyle):
                 # Possible advanced events treatments
                 self._time_manager.update()
                 self.focused_scene._container_run()
-                # self._runables_manager.run_once()  # TODO : remove _runables_manager
 
                 # Possible coded stuff
                 self.focused_scene.run()
