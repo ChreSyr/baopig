@@ -317,11 +317,12 @@ class GridLayer(Layer):
         """Updates window & position"""
         cell_rect = self.get_cell_rect(comp.row, comp.col)
         comp.set_window(cell_rect)
-        comp.origin.unlock()
+        comp.set_lock(origin=False)
         if comp.sticky is not None:
-            comp.origin.config(pos=getattr(pygame.Rect(cell_rect), comp.sticky), location=comp.sticky, locked=True)
+            comp.origin.config(pos=getattr(pygame.Rect(cell_rect), comp.sticky), location=comp.sticky)
         else:
-            comp.origin.config(pos=cell_rect[:2], locked=True)
+            comp.origin.config(pos=cell_rect[:2])
+        comp.set_lock(origin=True)
 
     def _update_size(self):
 
@@ -367,7 +368,7 @@ class GridLayer(Layer):
             if new_w:
                 col._update_width()
 
-            comp.origin.unlock()  # the grid layer has to be the only one who gives a position to the widget
+            comp.set_lock(origin=False)  # the grid layer has to be the only one who gives a position to the widget
             if comp.sticky is not None:
                 pos = getattr(pygame.Rect(self.get_cell_rect(comp.row, comp.col)), comp.sticky)
                 loc = comp.sticky
@@ -531,8 +532,8 @@ class GridLayer(Layer):
         assert widget1 in self
         assert widget2 in self
 
-        widget1.origin.unlock()
-        widget2.origin.unlock()
+        widget1.set_lock(origin=False)
+        widget2.set_lock(origin=False)
 
         self._data[widget1.row][widget1.col] = widget2
         self._data[widget2.row][widget2.col] = widget1

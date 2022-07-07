@@ -54,13 +54,13 @@ class _Origin:
         self._reference_location = owner.style["pos_ref_location"]
 
     def __str__(self):
-        return "Origin(asked_pos={}, location={}, reference={}, reference_location={}, from_hitbox={}, " \
-               "is_locked={})".format(self.asked_pos, self.location, self.reference,
-                                      self.reference_location, self.from_hitbox, self.owner.has_locked.origin)
+        return f"Origin(asked_pos={self.asked_pos}, location={self.location}, reference={self.reference}, " \
+               f"reference_location={self.reference_location}, from_hitbox={self.from_hitbox}, " \
+               f"is_locked={self.is_locked})"
 
     asked_pos = property(lambda self: self._asked_pos)
     from_hitbox = property(lambda self: self._from_hitbox)
-    is_locked = property(lambda self: self.owner.has_locked.origin)
+    is_locked = property(lambda self: self.owner.has_locked("origin"))
     location = property(lambda self: self._location)
     owner = property(lambda self: self._owner_ref())
     reference = property(lambda self: self._reference_ref())
@@ -123,7 +123,7 @@ class _Origin:
     def config(self, pos=None, location=None, reference_location=None, from_hitbox=None, locked=None):
 
         if locked is False:
-            self.owner.has_locked.origin = False
+            self.owner.set_lock(origin=False)
 
         if self.is_locked:
             raise PermissionError("This origin is locked")
@@ -144,7 +144,7 @@ class _Origin:
         self.owner.move_at(self.pos, self.location)
 
         if locked is True:
-            self.owner.has_locked.origin = True
+            self.owner.set_lock(origin=True)
 
     def get_pos_relative_to_owner_parent(self):
 
@@ -197,14 +197,6 @@ class _Origin:
         return tuple(pos)
 
     pos = property(get_pos_relative_to_owner_parent)
-
-    def lock(self):
-
-        self.owner.has_locked.origin = True
-
-    def unlock(self):
-
-        self.owner.has_locked.origin = False
 
 
 class _Window(tuple):
@@ -432,10 +424,10 @@ class HasProtectedHitbox:
         # Note : paint_lock is hold by the parent
         old_pos = self.origin.pos
         new_pos = getattr(self.rect, self.origin.location)
-        if self.has_locked.origin:
-            self.origin.unlock()
+        if self._has_locked.origin:
+            self.set_lock(origin=False)
             self._move(dx=old_pos[0] - new_pos[0], dy=old_pos[1] - new_pos[1])
-            self.origin.lock()
+            self.set_lock(origin=True)
         else:
             self._move(dx=old_pos[0] - new_pos[0], dy=old_pos[1] - new_pos[1])
 
@@ -460,23 +452,12 @@ class HasProtectedHitbox:
 
         return self.is_visible & self.abs_hitbox.collidepoint(mouse.pos)
 
-    def lock_height(self, locked=True):
-        self.has_locked.height = locked
-        self.has_locked.size = self.has_locked.height and self.has_locked.width
-
-    def lock_size(self, locked=True):
-        self.has_locked.height = locked
-        self.has_locked.width = locked
-        self.has_locked.size = locked
-
-    def lock_width(self, locked=True):
-        self.has_locked.width = locked
-        self.has_locked.size = self.has_locked.height and self.has_locked.width
-
     def move(self, dx=0, dy=0):
 
-        if dx == 0 and dy == 0: return
-        if self.has_locked.origin: return
+        if dx == 0 and dy == 0:
+            return
+        if self._has_locked.origin:
+            return
         self._move(dx, dy)
 
     def move_at(self, value, key="topleft"):
@@ -487,7 +468,7 @@ class HasProtectedHitbox:
             "center", "midright", "bottomleft", "midbottom", "bottomright")
         assert key in accepted, f"key '{key}' is not a valid rect position (one of {accepted})"
 
-        if self.has_locked.origin:
+        if self._has_locked.origin:
             return
 
         old = getattr(self.rect, key)
@@ -618,11 +599,11 @@ class HasProtectedSurface:
 
         assert isinstance(surface, pygame.Surface), surface
 
-        if self.has_locked.height and self.rect.height != surface.get_height():
+        if self._has_locked.height and self.rect.height != surface.get_height():
             raise PermissionError(
                 "Wrong surface : {} (this component's surface height is locked at {})".format(surface, self.h))
 
-        if self.has_locked.width and self.rect.width != surface.get_width():
+        if self._has_locked.width and self.rect.width != surface.get_width():
             raise PermissionError(
                 "Wrong surface : {} (this component's surface width is locked at {})".format(surface, self.w))
 
@@ -878,7 +859,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
     app = application = property(lambda self: self._app)  # TODO : remove application ?
     col = property(lambda self: self._col)
     dirty = property(lambda self: self._dirty)
-    has_locked = property(lambda self: self._has_locked)
     is_alive = property(lambda self: self._weakref._comp is not None)
     is_asleep = property(lambda self: self._is_asleep)
     is_awake = property(lambda self: not self._is_asleep)
@@ -915,6 +895,13 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
             self.signal.KILL.connect(callback, owner=None)
         return self._weakref
 
+    def has_locked(self, key):
+
+        try:
+            return getattr(self._has_locked, key)
+        except AttributeError:
+            raise KeyError(f"Unknown key: {key}, availible keys are:{tuple(self._has_locked.__dict__.keys())}")
+
     def hide(self):
 
         if self.has_locked.visibility:
@@ -949,19 +936,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
 
         del self
 
-    def lock_visibility(self, locked=True):
-
-        if self.has_locked.visibility == locked: return
-        self.has_locked.visibility = locked
-
-    def move_behind(self, comp):
-
-        self.layer.move_comp1_behind_comp2(comp1=self, comp2=comp)
-
-    def move_in_front_of(self, comp):
-
-        self.layer.move_comp1_in_front_of_comp2(comp1=self, comp2=comp)
-
     def paint(self):
         """
         This method is made for being overriden
@@ -995,14 +969,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
             else:
                 self.parent._dirty_child(self, 1)
 
-    def set_nontouchable(self):
-        """Cannot go back"""
-
-        # TODO : documentation
-        # TODO : rework
-        # TODO : if Hoverable, mouse.update_hovered_comp() ?
-        self.collidemouse = lambda: False
-
     def set_dirty(self, dirty):
         """
         Works as pygame.DirtySprite :
@@ -1014,16 +980,38 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
 
         self.parent._dirty_child(self, dirty)
 
-    def set_visibility(self, visible):
+    def set_lock(self, **kwargs):
+        """
+        In kwargs, keys can be:
+            height
+            width
+            size
+            visibility
+            origin
+        In kwargs, values are interpreted as booleans
+        """
+        for key, locked in kwargs.items():
+            if not hasattr(self._has_locked, key):
+                raise KeyError(f"Unknown key: {key}, availible keys are:{tuple(self._has_locked.__dict__.keys())}")
 
-        if visible:
-            self.show()
-        else:
-            self.hide()
+            self._has_locked.__setattr__(key, bool(locked))
+            if key in ("height", "width"):
+                self._has_locked.size = self._has_locked.height and self._has_locked.width
+            elif key == "size":
+                self._has_locked.height = bool(locked)
+                self._has_locked.width = bool(locked)
+
+    def set_nontouchable(self):
+        """Cannot go back"""
+
+        # TODO : documentation
+        # TODO : rework
+        # TODO : if Hoverable, mouse.update_hovered_comp() ?
+        self.collidemouse = lambda: False
 
     def show(self):
 
-        if self.has_locked.visibility:
+        if self._has_locked.visibility:
             return
         if self.is_visible:
             return

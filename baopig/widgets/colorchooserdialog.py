@@ -109,9 +109,9 @@ class ColorEntry(NumEntry):
 
     def handle_validate(self):
         setattr(self.parent.color, self.attr, int(self.text))
-        self.lock_text(True)
+        self.set_lock(text=True)
         self.parent.update()
-        self.lock_text(False)
+        self.set_lock(text=False)
 
     def update(self):
         val = str(int(getattr(self.parent.color, self.attr)))

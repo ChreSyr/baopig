@@ -158,7 +158,7 @@ class AbstractButton(Container, Clickable, Hoverable):
         if isinstance(hover, int) and hover != -1:
             hidden = self.is_hidden
             if hidden:
-                if self.has_locked.visibility:
+                if self.has_locked("visibility"):
                     raise NotImplementedError
                 self.show()
             self.paint()  # cannot paint if not visible
@@ -182,7 +182,7 @@ class AbstractButton(Container, Clickable, Hoverable):
 
         self.disable_sail.show()
         self.hover_sail.hide()
-        self.hover_sail.lock_visibility(locked=True)
+        self.hover_sail.set_lock(visibility=True)
         self.hover_sail.show()
         assert not self.hover_sail.is_visible
 

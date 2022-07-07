@@ -188,7 +188,7 @@ class Layer(Communicative):
         left, top = padding.left + start_pos[0], padding.top + start_pos[1]
         if axis == "horizontal":
             for comp in sorted_children:
-                if comp.has_locked.origin:
+                if comp.has_locked("origin"):
                     raise PermissionError("Cannot pack a layer who contains locked children")
                 if comp.window is not None:
                     comp.topleft = (left - comp.window[0], top - comp.window[1])
@@ -197,7 +197,7 @@ class Layer(Communicative):
                 left = comp.hitbox.right + children_margins.left
         elif axis == "vertical":
             for comp in sorted_children:
-                if comp.has_locked.origin:
+                if comp.has_locked("origin"):
                     raise PermissionError("Cannot pack a layer who contains locked children")
                 if comp.window is not None:
                     comp.topleft = (left - comp.window[0], top - comp.window[1])

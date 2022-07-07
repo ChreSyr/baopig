@@ -82,9 +82,9 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
 
     def resize(self, w, h):
 
-        if self.has_locked.width:
+        if self.has_locked("width"):
             raise PermissionError("Cannot resize : the width is locked")
-        if self.has_locked.height:
+        if self.has_locked("height"):
             raise PermissionError("Cannot resize : the height is locked")
         # if (w, h) == self._asked_size:
         #     return

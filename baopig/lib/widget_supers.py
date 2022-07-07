@@ -516,9 +516,9 @@ class ResizableWidget(Widget):  # TODO : solve : try_it_yourself.code is not res
     def resize(self, w, h):
         """Sets up the new component's surface"""
 
-        if self.has_locked.width:
+        if self.has_locked("width"):
             raise PermissionError("Cannot resize : the width is locked")
-        if self.has_locked.height:
+        if self.has_locked("height"):
             raise PermissionError("Cannot resize : the height is locked")
         # if (w, h) == self._asked_size:
         #     return

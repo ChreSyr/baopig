@@ -553,7 +553,7 @@ class Text(Zone, SelectableWidget):
         self._lines_pos = []
         self._align_mode = self.style["align_mode"]
         self._padding = self.style["padding"]
-        self.has_locked.text = False
+        self._has_locked.text = False
 
         self.line_selections = Layer(self, _LineSelection, name="line_selections", touchable=False, sort_by_pos=True)
         self.lines = Layer(self, _Line, name="lines", default_sortkey=lambda line: line.line_index)
@@ -715,10 +715,6 @@ class Text(Zone, SelectableWidget):
 
     text = property(get_text)
 
-    def lock_text(self, locked=True):
-
-        self.has_locked.text = locked
-
     def pack(self, *args, **kwargs):
 
         raise PermissionError("Should not use this method on a Text")
@@ -751,7 +747,7 @@ class Text(Zone, SelectableWidget):
 
     def set_text(self, text):
 
-        if self.has_locked.text:
+        if self.has_locked("text"):
             return
 
         with paint_lock:
