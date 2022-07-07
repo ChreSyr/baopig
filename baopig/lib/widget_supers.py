@@ -2,6 +2,7 @@
 import pygame
 from baopig.io import LOGGER, mouse, keyboard
 from baopig.documentation import Hoverable as HoverableDoc
+from baopig.documentation import Paintable as PaintableDoc
 from baopig.communicative import ApplicationExit
 from baopig.time.timer import RepeatingTimer
 from .widget import Widget
@@ -58,22 +59,12 @@ class Hoverable(HoverableDoc, Widget):
     is_hovered = property(lambda self: self._is_hovered)
 
 
-class Paintable(Widget):  # TODO : doc
+class Paintable(PaintableDoc, Widget):
 
     def __init__(self, parent, **kwargs):
 
         Widget.__init__(self, parent, **kwargs)
 
-        """
-        dirty is True while the widget's surface have not been updated
-        
-        Particularly usefull when a hidden widget got updated
-        We wait until it get visible before rendering it
-        
-        0 : don't need to be updated
-        1 : need to be updated once
-        2 : need to be updated as much as possible
-        """
         self._dirty = 0
         self._waiting_line = self.parent._children_to_paint
 
@@ -85,42 +76,25 @@ class Paintable(Widget):  # TODO : doc
 
     dirty = property(lambda self: self._dirty)
 
-    def paint(self):
-        """
-        This method is made for being overriden
-
-        In your implementation, you can update the widget's surface.
-        If you use send_paint_request(), this method will be called when the next frame is rendered
-        In fact, you can use paint() at any moment, but it is more efficient
-        to update it through send_paint_request() if it is changing very often
-
-        WARNING : never call this method yourself, always use self.send_paint_request()
-        WARNING : don't forget to include a self.send_display_request()
-        """
-
     def send_paint_request(self):
 
         if self._dirty == 0:
             self._dirty = 1
-            if self.is_awake:  # the widget has no parent
+
+            if self.is_awake:
                 self._waiting_line.add(self)
 
-    def set_dirty(self, dirty):
-        """
-        Works as pygame.DirtySprite :
+    def set_dirty(self, val):
 
-        if set to 1, it is repainted and then set to 0 again
-        if set to 2 then it is always dirty (repainted each scene, flag is not reset)
-        0 means that it is not dirty and therefor not repainted again
-        """
+        assert val in (0, 1, 2)
 
-        assert dirty in (0, 1, 2)
+        self._dirty = val
 
-        self._dirty = dirty
-        if dirty:
-            self._waiting_line.add(self)
-        elif self in self._waiting_line:
-            self._waiting_line.remove(self)
+        if self.is_awake:
+            if val:
+                self._waiting_line.add(self)
+            elif self in self._waiting_line:
+                self._waiting_line.remove(self)
 
 
 class Runable(Widget):
