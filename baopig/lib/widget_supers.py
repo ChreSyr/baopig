@@ -3,6 +3,7 @@ import pygame
 from baopig.io import LOGGER, mouse, keyboard
 from baopig.documentation import Hoverable as HoverableDoc
 from baopig.documentation import Paintable as PaintableDoc
+from baopig.documentation import Runable as RunableDoc
 from baopig.communicative import ApplicationExit
 from baopig.time.timer import RepeatingTimer
 from .widget import Widget
@@ -97,55 +98,18 @@ class Paintable(PaintableDoc, Widget):
                 self._waiting_line.remove(self)
 
 
-class Runable(Widget):
+class Runable(RunableDoc, Widget):
 
     def __init__(self, parent, start=False, **kwargs):
 
         Widget.__init__(self, parent, **kwargs)
 
         self._is_running = False
-        self._is_paused = False
-
-        self.signal.SLEEP.connect(self.pause, owner=self)
-        self.signal.WAKE.connect(self.resume, owner=self)
 
         if start:
             self.start_running()
 
-    is_paused = property(lambda self: self._is_paused)
     is_running = property(lambda self: self._is_running)
-
-    def run(self):
-        """Stuff to do when the object is running"""
-
-    def pause(self):
-
-        if not self.is_running:
-            raise PermissionError("Cannot pause a Runable who didn't start yet")
-
-        if self.is_paused is True:
-            return
-
-        self._is_running = False
-        self._is_paused = True
-        self.handle_pause()
-        # self.signal.PAUSE.emit()
-
-    def handle_pause(self):
-        """Stuff to do when the object is paused"""
-
-    def resume(self):
-
-        if self.is_paused is False:
-            raise PermissionError("Cannot resume a Runable who isn't paused")
-
-        self._is_running = True
-        self._is_paused = False
-        self.handle_resume()
-        # self.signal.RESUME.emit()
-
-    def handle_resume(self):
-        """Stuff to do when the object resume"""
 
     def start_running(self):
 
@@ -154,25 +118,14 @@ class Runable(Widget):
 
         self._is_running = True
         self.handle_startrunning()
-        # self.signal.START_RUNNING.emit()
-
-    def handle_startrunning(self):
-        """Stuff to do when the object starts to run"""
 
     def stop_running(self):
-
-        if self.is_paused is True:
-            self.resume()
 
         if self.is_running is False:
             return
 
         self._is_running = False
         self.handle_stoprunning()
-        # self.signal.STOP_RUNNING.emit()
-
-    def handle_stoprunning(self):
-        """Stuff to do when the object stops to run"""
 
 
 class Validable(Widget):

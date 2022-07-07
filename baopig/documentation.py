@@ -230,7 +230,7 @@ class Paintable(Widget):
 
     def paint(self):
         """
-        Abstract - Updates the widget's surface
+        Abstract - called at a frme rendering, if the widget is dirty.
 
         WARNING : It is deprecated to call paint() yourself, use send_paint_request() instead.
 
@@ -261,6 +261,43 @@ class Paintable(Widget):
             if 1, paint() is called at next frame rendering, then dirty will be set to 0 again
             if 2, paint() is called at each frame rendering
         """
+
+
+class Runable(Widget):
+    """
+    Class for widgets who need to execute their run() method as much as possible.
+
+    By default, is_running is set to False.
+
+    :Attributes:
+    ------------
+        is_running: bool -> True if the widget is running
+
+    :Methods:
+    ---------
+        run() -> abstract - called as much as possible, while the object is running
+
+        start_running() -> starts to run the widget
+        stop_running()  -> stops the widget
+
+        handle_startrunning() -> abstract - called when the widget starts to run
+        handle_stoprunning()  -> abstract - called when the widget stops
+    """
+
+    def handle_startrunning(self):
+        """ Abstract - called when the widget starts to run """
+
+    def handle_stoprunning(self):
+        """ Abstract - called when the widget stops """
+
+    def run(self):
+        """ Abstract - called as much as possible, while the object is running """
+
+    def start_running(self):
+        """ Starts to run the widget """
+
+    def stop_running(self):
+        """ Stops the widget """
 
 
 # ...
