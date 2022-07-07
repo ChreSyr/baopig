@@ -457,11 +457,6 @@ class Container(ResizableWidget):
             if background_adapt is False:
                 self.resize(*self.background_image.size)
 
-    def set_surface_TBR(self, surface):
-        """WARNING : DO NOT CALL THIS FUNCTION"""  # TODO : write this warning in Container doc
-
-        raise PermissionError("A Container manage its surface itself (it is the addition of its child surfaces)")
-
     def set_window(self, *args, **kwargs):
 
         super().set_window(*args, **kwargs)

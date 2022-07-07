@@ -84,7 +84,7 @@ class UT_Sleep_Zone(Zone):
         clone_zone = Zone(z3, size=("100%", 150))
         original_zone = Zone(z3, size=("100%", 150))
         original = DraggableRectangle(original_zone, color=(116, 0, 32))
-        clone = Rectangle(clone_zone, size=("100%", "100%"), pos=(0, - 150 - 35), pos_ref=original, color=(110, 80, 90))
+        clone = Rectangle(clone_zone, size=original.size, pos=(0, - 150 - 35), pos_ref=original, color=(110, 80, 90))
         # TODO : solve: an adaptable size is not linked to the pos_ref but to the parent
         b = Button(z3, text="state:AWAKE", width="33%", command=PrefilledFunction(tog, clone))
         b.move_behind(original_zone)

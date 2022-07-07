@@ -218,7 +218,7 @@ class WidgetLocation(str):
             location = "midright"
         elif location == "bottom":
             location = "midbottom"
-        if location not in WidgetLocation.ACCEPTED:
+        elif location not in WidgetLocation.ACCEPTED:
             raise ValueError(f"Wrong value for location : '{location}', "
                              f"must be one of {WidgetLocation.ACCEPTED}")
         return str.__new__(cls, location)
@@ -235,7 +235,7 @@ class ProtectedHitbox(pygame.Rect):
         object.__setattr__(self, "_mask", None)
 
     def __setattr__(self, *args):
-        raise PermissionError
+        raise self.ERR
 
     pos = property(lambda self: tuple(self[:2]))
     lpos = property(lambda self: self[:2], doc="A list containing the rect topleft")
@@ -431,23 +431,6 @@ class HasProtectedHitbox:
         else:
             self._move(dx=old_pos[0] - new_pos[0], dy=old_pos[1] - new_pos[1])
 
-    def can_be_resized_at(self, size):
-
-        if self.has_locked.width and size[0] != self.rect.w:
-            return False
-        if self.has_locked.height and size[1] != self.rect.h:
-            return False
-
-        return True
-
-    def clamp_ip(self, rect):
-
-        raise PermissionError("not implemented")
-
-    def inflate_ip(self, x, y):
-
-        raise PermissionError("not implemented")
-
     def collidemouse(self):
 
         return self.is_visible & self.abs_hitbox.collidepoint(mouse.pos)
@@ -486,17 +469,6 @@ class HasProtectedHitbox:
         else:
             self._move(value[0] - old[0], value[1] - old[1])
 
-    def reference(self, pos):
-        """
-        Require a position relative to the application application
-        Return the same position relative to the component's parent topleft
-        """
-        """if len(pos) == 4:
-            rect = pos
-            return self.reference((rect[0], rect[1])) + (rect[2], rect[3])"""
-
-        return self.parent.abs_hitbox.referencing(pos)
-
     def set_window(self, window, follow_movements=None):
         """window is a rect relative to the parent
 
@@ -530,24 +502,6 @@ class HasProtectedHitbox:
             self._window = None
 
         self.send_display_request(rect=self.rect)  # rect is to cover all possibilities
-
-    # TODO : rework
-    def config_margin(self, margin=None, left=None, top=None, right=None, bottom=None):
-
-        if margin is not None:
-            assert left is None
-            assert top is None
-            assert right is None
-            assert bottom is None
-            if hasattr(margin, "__iter__"):
-                return self.set_margin(left=margin[0], top=margin[1], right=margin[2], bottom=margin[3])
-            else:
-                return self.set_margin(left=margin, top=margin, right=margin, bottom=margin)
-
-        if left is not None: self.margin.left = left
-        if top is not None: self.margin.top = top
-        if right is not None: self.margin.right = right
-        if bottom is not None: self.margin.bottom = bottom
 
     def update_pos(self):
 
@@ -626,23 +580,9 @@ class HasProtectedSurface:
 
             self.signal.NEW_SURF.emit()
 
-    def subsurface(self, rect):
-        """
-        If a modification is set on a subsurface, this will change the parent surface,
-        but this change won't be visible on screen.
-        """
-
-        return self.surface.subsurface(rect).copy()
-
 
 class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, metaclass=MetaPaintLocker):
-    """
-    Abstract class for the elements of the screen
-    A component can be visible, hidden, static, interactive, dynamic...
-    Every component is child of one parent (baopig bio-logic, hmmm...)
 
-    Every Widget have to make its surface at its creation
-    """
     STYLE = StyleClass()
     STYLE.create(
         pos=(0, 0),
@@ -845,9 +785,7 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         """
         # This complicated string creation is avoiding the o.__repr__()
         # in order to avoid representation of components
-        return "<{}(name='{}', parent='{}', hitbox={})>".format(
-            self.__class__.__name__, self.name, self.parent.name, self.hitbox
-        )
+        return f"<{self.__class__.__name__}(name='{self.name}', parent='{self.parent.name}', hitbox={self.hitbox})>"
 
     def __str__(self):
         """
@@ -871,12 +809,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
     row = property(lambda self: self._row)
     scene = property(lambda self: self.__scene)
     sticky = property(lambda self: self._sticky)
-
-    def copy(self):
-        """
-        Abstract method
-        """
-        raise PermissionError("The copy() method has not been overriden")
 
     def get_weakref(self, callback=None):
         """
@@ -904,7 +836,7 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
 
     def hide(self):
 
-        if self.has_locked.visibility:
+        if self._has_locked.visibility:
             return
 
         if not self.is_visible:
@@ -961,7 +893,7 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
                 rect = self.hitbox
             self._parent._warn_change(rect)
 
-    def send_paint_request(self):
+    def send_paint_request(self):  # TODO : Paintable
 
         if self._dirty == 0:
             if self.is_asleep:  # the widget has no parent
@@ -1033,24 +965,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         self._is_asleep = True
         self.signal.SLEEP.emit()
 
-    def swap_layer(self, layer):
-
-        if isinstance(layer, str): layer = self.parent.layers_manager.get_layer(layer)
-        self.parent.layers_manager.swap_layer(self, layer)
-
-    def toggle_visibility(self):
-
-        if self.is_visible:
-            self.hide()
-        else:
-            self.show()
-
-    @staticmethod
-    def ivisibles_from(list):
-        for comp in list:
-            if comp.is_visible:
-                yield comp
-
     def wake(self):
 
         if self.is_awake:
@@ -1066,3 +980,18 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         self.parent._add_child(self)
         self.origin._weak_update_owner_pos()
         self.signal.WAKE.emit()
+
+    # TODO : move these methods to Layer
+    def move_behind(self, comp):
+
+        self.layer.move_comp1_behind_comp2(comp1=self, comp2=comp)
+
+    def move_in_front_of(self, comp):
+
+        self.layer.move_comp1_in_front_of_comp2(comp1=self, comp2=comp)
+
+    def swap_layer(self, layer):
+
+        if isinstance(layer, str):
+            layer = self.parent.layers_manager.get_layer(layer)
+        self.parent.layers_manager.swap_layer(self, layer)

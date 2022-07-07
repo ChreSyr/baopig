@@ -96,9 +96,6 @@ class UT_GridLayer_Zone(Zone):
         def click():
             from baopig.lib.widget import WidgetLocation
             for w in grid4:
-                # sticky = mouse.hovered_comp.text_widget.text
-                # w.origin.unlock()
-                # w.origin.config(sticky=sticky, locked=True)
                 w._sticky = WidgetLocation(mouse.hovered_comp.text_widget.text)  # TODO : origin.config(sticky=...)
             grid4.pack()
         Button(z4, row=0, col=0, command=click, text="topleft")
