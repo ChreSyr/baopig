@@ -1,6 +1,7 @@
 import pygame
+from baopig.pybao.objectutilities import Object
 from baopig.lib import Clickable, Layer
-from baopig.lib import Sail, Image, Container, Hoverable
+from baopig.lib import Rectangle, Image, Container, Hoverable
 from .text import Text
 
 
@@ -67,85 +68,57 @@ class AbstractButton(Container, Clickable, Hoverable):
             self.command = command  # non protected field
             assert callable(command), "command must be callable"
 
-        if self.default_layer is None:
-            Layer(self)  # TODO : usefull ?
-        self.behind_lines = Layer(self, weight=self.default_layer.weight - 1)
-        self.above_lines = Layer(self, weight=self.default_layer.weight + 1)
+        self.behind_content = Layer(self, weight=0)
+        self.content = Layer(self, weight=1)
+        self.above_content = Layer(self, weight=2)
 
-        self._hover_sail_ref = lambda: None
-        self._link_sail_ref = lambda: None
-        self._focus_rect_ref = lambda: None
+        void = Object(show=lambda: None, hide=lambda: None)
+        self._hover_sail_ref = lambda: void
+        self._link_sail_ref = lambda: void
+        self._focus_sail_ref = lambda: void
+
+        self.set_style_for(Rectangle, width="100%", height="100%")
+        self.set_style_for(Image, width="100%", height="100%")  # TODO : implement (this is not working)
 
         if hover != -1:
-            if hover is None: hover = 63
+            if hover is None:
+                hover = 63
             if isinstance(hover, int):
-                self._hover_sail_ref = Sail(
-                    parent=self,
-                    color=(0, 0, 0, hover),
-                    pos=(0, 0),
-                    size=self.size,
-                    name=self.name + ".hover_sail",
+                self._hover_sail_ref = Rectangle(
+                    self, color=(0, 0, 0, hover), visible=False,
+                    layer=self.above_content, name=self.name + ".hover_sail",
                 ).get_weakref()
             else:
                 self._hover_sail_ref = Image(
-                    self, hover, layer="nontouchable_layer", name=self.name + ".hover_sail"
+                    self, hover, visible=False, layer=self.above_content, name=self.name + ".hover_sail",
                 ).get_weakref()
-            self.hover_sail.hide()
-            self.signal.HOVER.connect(self.hover_sail.show, owner=self.hover_sail)
-            self.signal.UNHOVER.connect(self.hover_sail.hide, owner=self.hover_sail)
-            self.hover_sail.swap_layer(self.above_lines)
 
         if focus != -1:
             if focus is None:
-                self._focus_rect_ref = Sail(
-                    parent=self,
-                    color=(0, 0, 0, 0),
-                    pos=(0, 0),  # (half_margin_left, half_margin_top),
-                    size=self.size,
-                    border_color="theme-color-border",
-                    border_width=1,
-                    name=self.name + ".focus_rect"
+                self._focus_sail_ref = Rectangle(
+                    self, color=(0, 0, 0, 0), border_color="theme-color-border", border_width=1, visible=False,
+                    layer=self.behind_content, name=self.name + ".focus_sail",
                 ).get_weakref()
-                # self.focus_rect.set_border(color=, width=1)  # TODO : Border
-            else:
-                self._focus_rect_ref = Image(
-                    self, focus, layer="nontouchable_layer", name=self.name + ".focus_sail"
+            else:  # TODO : implement properly
+                self._focus_sail_ref = Image(
+                    self, focus, visible=False, layer=self.behind_content, name=self.name + ".focus_sail"
                 ).get_weakref()
-            self.focus_rect.hide()
-            self.signal.FOCUS.connect(self.focus_rect.show, owner=self.focus_rect)
-            self.signal.DEFOCUS.connect(self.focus_rect.hide, owner=self.focus_rect)
-            self.focus_rect.swap_layer(self.behind_lines)
 
         if link != -1:
             if link is None:
-                self._link_sail_ref = Sail(
-                    parent=self,
-                    color=(0, 0, 0, 63),
-                    pos=(0, 0),
-                    size=self.size,
-                    name=self.name + ".link_sail",
+                self._link_sail_ref = Rectangle(
+                    self, color=(0, 0, 0, 63), visible=False, layer=self.behind_content, name=self.name + ".link_sail",
                 ).get_weakref()
             else:
                 self._link_sail_ref = Image(
-                    self, link, layer="nontouchable_layer", name=self.name + ".link_sail"
+                    self, link, visible=False, layer=self.behind_content, name=self.name + ".link_sail"
                 ).get_weakref()
-            self.link_sail.hide()
-            self.signal.LINK.connect(self.link_sail.show, owner=self.link_sail)
-            self.signal.VALIDATE.connect(self.link_sail.show, owner=self.link_sail)  # For RETURN validation
-            self.signal.UNLINK.connect(self.link_sail.hide, owner=self.link_sail)
-            self.link_sail.swap_layer(self.behind_lines)  # TODO : layer=self.behind_lines
 
-        self._disable_sail_ref = Sail(  # TODO : same as hover, focus and link
-            parent=self,
-            color=(255, 255, 255, 128),
-            pos=(0, 0),
-            size=self.size,
-            name=self.name + ".disable_sail"
+        self._disable_sail_ref = Rectangle(  # TODO : same as hover, focus and link
+            self, color=(255, 255, 255, 128), visible=False, layer=self.above_content, name=self.name + ".disable_sail",
         ).get_weakref()
-        self.disable_sail.hide()
-        self.disable_sail.swap_layer(self.above_lines)
 
-        if isinstance(hover, int) and hover != -1 and False:  # TODO : hover_alpha=False
+        if isinstance(hover, int) and hover != -1:  # TODO : hover_alpha=False or Sail
             # Adapts the hover sail to the surface -> alpha pixels are not hovered
             hidden = self.is_hidden
             if hidden:
@@ -158,9 +131,21 @@ class AbstractButton(Container, Clickable, Hoverable):
             self.hover_sail.surface.blit(self.surface, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
 
     disable_sail = property(lambda self: self._disable_sail_ref())
-    focus_rect = property(lambda self: self._focus_rect_ref())
+    focus_sail = property(lambda self: self._focus_sail_ref())
     hover_sail = property(lambda self: self._hover_sail_ref())
     link_sail = property(lambda self: self._link_sail_ref())
+
+    def handle_defocus(self):
+
+        self.focus_sail.hide()
+
+    def handle_disable(self):
+
+        self.disable_sail.show()
+        self.hover_sail.hide()
+        self.hover_sail.set_lock(visibility=True)
+        self.hover_sail.show()
+        assert self.hover_sail.is_hidden
 
     def handle_enable(self):
 
@@ -169,22 +154,36 @@ class AbstractButton(Container, Clickable, Hoverable):
         if self.is_hovered:
             self.hover_sail.show()
 
-    def handle_disable(self):
+    def handle_focus(self):
 
-        self.disable_sail.show()
-        self.hover_sail.hide()
-        self.hover_sail.set_lock(visibility=True)
+        self.focus_sail.show()
+
+    def handle_hover(self):
+
         self.hover_sail.show()
-        assert not self.hover_sail.is_visible
 
     def handle_keyup(self, key):
 
         if key == pygame.K_RETURN:
-            self.link_sail.hide()
+            self.link_sail.hide()  # For validation via RETURN key
+
+    def handle_link(self):
+
+        self.link_sail.show()
+
+    def handle_unhover(self):
+
+        self.hover_sail.hide()
+
+    def handle_unlink(self):
+
+        super().handle_unlink()
+        self.link_sail.hide()
 
     def handle_validate(self):
 
         self.command()
+        self.link_sail.show()  # For validation via RETURN key
 
 
 class Button(AbstractButton):
@@ -208,6 +207,6 @@ class Button(AbstractButton):
 
         if text is not None:
             assert isinstance(text, str)
-            self.text_widget = self.style["text_class"](self, text=text, **self.style["text_style"])
+            self.text_widget = self.style["text_class"](self, text=text, layer=self.content, **self.style["text_style"])
             if self.name == "NoName":
                 self._name = text

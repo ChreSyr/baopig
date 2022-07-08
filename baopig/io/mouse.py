@@ -59,7 +59,7 @@ class _Mouse(Communicative):
         for signal in self._signals:
             self.create_signal(signal)
 
-        self._pos = (0, 0)
+        self._pos = (-1, -1)  # No collision at application launch
         self._rel = (0, 0)  # Le dernier deplacement de la souris
 
         # L'etat des bouttons de la souris (il y en a 5)
