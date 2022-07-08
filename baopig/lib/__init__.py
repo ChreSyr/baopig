@@ -4,7 +4,7 @@ from .widget import Widget, Communicative
 from .widget_supers import Clickable, Draggable, Enablable, Focusable, Hoverable, Linkable, \
     Paintable, RepetivelyAnimated, ResizableWidget, Runable, Validable
 from .imagewidget import Image
-from .shapes import Rectangle, Highlighter, Sail, Polygon, Line, Circle
+from .shapes import Rectangle, Highlighter, Polygon, Line, Circle
 from .layer import Layer
 from .gridlayer import GridLayer
 from .layersmanager import LayersManager

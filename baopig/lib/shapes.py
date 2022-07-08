@@ -125,21 +125,6 @@ class Highlighter(Rectangle):
     target = property(lambda self: self._target_ref())
 
 
-class Sail(Rectangle):
-    STYLE = Rectangle.STYLE.substyle()
-    STYLE.modify(
-        border_width=0,
-    )
-
-    def __init__(self, *args, **kwargs):
-
-        Rectangle.__init__(self, *args, **kwargs)
-        self.set_nontouchable()
-        if not self.parent.has_layer("nontouchable_layer"):
-            Layer(self.parent, name="nontouchable_layer", touchable=False)
-        self.swap_layer("nontouchable_layer")
-
-
 class Polygon(Widget):
     """
     Create a Polygon from vertices
