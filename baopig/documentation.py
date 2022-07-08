@@ -143,7 +143,7 @@ class Widget(Communicative):
             Kills the widget's weakref
         """
 
-    def send_display_request(self, rect: Iterable[int] | None):
+    def send_display_request(self, rect: Iterable[int] | None = None):
         """
         Sends a request who will update the display
         The request is executed by a thread dedicated to the screen's display

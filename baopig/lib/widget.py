@@ -422,9 +422,6 @@ class Widget_VisibleSleepy(WidgetCore, HasLock):
 
         self._is_asleep = False
         self.parent._add_child(self)
-        self.update_pos()
-        if hasattr(self, "_update_size"):
-            self._update_size()
         self.signal.WAKE.emit()
 
 
@@ -527,13 +524,14 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle):
         pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs.topleft)
 
         # Connections
+        self.signal.WAKE.connect(self._update_pos, owner=self)
         pos_ref = self.origin.reference
-        pos_ref.signal.RESIZE.connect(self.update_pos, owner=self)
+        pos_ref.signal.RESIZE.connect(self._update_pos, owner=self)
         if pos_ref != self.parent:
-            pos_ref.signal.MOTION.connect(self.update_pos, owner=self)
+            pos_ref.signal.MOTION.connect(self._update_pos, owner=self)
 
         def update_pos_from_parent_movement():
-            # Code from update_pos(), without these two lines:
+            # Code from _update_pos(), without these two lines:
             #     if new_pos == old_pos:
             #       return
             # This allows the MOTION.emit() even if no movement has been made
@@ -625,6 +623,19 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle):
 
             self.signal.MOTION.emit(dx, dy)
 
+    def _update_pos(self):
+        """ Updates the postion if this widget is not referenced from its parent """
+
+        if self.is_asleep:  # the widget has no parent
+            return
+
+        new_pos = self.origin.get_pos_relative_to_owner_parent()
+        rect = self.hitbox if self.origin.referenced_by_hitbox else self.rect
+        old_pos = getattr(rect, self.origin.location)
+        if new_pos == old_pos:
+            return
+        self._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
+
     def collidemouse(self):
 
         return self.is_visible & self.abs_hitbox.collidepoint(mouse.pos)
@@ -711,18 +722,6 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle):
 
         self.send_display_request(rect=self.rect)  # rect is to cover all possibilities
 
-    def update_pos(self):
-
-        if self.is_asleep:  # the widget has no parent
-            return
-
-        new_pos = self.origin.get_pos_relative_to_owner_parent()
-        rect = self.hitbox if self.origin.referenced_by_hitbox else self.rect
-        old_pos = getattr(rect, self.origin.location)
-        if new_pos == old_pos:
-            return
-        self._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
-
 
 # HasVisibility
 class HasProtectedSurface(HasProtectedHitbox):
@@ -757,7 +756,7 @@ class HasProtectedSurface(HasProtectedHitbox):
             pygame.Rect.__setattr__(self.hitbox, "size", size)
             pygame.Rect.__setattr__(self.abs_hitbox, "size", size)
             pygame.Rect.__setattr__(self.auto_hitbox, "size", size)
-            self.update_pos()
+            self._update_pos()
 
     def set_surface(self, surface):
 

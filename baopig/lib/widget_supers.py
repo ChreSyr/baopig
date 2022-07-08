@@ -413,6 +413,7 @@ class ResizableWidget(Widget):
         # assert not hasattr(self, "_weakref")
         Widget.__init__(self, parent, **kwargs)
 
+        self.signal.WAKE.connect(self._update_size, owner=self)
         self.signal.RESIZE.connect(self.handle_resize, owner=None)
         self.origin.reference.signal.RESIZE.connect(self._update_size, owner=self)
 
