@@ -453,10 +453,11 @@ class ResizableWidget(Widget):
             raise PermissionError("Cannot resize : the width is locked")
         if self.has_locked("height"):
             raise PermissionError("Cannot resize : the height is locked")
-        # if (w, h) == self._asked_size:
-        #     return
 
         self._asked_size = w, h
+
+        if self.is_asleep:
+            return
 
         asked_size = self._get_asked_size()
         if asked_size == self.size:

@@ -423,8 +423,8 @@ class Widget_VisibleSleepy(WidgetCore, HasLock):
         self._is_asleep = False
         self.parent._add_child(self)
         self.update_pos()
-        # if hasattr(self, "update_size"):
-        #     self.update_size()
+        if hasattr(self, "_update_size"):
+            self._update_size()
         self.signal.WAKE.emit()
 
 
