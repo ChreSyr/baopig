@@ -24,7 +24,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
         if "name" not in kwargs:
             kwargs["name"] = self.__class__.__name__
-        self._application = self._app = application
+        self._application = application
 
         if "theme" in kwargs:
             theme = kwargs.pop("theme")
@@ -52,11 +52,10 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
     abs_left = 0  # End of recursive call
     abs_top = 0  # End of recursive call
-    application = property(lambda self: self._application)
     asked_size = property(lambda self: self._asked_size)
     focused_widget = property(lambda self: self._focused_widget_ref())
     # mode = property(lambda self: self._mode)
-    painter = property(lambda self: self._application._painter)
+    painter = property(lambda self: self.application._painter)
     scene = property(lambda self: self)  # End of recursive call
 
     def _add_child(self, widget):

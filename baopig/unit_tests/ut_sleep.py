@@ -82,9 +82,10 @@ class UT_Sleep_Zone(Zone):
         clone_zone = Zone(z3, size=("100%", 150))
         original_zone = Zone(z3, size=("100%", 150))
         original = DraggableRectangle(original_zone, color=(116, 0, 32))
-        clone = Rectangle(clone_zone, size=original.size, pos=(0, - 150 - 35), ref=original, color=(110, 80, 90))
+        clone = Rectangle(clone_zone, size=original.size, pos=(0, - 150 - 35), ref=original)
+        clone2 = Rectangle(clone_zone, size=clone.size, pos=(50, 0), ref=clone, color=(110, 100, 100))
         # TODO : solve: an adaptable size is not linked to the ref but to the parent
-        b = Button(z3, text="state:AWAKE", width="33%", command=PrefilledFunction(tog, clone))
+        b = Button(z3, text="state:AWAKE", width="25%", command=PrefilledFunction(tog, clone))
         b.move_behind(original_zone)
         z3.default_layer.pack()
 
@@ -92,6 +93,27 @@ class UT_Sleep_Zone(Zone):
             clone.resize(*original.size)
 
         original.signal.RESIZE.connect(handle_resize, owner=clone)
+
+        def handle_new_surface():
+            cloned_color = original.color.copy()
+            cloned_color.s -= 50
+            clone.set_color(cloned_color)
+
+        original.signal.NEW_SURFACE.connect(handle_new_surface, owner=clone)
+        handle_new_surface()
+
+        def handle_resize():
+            clone2.resize(*clone.size)
+
+        clone.signal.RESIZE.connect(handle_resize, owner=clone2)
+
+        def handle_new_surface():
+            cloned_color = clone.color.copy()
+            cloned_color.s -= 10
+            clone2.set_color(cloned_color)
+
+        clone.signal.NEW_SURFACE.connect(handle_new_surface, owner=clone2)
+        handle_new_surface()
 
         def resize():
             if original.width == 30:
@@ -101,7 +123,7 @@ class UT_Sleep_Zone(Zone):
             else:
                 original.resize(30, 30)
 
-        b2 = Button(z3, text="Resize", width="33%", ref=b, refloc="topright", command=resize)
+        b2 = Button(z3, text="Resize", width="25%", ref=b, refloc="topright", command=resize)
 
         def toggle_visibility():
             clicked_button = mouse.hovered_widget
@@ -112,9 +134,21 @@ class UT_Sleep_Zone(Zone):
                 clone.show()
                 clicked_button.text_widget.set_text("state:VISIBLE")
 
-        Button(z3, text="state:VISIBLE", width="34%", ref=b2, refloc="topright",
-               command=toggle_visibility)
-        # TODO : solve: focus, hover & link are not updated to the size of their button
+        b3 = Button(z3, text="state:VISIBLE", width="25%", ref=b2, refloc="topright", command=toggle_visibility)
+
+        def toggle_color():
+            clicked_button = mouse.hovered_widget
+            text = clicked_button.text_widget.text
+            if text == "state:RED":
+                clicked_button.text_widget.set_text("state:GREEN")
+            elif text == "state:GREEN":
+                clicked_button.text_widget.set_text("state:BLUE")
+            else:
+                clicked_button.text_widget.set_text("state:RED")
+            original.color.h = (original.color.h + 120) % 360
+            original.paint()
+
+        Button(z3, text="state:RED", width="25%", ref=b3, refloc="topright", command=toggle_color)
 
         # Z5
         # TODO : try to asleep a widget from a BoxLayout, and then wake it up

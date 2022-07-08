@@ -108,6 +108,8 @@ class Widget(Communicative):
             # rect.size = width, height
             # signal.RESIZE.emit()
 
+        set_surface() TODO
+
         hide()  -> the widget is no longer visible
         kill()  -> the widget is permanently deleted
         show()  -> the widget is visible again
@@ -256,7 +258,7 @@ class Paintable(Widget):
             def paint(self):
                 surf = get_the_new_surface()
                 self.set_surface(surf)
-                self.send_display_request()
+                self.send_display_request()  # TODO : set_surface() or self.surface.blit() & NEW_SURFACE.emit() & send()
         """
 
     def send_paint_request(self):

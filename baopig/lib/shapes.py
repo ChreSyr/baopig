@@ -65,6 +65,7 @@ class Rectangle(ResizableWidget, Paintable):
         self.surface.fill(self.color)
         if self.border_color is not None:
             pygame.draw.rect(self.surface, self.border_color, (0, 0) + self.size, self.border_width * 2 - 1)
+        self.signal.NEW_SURFACE.emit()
         self.send_display_request()
 
     def set_color(self, color=None):
@@ -199,7 +200,7 @@ class Line(Widget):
             min(p[1] for p in points),
         )
 
-        Widget.__init__(self, parent, surf, pos, **kwargs)
+        Widget.__init__(self, parent, surf, pos=pos, **kwargs)
 
         self._points = points
 

@@ -25,7 +25,8 @@ class SelectableRectangle(Rectangle, SelectableWidget):
     def highlight(self, color):
 
         def timeout():
-            self.hightlighter.kill()
+            if self.hightlighter:
+                self.hightlighter.kill()
             self.hightlighter = None
 
         if self.hightlighter is not None:

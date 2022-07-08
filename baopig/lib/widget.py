@@ -4,12 +4,11 @@
 
 import pygame
 from baopig.pybao.issomething import *
-from baopig.pybao.objectutilities import Object
 from baopig.io import mouse
 from baopig.documentation import Widget as WidgetDoc
 from baopig.communicative import Communicative
 from .utilities import paint_lock, MetaPaintLocker
-from .style import HasStyle, StyleClass, Theme
+from .style import HasStyle
 
 
 class WeakRef:
@@ -35,9 +34,7 @@ class _Origin:
 
     def __init__(self, owner):
 
-        """
-        asked_pos is the distance between reference at reference_location and owner at location
-        """
+        # asked_pos is the distance between reference at reference_location and owner at location
         self._asked_pos = owner.style["pos"]
         self._location = owner.style["loc"]
         reference = owner.style["ref"]
@@ -48,10 +45,6 @@ class _Origin:
             reference = owner.parent
         self._owner_ref = owner.get_weakref()
         self._reference_ref = reference.get_weakref()
-
-        self.reference.signal.RESIZE.connect(self._weak_update_owner_pos, owner=self.owner)
-        if self.reference != owner.parent:
-            self.reference.signal.MOTION.connect(self._weak_update_owner_pos, owner=self.owner)
 
     def __str__(self):
         return f"Origin(asked_pos={self.asked_pos}, location={self.location}, reference={self.reference}, " \
@@ -95,15 +88,6 @@ class _Origin:
             owner_abspos_at_location[0] - reference_abspos_at_location[0],
             owner_abspos_at_location[1] - reference_abspos_at_location[1]
         )
-
-    def _weak_update_owner_pos(self):
-        if self.owner.is_asleep:
-            return
-        new_pos = self.pos
-        old_pos = getattr(self.owner.rect, self.location)
-        if new_pos == old_pos:
-            return
-        self.owner._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
 
     @staticmethod
     def accept(coord):
@@ -162,49 +146,29 @@ class _Origin:
 
         pos = []
 
-        if self.referenced_by_hitbox:
+        rect = "hitbox" if self.referenced_by_hitbox else "rect"
 
-            # Percentage translation of asked_pos
-            for i, c in enumerate(self._asked_pos):
+        # Percentage translation of asked_pos
+        ref_rect = getattr(self.reference, rect)
+        for i, c in enumerate(self._asked_pos):
+            if isinstance(c, str):
+                c = ref_rect.size[i] * int(c[:-1]) / 100
+            pos.append(int(c))
 
-                if isinstance(c, str):
-                    c = self.reference.hitbox.size[i] * int(c[:-1]) / 100
+        # Transition at reference_location
+        if self._reference_location != "topleft":
+            ref_autorect = getattr(self.reference, "auto_" + rect)
+            d = getattr(ref_autorect, self._reference_location)
+            for i in range(2):
+                pos[i] += d[i]
 
-                pos.append(int(c))
-
-            # Transition at reference_location
-            if self._reference_location != "topleft":
-                d = getattr(self.reference.auto_hitbox, self._reference_location)
-                for i in range(2):
-                    pos[i] += d[i]
-
-            # Set pos relative to self.owner.parent
-            if self.reference is not self.owner.parent:
-                pos = (
-                    pos[0] + self.reference.abs_hitbox.left - self.owner.parent.abs.left,
-                    pos[1] + self.reference.abs_hitbox.top - self.owner.parent.abs.top
-                )
-
-        else:
-            # Percentage translation of asked_pos
-            for i, c in enumerate(self._asked_pos):
-
-                if isinstance(c, str):
-                    c = self.reference.rect.size[i] * int(c[:-1]) / 100
-
-                pos.append(int(c))
-
-            # Transition at reference_location
-            if self._reference_location != "topleft":
-                dx, dy = getattr(self.reference.auto_rect, self._reference_location)
-                pos = pos[0] + dx, pos[1] + dy
-
-            # Set pos relative to self.owner.parent
-            if self.reference != self.owner.parent:
-                pos = (
-                    pos[0] + self.reference.abs.left - self.owner.parent.abs.left,
-                    pos[1] + self.reference.abs.top - self.owner.parent.abs.top
-                )
+        # Set pos relative to self.owner.parent
+        if self.reference is not self.owner.parent:
+            ref_absrect = getattr(self.reference, "abs_" + rect)
+            pos = (
+                pos[0] + ref_absrect.left - self.owner.parent.abs.left,
+                pos[1] + ref_absrect.top - self.owner.parent.abs.top
+            )
 
         return tuple(pos)
 
@@ -282,6 +246,61 @@ class ProtectedHitbox(pygame.Rect):
         raise self.ERR
 
 
+class WidgetCore(WidgetDoc, Communicative):
+
+    def __init__(self, parent):
+        assert hasattr(parent, "_warn_change")
+
+        Communicative.__init__(self)
+
+        # NOTE : Since self is a parent's child, it doesn't need to use weakrefs
+        self._parent = parent
+        self.__scene = parent.scene
+        self._application = parent.application
+
+        # weakref will return None after widget.kill()
+        self._weakref = WeakRef(self)
+        self.create_signal("KILL")
+
+    application = property(lambda self: self._application)
+    parent = property(lambda self: self._parent)
+    scene = property(lambda self: self.__scene)
+
+    is_alive = property(lambda self: self._weakref._ref is not None)
+    is_dead = property(lambda self: self._weakref._ref is None)
+
+    def get_weakref(self, callback=None):
+        """
+        A weakref is a reference to an object
+        callback is a function called when the widget die
+
+        Example :
+            weak_ref = my_widget.get_weakref()
+            my_widget2 = weak_ref()
+            my_widget is my_widget2 -> return True
+            del my_widget
+            print(my_widget2) -> return None
+        """
+        if callback is not None:
+            assert callable(callback)
+            self.signal.KILL.connect(callback, owner=None)
+        return self._weakref
+
+    def kill(self):
+
+        if not self.is_alive:
+            return
+
+        with paint_lock:
+            self.signal.KILL.emit(self._weakref)
+            if self.parent is not None:  # False when called by Widget.wake()
+                self.parent._remove_child(self)
+            self.disconnect()
+            self._weakref._ref = None
+
+        del self
+
+
 class HasLock:
 
     def __init__(self):
@@ -324,11 +343,103 @@ class HasLock:
                 self._has_locked.width = bool(locked)
 
 
-# Communicative, IsSleepy, HasParent, HasVisibility, HasLock
-class HasProtectedHitbox(WidgetDoc, Communicative, HasLock):
-    """
-    The pos parameter is in fact the origin, who will often coincide with the topleft
-    """
+class Widget_VisibleSleepy(WidgetCore, HasLock):
+
+    def __init__(self, parent):
+
+        WidgetCore.__init__(self, parent)
+        HasLock.__init__(self)
+
+        # Sleep
+        self._is_asleep = False
+        self._sleep_parent_ref = lambda: None
+        self.create_signal("SLEEP")
+        self.create_signal("WAKE")
+
+        # Visibility
+        self._is_visible = True
+        self.create_signal("SHOW")
+        self.create_signal("HIDE")
+
+    is_asleep = property(lambda self: self._is_asleep)
+    is_awake = property(lambda self: not self._is_asleep)
+    is_hidden = property(lambda self: not self._is_visible)
+    is_visible = property(lambda self: self._is_visible)
+
+    def hide(self):
+
+        if self._has_locked.visibility:
+            return
+
+        if not self.is_visible:
+            return
+
+        self._is_visible = False
+
+        # TODO : the mouse manages itself
+        #  -> mouse.focused_widget.signal.HIDE
+        #  -> mouse.linked_widget.signal.HIDE
+        #  -> mouse.linked_widget.signal.SLEEP
+        if self == mouse.linked_widget:
+            mouse._unlink()
+
+        self.send_display_request()
+        self.signal.HIDE.emit()
+
+    def show(self):
+
+        if self._has_locked.visibility:
+            return
+        if self.is_visible:
+            return
+
+        self._is_visible = True
+        self.send_display_request()
+        self.signal.SHOW.emit()
+
+    def sleep(self):
+
+        if self.is_asleep:
+            return
+
+        assert self in self.parent.children
+
+        self.parent._remove_child(self)
+        self._sleep_parent_ref = self.parent.get_weakref()
+        self._parent = None
+        self._is_asleep = True
+        self.signal.SLEEP.emit()
+
+    def wake(self):
+
+        if self.is_awake:
+            return
+
+        self._parent = self._sleep_parent_ref()
+        self._sleep_parent_ref = lambda: None
+        if self.parent is None:
+            return self.kill()
+
+        self._is_asleep = False
+        self.parent._add_child(self)
+        self.update_pos()
+        # if hasattr(self, "update_size"):
+        #     self.update_size()
+        self.signal.WAKE.emit()
+
+
+class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle):
+    STYLE = HasStyle.STYLE
+    STYLE.create(
+        pos=(0, 0),
+        loc="topleft",
+        ref=None,  # default is parent
+        refloc="topleft",
+        referenced_by_hitbox=False,
+    )
+    STYLE.set_type("loc", Location)
+    STYLE.set_type("refloc", Location)
+
     HITBOX_ATTRIBUTES = (
         "topleft", "midtop", "topright",
         "midleft", "center", "midright",
@@ -338,7 +449,7 @@ class HasProtectedHitbox(WidgetDoc, Communicative, HasLock):
         "pos",  # pos = topleft
     )
 
-    def __init__(self, size):
+    def __init__(self, parent, size, **kwargs):
         """
         rect is the surface hitbox, relative to the parent
         abs_rect is the rect relative to the application (also called 'abs')
@@ -350,13 +461,23 @@ class HasProtectedHitbox(WidgetDoc, Communicative, HasLock):
         auto_hitbox is the hitbox relative to the widget itself
         """
 
-        Communicative.__init__(self)
-        HasLock.__init__(self)
+        Widget_VisibleSleepy.__init__(self, parent)
+        HasStyle.__init__(self, parent, options=kwargs)
 
-        # Visibility
-        self._is_visible = True
-        self.create_signal("SHOW")
-        self.create_signal("HIDE")
+        # Shortcuts :                                             - NOTE : Can only use one shortcut
+        #   sticky="center"   <=>  loc="center", refloc="center"
+        #   center=(200, 45)  <=>  pos=(200, 45), loc="center"    - works for every location
+        if "sticky" in kwargs:
+            sticky = Location(kwargs.pop("sticky"))
+            self.style.modify(loc=sticky, refloc=sticky)
+        else:
+            for key in tuple(kwargs.keys()):
+                if key in Location.ACCEPTED:
+                    self.style.modify(pos=kwargs.pop(key), loc=key)
+                    break
+
+        if kwargs:
+            raise ValueError(f"Unused options : {kwargs}")
 
         """
         MOTION is emitted when the absolute position of the widget.rect moves
@@ -390,7 +511,6 @@ class HasProtectedHitbox(WidgetDoc, Communicative, HasLock):
         # This will initialize the rects and hiboxes
         self._origin = _Origin(owner=self)
 
-        # size = self.surface.get_size()
         self._rect = ProtectedHitbox((0, 0), size)
         self._abs_rect = ProtectedHitbox((0, 0), size)
         self._auto_rect = ProtectedHitbox((0, 0), size)
@@ -406,9 +526,26 @@ class HasProtectedHitbox(WidgetDoc, Communicative, HasLock):
         pygame.Rect.__setattr__(self.hitbox, "topleft", self.topleft)
         pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs.topleft)
 
-    # VISIBILITY
-    is_hidden = property(lambda self: not self._is_visible)
-    is_visible = property(lambda self: self._is_visible)
+        # Connections
+        pos_ref = self.origin.reference
+        pos_ref.signal.RESIZE.connect(self.update_pos, owner=self)
+        if pos_ref != self.parent:
+            pos_ref.signal.MOTION.connect(self.update_pos, owner=self)
+
+        def update_pos_from_parent_movement():
+            # Code from update_pos(), without these two lines:
+            #     if new_pos == old_pos:
+            #       return
+            # This allows the MOTION.emit() even if no movement has been made
+            # This way, widgets referenced by this widget can update their positions
+            if self.is_asleep:  # the widget has no parent
+                return
+            new_pos = self.origin.get_pos_relative_to_owner_parent()
+            rect = self.hitbox if self.origin.referenced_by_hitbox else self.rect
+            old_pos = getattr(rect, self.origin.location)
+            self._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
+
+        self.parent.signal.MOTION.connect(update_pos_from_parent_movement, owner=self)
 
     # ORIGIN
     origin = property(lambda self: self._origin)
@@ -422,43 +559,23 @@ class HasProtectedHitbox(WidgetDoc, Communicative, HasLock):
     abs_hitbox = property(lambda self: self._abs_hitbox)
     auto_hitbox = property(lambda self: self._auto_hitbox)
 
-    def _set_rectattr(self, value):
-        raise PermissionError
-
-    """bottom = property(lambda self: self._rect.bottom, lambda self, v: self._set_rectattr(v, "bottom"))
-    bottomleft = property(lambda self: self._rect.bottomleft, lambda self, v: self.move_at(v, "bottomleft"))
-    bottomright = property(lambda self: self._rect.bottomright, lambda self, v: self.move_at(v, "bottomright"))
-    center = property(lambda self: self._rect.center, lambda self, v: self.move_at(v, "center"))
-    centerx = property(lambda self: self._rect.centerx, lambda self, v: self.move_at(v, "centerx"))
-    centery = property(lambda self: self._rect.centery, lambda self, v: self.move_at(v, "centery"))
-    left = property(lambda self: self._rect.left, lambda self, v: self.move_at(v, "left"))
-    midbottom = property(lambda self: self._rect.midbottom, lambda self, v: self.move_at(v, "midbottom"))
-    midleft = property(lambda self: self._rect.midleft, lambda self, v: self.move_at(v, "midleft"))
-    midright = property(lambda self: self._rect.midright, lambda self, v: self.move_at(v, "midright"))
-    midtop = property(lambda self: self._rect.midtop, lambda self, v: self.move_at(v, "midtop"))
-    pos = topleft = property(lambda self: self._rect.topleft, lambda self, v: self.move_at(v, "topleft"))
-    right = property(lambda self: self._rect.right, lambda self, v: self.move_at(v, "right"))
-    top = property(lambda self: self._rect.top, lambda self, v: self.move_at(v, "top"))
-    topright = property(lambda self: self._rect.topright, lambda self, v: self.move_at(v, "topright"))
-    x = property(lambda self: self._rect.x, lambda self, v: self.move_at(v, "x"))
-    y = property(lambda self: self._rect.y, lambda self, v: self.move_at(v, "y"))"""
-    bottom = property(lambda self: self._rect.bottom, _set_rectattr)
-    bottomleft = property(lambda self: self._rect.bottomleft, _set_rectattr)
-    bottomright = property(lambda self: self._rect.bottomright, _set_rectattr)
-    center = property(lambda self: self._rect.center, _set_rectattr)
-    centerx = property(lambda self: self._rect.centerx, _set_rectattr)
-    centery = property(lambda self: self._rect.centery, _set_rectattr)
-    left = property(lambda self: self._rect.left, _set_rectattr)
-    midbottom = property(lambda self: self._rect.midbottom, _set_rectattr)
-    midleft = property(lambda self: self._rect.midleft, _set_rectattr)
-    midright = property(lambda self: self._rect.midright, _set_rectattr)
-    midtop = property(lambda self: self._rect.midtop, _set_rectattr)
-    pos = topleft = property(lambda self: self._rect.topleft, _set_rectattr)
-    right = property(lambda self: self._rect.right, _set_rectattr)
-    top = property(lambda self: self._rect.top, _set_rectattr)
-    topright = property(lambda self: self._rect.topright, _set_rectattr)
-    x = property(lambda self: self._rect.x, _set_rectattr)
-    y = property(lambda self: self._rect.y, _set_rectattr)
+    bottom = property(lambda self: self._rect.bottom)
+    bottomleft = property(lambda self: self._rect.bottomleft)
+    bottomright = property(lambda self: self._rect.bottomright)
+    center = property(lambda self: self._rect.center)
+    centerx = property(lambda self: self._rect.centerx)
+    centery = property(lambda self: self._rect.centery)
+    left = property(lambda self: self._rect.left)
+    midbottom = property(lambda self: self._rect.midbottom)
+    midleft = property(lambda self: self._rect.midleft)
+    midright = property(lambda self: self._rect.midright)
+    midtop = property(lambda self: self._rect.midtop)
+    pos = topleft = property(lambda self: self._rect.topleft)
+    right = property(lambda self: self._rect.right)
+    top = property(lambda self: self._rect.top)
+    topright = property(lambda self: self._rect.topright)
+    x = property(lambda self: self._rect.x)
+    y = property(lambda self: self._rect.y)
 
     h = property(lambda self: self._rect.h)
     height = property(lambda self: self._rect.height)
@@ -500,25 +617,13 @@ class HasProtectedHitbox(WidgetDoc, Communicative, HasLock):
                 pygame.Rect.__setattr__(self.hitbox, "topleft", self.topleft)
                 pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs.topleft)
 
-            self.signal.MOTION.emit(dx, dy)
-
             # We reset the asked_pos after the MOTION in order to allow cycles of origin referecing
             self.origin._reset_asked_pos()
 
             if self.is_visible:
                 self.send_display_request(rect=self.hitbox.union(old_hitbox))
 
-    def _update_from_parent_movement(self):
-
-        # Note : paint_lock is hold by the parent
-        old_pos = self.origin.pos
-        new_pos = getattr(self.rect, self.origin.location)
-        if self._has_locked.origin:
-            self.set_lock(origin=False)
-            self._move(dx=old_pos[0] - new_pos[0], dy=old_pos[1] - new_pos[1])
-            self.set_lock(origin=True)
-        else:
-            self._move(dx=old_pos[0] - new_pos[0], dy=old_pos[1] - new_pos[1])
+            self.signal.MOTION.emit(dx, dy)
 
     def collidemouse(self):
 
@@ -611,8 +716,9 @@ class HasProtectedHitbox(WidgetDoc, Communicative, HasLock):
         if self.is_asleep:  # the widget has no parent
             return
 
-        new_pos = self.origin.pos
-        old_pos = getattr(self.rect, self.origin.location)
+        new_pos = self.origin.get_pos_relative_to_owner_parent()
+        rect = self.hitbox if self.origin.referenced_by_hitbox else self.rect
+        old_pos = getattr(rect, self.origin.location)
         if new_pos == old_pos:
             return
         self._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
@@ -621,9 +727,11 @@ class HasProtectedHitbox(WidgetDoc, Communicative, HasLock):
 # HasVisibility
 class HasProtectedSurface(HasProtectedHitbox):
 
-    def __init__(self, surface):
+    def __init__(self, parent, surface, **kwargs):
 
         assert isinstance(surface, pygame.Surface)
+
+        HasProtectedHitbox.__init__(self, parent, surface.get_size(), **kwargs)
 
         """
         surface is the widget's image
@@ -634,9 +742,6 @@ class HasProtectedSurface(HasProtectedHitbox):
         NEW_SURFACE is emitted right after set_surface()
         """
         self._surface = surface
-
-        HasProtectedHitbox.__init__(self, size=surface.get_size())
-
         self.create_signal("NEW_SURFACE")
 
     surface = property(lambda self: self._surface)
@@ -687,17 +792,7 @@ class HasProtectedSurface(HasProtectedHitbox):
             self.signal.NEW_SURFACE.emit()
 
 
-class Widget(HasStyle, HasProtectedSurface, metaclass=MetaPaintLocker):
-    STYLE = HasStyle.STYLE
-    STYLE.create(
-        pos=(0, 0),
-        loc="topleft",
-        ref=None,  # default is parent
-        refloc="topleft",
-        referenced_by_hitbox=False,
-    )
-    STYLE.set_type("loc", Location)
-    STYLE.set_type("refloc", Location)
+class Widget(HasProtectedSurface, metaclass=MetaPaintLocker):
 
     def __init__(self, parent, surface=None, layer=None, layer_level=None, name=None, row=None, col=None,
                  visible=True, touchable=True, **kwargs):
@@ -705,46 +800,14 @@ class Widget(HasStyle, HasProtectedSurface, metaclass=MetaPaintLocker):
         if hasattr(self, "_weakref"):  # Widget.__init__() has already been called
             return
 
-        assert hasattr(parent, "_warn_change")
         assert surface is not None
 
         # name is a string who may help to identify the widget
         # It is defined here, so it's in first place in self.__dict__ (should)
         self._name = name if name else "NoName"
 
-        HasStyle.__init__(self, parent, options=kwargs)
-
-        # NOTE : Since self is a parent's child, it doesn't need to use a weakref
-        self._parent = parent
-        self._app = parent.app
-
-        # weakref will return None after widget.kill()
-        self._weakref = WeakRef(self)
-
-        # Sleep
-        self._is_asleep = False
-        self._sleep_parent_ref = lambda: None
-
-        # NOTE : Since self is a scene's child, it doesn't need to use a weakref
-        self.__scene = parent.scene
-
-        # SHORTCUT
-        # NOTE : Can only use one shortcut
-        if "sticky" in kwargs:
-            # sticky="center" <=> loc="center", refloc="center"
-            # assert self.style["loc"] == self.style["refloc"] == "topleft", \
-            #     "Cannot use parameter sticky with parameters loc and refloc"
-            sticky = Location(kwargs.pop("sticky"))
-            self.style.modify(loc=sticky, refloc=sticky)
-        else:
-            # center=(200, 45) <=> pos=(200, 45), loc="center"
-            # Works for every location
-            for key in tuple(kwargs.keys()):
-                if key in HasProtectedHitbox.HITBOX_ATTRIBUTES:
-                    # assert self.style["pos"] == (0, 0) and self.style["loc"] == "topleft", \
-                    #     "Cannot use location shortcut with parameters pos and loc"
-                    self.style.modify(pos=kwargs.pop(key), loc=key)
-                    break
+        # INITIALIZATIONS
+        HasProtectedSurface.__init__(self, parent, surface, **kwargs)
 
         self._col = None
         self._row = None
@@ -774,22 +837,12 @@ class Widget(HasStyle, HasProtectedSurface, metaclass=MetaPaintLocker):
             layer = parent.layers_manager.get_layer(layer)
         self._layer = layer
 
-        # INITIALIZATIONS
-        HasProtectedSurface.__init__(self, surface)
-
         self._is_visible = visible
-
-        self.create_signal("KILL")
-        self.create_signal("SLEEP")
-        self.create_signal("WAKE")
-
-        parent._add_child(self)
 
         if touchable is False:
             self.set_nontouchable()
 
-        if kwargs:
-            raise ValueError(f"Unused options : {kwargs}")
+        parent._add_child(self)
 
     def __repr__(self):
         """
@@ -808,68 +861,14 @@ class Widget(HasStyle, HasProtectedSurface, metaclass=MetaPaintLocker):
         return f"{self.__class__.__name__}(name={self.name})"
 
     # GETTERS ON PROTECTED FIELDS
-    app = application = property(lambda self: self._app)  # TODO : remove application ?
     col = property(lambda self: self._col)
-    is_alive = property(lambda self: self._weakref._ref is not None)
-    is_asleep = property(lambda self: self._is_asleep)
-    is_awake = property(lambda self: not self._is_asleep)
-    is_dead = property(lambda self: self._weakref._ref is None)
     layer = property(lambda self: self._layer)
     name = property(lambda self: self._name)
-    parent = property(lambda self: self._parent)
     row = property(lambda self: self._row)
-    scene = property(lambda self: self.__scene)
 
-    def get_weakref(self, callback=None):
-        """
-        A weakref is a reference to an object
-        callback is a function called when the widget die
+    # ...
 
-        Example :
-            weak_ref = my_widget.get_weakref()
-            my_widget2 = weak_ref()
-            my_widget is my_widget2 -> return True
-            del my_widget
-            print(my_widget2) -> return None
-        """
-        if callback is not None:
-            assert callable(callback)
-            self.signal.KILL.connect(callback, owner=None)
-        return self._weakref
-
-    def hide(self):
-
-        if self._has_locked.visibility:
-            return
-
-        if not self.is_visible:
-            return
-
-        self._is_visible = False
-
-        # TODO : the mouse manages itself
-        #  -> mouse.focused_widget.signal.HIDE
-        #  -> mouse.linked_widget.signal.HIDE
-        #  -> mouse.linked_widget.signal.SLEEP
-        if self == mouse.linked_widget:
-            mouse._unlink()
-
-        self.send_display_request()
-        self.signal.HIDE.emit()
-
-    def kill(self):
-
-        if not self.is_alive:
-            return
-
-        with paint_lock:
-            self.signal.KILL.emit(self._weakref)
-            if self.parent is not None:  # False when called by Widget.wake()
-                self.parent._remove_child(self)
-            self.disconnect()
-            self._weakref._ref = None
-
-        del self
+    # ...
 
     def set_nontouchable(self):
         """Cannot go back"""
@@ -878,45 +877,6 @@ class Widget(HasStyle, HasProtectedSurface, metaclass=MetaPaintLocker):
         # TODO : rework
         # TODO : if Hoverable, mouse.update_hovered_widget() ?
         self.collidemouse = lambda: False
-
-    def show(self):
-
-        if self._has_locked.visibility:
-            return
-        if self.is_visible:
-            return
-
-        self._is_visible = True
-        self.send_display_request()
-        self.signal.SHOW.emit()
-
-    def sleep(self):
-
-        if self.is_asleep:
-            return
-
-        assert self in self.parent.children
-
-        self.parent._remove_child(self)
-        self._sleep_parent_ref = self.parent.get_weakref()
-        self._parent = None
-        self._is_asleep = True
-        self.signal.SLEEP.emit()
-
-    def wake(self):
-
-        if self.is_awake:
-            return
-
-        self._parent = self._sleep_parent_ref()
-        self._sleep_parent_ref = lambda: None
-        if self.parent is None:
-            return self.kill()
-
-        self._is_asleep = False
-        self.parent._add_child(self)
-        self.origin._weak_update_owner_pos()
-        self.signal.WAKE.emit()
 
     # TODO : move these methods to Layer
     def move_behind(self, widget):

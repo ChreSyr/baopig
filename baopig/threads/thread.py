@@ -9,7 +9,7 @@ class ExtraThread(threading.Thread):
 
         threading.Thread.__init__(self, name=self.__class__.__name__, daemon=True)
 
-        self._app = app
+        self._application = app
         self._stop_event = threading.Event()
         self._stop_event.set()
 
@@ -17,7 +17,7 @@ class ExtraThread(threading.Thread):
 
         return self.name
 
-    app = property(lambda self: self._app)
+    app = property(lambda self: self._application)
     is_running = property(lambda self: not self._stop_event.is_set())
     is_stopped = property(lambda self: self._stop_event.is_set())
 

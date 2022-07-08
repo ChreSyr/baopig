@@ -15,6 +15,7 @@ class ColorSliderBloc(SliderBloc):
             self.surface, self.slider.color,
             (self.border_width, self.border_width, self.w - self.border_width * 2, self.h - self.border_width * 2)
         )
+        self.signal.NEW_SURFACE.emit()
         self.send_display_request()
 
 
@@ -39,6 +40,7 @@ class ColorSliderBar(SliderBar):
                 (i + self.border_width, self.border_width),
                 (i + self.border_width, self.h - self.border_width * 2)
             )
+        self.signal.NEW_SURFACE.emit()
         self.send_display_request()
 
 

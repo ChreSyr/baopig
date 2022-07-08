@@ -130,6 +130,8 @@ class AbstractButton(Container, Clickable, Hoverable):
                 self.hide()
             self.hover_sail.surface.blit(self.surface, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
 
+        self.signal.KILL.connect(self.handle_kill, owner=None)
+
     disable_sail = property(lambda self: self._disable_sail_ref())
     focus_sail = property(lambda self: self._focus_sail_ref())
     hover_sail = property(lambda self: self._hover_sail_ref())
@@ -166,6 +168,11 @@ class AbstractButton(Container, Clickable, Hoverable):
 
         if key == pygame.K_RETURN:
             self.link_sail.hide()  # For validation via RETURN key
+
+    def handle_kill(self):
+
+        void = Object(show=lambda: None, hide=lambda: None)
+        self._link_sail_ref = lambda: void
 
     def handle_link(self):
 

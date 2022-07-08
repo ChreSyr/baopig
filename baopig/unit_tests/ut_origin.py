@@ -62,13 +62,13 @@ class UT_Origin_Zone(Zone):
         radius = 100
         step = int(math.degrees((2 * math.pi) / 8))
         for i in range(0, int(math.degrees(2 * math.pi)), step):
-            r = Rectangle(z2, color=ref.color, size=ref.size,
+            r = Rectangle(z2, color=(150, 120, 0), size=ref.size,
                           pos=(math.cos(math.radians(i)) * radius,
                                math.sin(math.radians(i)) * radius),
                           ref=ref, name="rect({})".format(i))
         for i in range(0, int(math.degrees(2 * math.pi)), step):
             i += step / 2
-            r = Rectangle(z3, color=(150, 120, 0), size=ref.size,
+            r = Rectangle(z3, color=ref.color, size=ref.size,
                           pos=(math.cos(math.radians(i)) * radius,
                                math.sin(math.radians(i)) * radius),
                           ref=ref, name="rect({})".format(i))

@@ -109,11 +109,23 @@ class DebugZone(Zone, Handler_SceneClose):
                 pos=(0, hitbox_presentator.top),
                 name="hitbox_tracker")
 
+            # HITBOX TRACKER
+            abs_hitbox_presentator = Text(
+                parent=presentators_zone,
+                text="- abs_hitbox : ",
+                pos=(0, hitbox_presentator.bottom),
+                name="abs_hitbox_presentator")
+            DynamicText(
+                parent=trackers_zone,
+                get_text=lambda: mouse.pointed_widget.abs_hitbox if mouse.pointed_widget else None,
+                pos=(0, abs_hitbox_presentator.top),
+                name="abs_hitbox_tracker")
+
             # PARENT TRACKER
             parent_presentator = Text(
                 parent=presentators_zone,
                 text="- parent : ",
-                pos=(0, hitbox_presentator.bottom),
+                pos=(0, abs_hitbox_presentator.bottom),
                 name="parent_presentator")
             DynamicText(
                 parent=trackers_zone,

@@ -255,13 +255,6 @@ class Container(ResizableWidget):
             self._rect_to_update = pygame.Rect(self.auto)
             self._update_rect()
 
-    def _move(self, dx, dy):
-
-        with paint_lock:
-            super()._move(dx, dy)
-            for child in self.children:
-                child._update_from_parent_movement()
-
     def _remove_child(self, child):
         self._children_manager.remove(child)
         if child in self._children_to_paint:
