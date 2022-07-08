@@ -38,7 +38,7 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
             assert not self.parent.auto.contains(self.rect)
             raise PermissionError("A SubZone must fit inside its parent")
 
-        self.parent.signal.NEW_SURF.connect(self._update_subsurface, owner=self)
+        self.parent.signal.NEW_SURFACE.connect(self._update_subsurface, owner=self)
         self.signal.MOTION.connect(self._update_subsurface, owner=self)
 
     def _update_subsurface(self):

@@ -631,21 +631,19 @@ class HasProtectedSurface(HasProtectedHitbox):
         Duing the widget life, the size of surface can NOT differ from
         the size of the hitbox, it is protected thanks to this classe methods and ProtectedSurface
         
-        NEW_SURF is emitted right after set_surface()
+        NEW_SURFACE is emitted right after set_surface()
         """
         self._surface = surface
 
         HasProtectedHitbox.__init__(self, size=surface.get_size())
 
-        self.create_signal("NEW_SURF")
+        self.create_signal("NEW_SURFACE")
 
     surface = property(lambda self: self._surface)
 
-    def _set_surface(self, surface):
+    def _update_size_from_newsurface(self, size):
 
         with paint_lock:
-            self._surface = surface
-            size = surface.get_size()
             pygame.Rect.__setattr__(self.rect, "size", size)
             pygame.Rect.__setattr__(self.abs_rect, "size", size)
             pygame.Rect.__setattr__(self.auto_rect, "size", size)
@@ -662,18 +660,19 @@ class HasProtectedSurface(HasProtectedHitbox):
 
         if self._has_locked.height and self.rect.height != surface.get_height():
             raise PermissionError(
-                "Wrong surface : {} (this widget's surface height is locked at {})".format(surface, self.h))
+                f"Wrong surface : {surface} (this widget's surface height is locked at {self.h})")
 
         if self._has_locked.width and self.rect.width != surface.get_width():
             raise PermissionError(
-                "Wrong surface : {} (this widget's surface width is locked at {})".format(surface, self.w))
+                f"Wrong surface : {surface} (this widget's surface width is locked at {self.w})")
 
         with paint_lock:
             if self.rect.size != surface.get_size():
 
                 old_hitbox = tuple(self.hitbox)
                 old_size = self.rect.size
-                self._set_surface(surface)
+                self._surface = surface
+                self._update_size_from_newsurface(surface.get_size())
                 self.signal.RESIZE.emit(old_size)
 
                 if self.is_visible:
@@ -685,7 +684,7 @@ class HasProtectedSurface(HasProtectedHitbox):
                 if self.is_visible:
                     self.send_display_request()
 
-            self.signal.NEW_SURF.emit()
+            self.signal.NEW_SURFACE.emit()
 
 
 class Widget(HasStyle, HasProtectedSurface, metaclass=MetaPaintLocker):

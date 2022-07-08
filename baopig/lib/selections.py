@@ -42,7 +42,7 @@ class SelectableWidget(Widget):
         assert self not in self.selector.selectables
         self.selector.selectables.add(self)
 
-        self.signal.NEW_SURF.connect(self.handle_unselect, owner=self)
+        self.signal.NEW_SURFACE.connect(self.handle_unselect, owner=self)
         self.signal.MOTION.connect(self.handle_unselect, owner=self)
         self.signal.HIDE.connect(self.handle_unselect, owner=self)
         self.signal.KILL.connect(lambda: self.selector.selectables.remove(self), owner=self)
