@@ -64,7 +64,7 @@ class CheckBox(Button):
         self._checkmarkframe_ref = CheckMarkFrame(self).get_weakref()
         self._checkmark_ref = CheckMark(self).get_weakref()
 
-        self.text_widget.left = self.checkmarkframe.right + self.children_margins.left
+        self.text_widget.set_pos(left=self.checkmarkframe.right + self.children_margins.left)
 
         self.checkmark.hide()
 

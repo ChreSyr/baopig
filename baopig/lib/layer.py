@@ -192,18 +192,18 @@ class Layer(Communicative):
                 if widget.has_locked("origin"):
                     raise PermissionError("Cannot pack a layer who contains locked children")
                 if widget.window is not None:
-                    widget.topleft = (left - widget.window[0], top - widget.window[1])
+                    widget.set_pos(topleft=(left - widget.window[0], top - widget.window[1]))
                 else:
-                    widget.topleft = (left, top)
+                    widget.set_pos(topleft=(left, top))
                 left = widget.hitbox.right + children_margins.left
         elif axis == "vertical":
             for widget in sorted_children:
                 if widget.has_locked("origin"):
                     raise PermissionError("Cannot pack a layer who contains locked children")
                 if widget.window is not None:
-                    widget.topleft = (left - widget.window[0], top - widget.window[1])
+                    widget.set_pos(topleft=(left - widget.window[0], top - widget.window[1]))
                 else:
-                    widget.topleft = (left, top)
+                    widget.set_pos(topleft=(left, top))
                 top = widget.hitbox.bottom + children_margins.top
         else:
             raise ValueError(f"axis must be either 'horizontal' or 'vertical', not {axis}")

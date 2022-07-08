@@ -282,7 +282,50 @@ class ProtectedHitbox(pygame.Rect):
         raise self.ERR
 
 
-class HasProtectedHitbox:
+class HasLock:
+
+    def __init__(self):
+
+        class Locks:
+            origin = False
+            width = False
+            height = False
+            size = False
+            visibility = False
+
+        self._has_locked = Locks()
+
+    def has_locked(self, key):
+
+        try:
+            return getattr(self._has_locked, key)
+        except AttributeError:
+            raise KeyError(f"Unknown key: {key}, availible keys are:{tuple(self._has_locked.__dict__.keys())}")
+
+    def set_lock(self, **kwargs):
+        """
+        In kwargs, keys can be:
+            height
+            width
+            size
+            visibility
+            origin
+        In kwargs, values are interpreted as booleans
+        """
+        for key, locked in kwargs.items():
+            if not hasattr(self._has_locked, key):
+                raise KeyError(f"Unknown key: {key}, availible keys are:{tuple(self._has_locked.__dict__.keys())}")
+
+            self._has_locked.__setattr__(key, bool(locked))
+            if key in ("height", "width"):
+                self._has_locked.size = self._has_locked.height and self._has_locked.width
+            elif key == "size":
+                self._has_locked.height = bool(locked)
+                self._has_locked.width = bool(locked)
+
+
+# Communicative, IsSleepy, HasParent, HasVisibility, HasLock
+class HasProtectedHitbox(WidgetDoc, Communicative, HasLock):
     """
     The pos parameter is in fact the origin, who will often coincide with the topleft
     """
@@ -295,7 +338,7 @@ class HasProtectedHitbox:
         "pos",  # pos = topleft
     )
 
-    def __init__(self):
+    def __init__(self, size):
         """
         rect is the surface hitbox, relative to the parent
         abs_rect is the rect relative to the application (also called 'abs')
@@ -306,6 +349,14 @@ class HasProtectedHitbox:
         abs_hitbox is the hitbox relative to the application
         auto_hitbox is the hitbox relative to the widget itself
         """
+
+        Communicative.__init__(self)
+        HasLock.__init__(self)
+
+        # Visibility
+        self._is_visible = True
+        self.create_signal("SHOW")
+        self.create_signal("HIDE")
 
         """
         MOTION is emitted when the absolute position of the widget.rect moves
@@ -339,7 +390,7 @@ class HasProtectedHitbox:
         # This will initialize the rects and hiboxes
         self._origin = _Origin(owner=self)
 
-        size = self.surface.get_size()
+        # size = self.surface.get_size()
         self._rect = ProtectedHitbox((0, 0), size)
         self._abs_rect = ProtectedHitbox((0, 0), size)
         self._auto_rect = ProtectedHitbox((0, 0), size)
@@ -355,7 +406,11 @@ class HasProtectedHitbox:
         pygame.Rect.__setattr__(self.hitbox, "topleft", self.topleft)
         pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs.topleft)
 
-    # GETTERS ON PROTECTED FIELDS
+    # VISIBILITY
+    is_hidden = property(lambda self: not self._is_visible)
+    is_visible = property(lambda self: self._is_visible)
+
+    # ORIGIN
     origin = property(lambda self: self._origin)
 
     # HITBOX
@@ -367,7 +422,10 @@ class HasProtectedHitbox:
     abs_hitbox = property(lambda self: self._abs_hitbox)
     auto_hitbox = property(lambda self: self._auto_hitbox)
 
-    bottom = property(lambda self: self._rect.bottom, lambda self, v: self.move_at(v, "bottom"))
+    def _set_rectattr(self, value):
+        raise PermissionError
+
+    """bottom = property(lambda self: self._rect.bottom, lambda self, v: self._set_rectattr(v, "bottom"))
     bottomleft = property(lambda self: self._rect.bottomleft, lambda self, v: self.move_at(v, "bottomleft"))
     bottomright = property(lambda self: self._rect.bottomright, lambda self, v: self.move_at(v, "bottomright"))
     center = property(lambda self: self._rect.center, lambda self, v: self.move_at(v, "center"))
@@ -383,7 +441,24 @@ class HasProtectedHitbox:
     top = property(lambda self: self._rect.top, lambda self, v: self.move_at(v, "top"))
     topright = property(lambda self: self._rect.topright, lambda self, v: self.move_at(v, "topright"))
     x = property(lambda self: self._rect.x, lambda self, v: self.move_at(v, "x"))
-    y = property(lambda self: self._rect.y, lambda self, v: self.move_at(v, "y"))
+    y = property(lambda self: self._rect.y, lambda self, v: self.move_at(v, "y"))"""
+    bottom = property(lambda self: self._rect.bottom, _set_rectattr)
+    bottomleft = property(lambda self: self._rect.bottomleft, _set_rectattr)
+    bottomright = property(lambda self: self._rect.bottomright, _set_rectattr)
+    center = property(lambda self: self._rect.center, _set_rectattr)
+    centerx = property(lambda self: self._rect.centerx, _set_rectattr)
+    centery = property(lambda self: self._rect.centery, _set_rectattr)
+    left = property(lambda self: self._rect.left, _set_rectattr)
+    midbottom = property(lambda self: self._rect.midbottom, _set_rectattr)
+    midleft = property(lambda self: self._rect.midleft, _set_rectattr)
+    midright = property(lambda self: self._rect.midright, _set_rectattr)
+    midtop = property(lambda self: self._rect.midtop, _set_rectattr)
+    pos = topleft = property(lambda self: self._rect.topleft, _set_rectattr)
+    right = property(lambda self: self._rect.right, _set_rectattr)
+    top = property(lambda self: self._rect.top, _set_rectattr)
+    topright = property(lambda self: self._rect.topright, _set_rectattr)
+    x = property(lambda self: self._rect.x, _set_rectattr)
+    y = property(lambda self: self._rect.y, _set_rectattr)
 
     h = property(lambda self: self._rect.h)
     height = property(lambda self: self._rect.height)
@@ -483,6 +558,20 @@ class HasProtectedHitbox:
         else:
             self._move(value[0] - old[0], value[1] - old[1])
 
+    def send_display_request(self, rect=None):
+
+        if self._parent is not None:  # False when asleep
+            if rect is None:
+                rect = self.hitbox
+            self._parent._warn_change(rect)
+
+    def set_pos(self, **kwargs):
+
+        assert len(kwargs) == 1
+
+        for key, value in kwargs.items():
+            self.move_at(value, key=key)
+
     def set_window(self, window, follow_movements=None):
         """window is a rect relative to the parent
 
@@ -529,7 +618,8 @@ class HasProtectedHitbox:
         self._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
 
 
-class HasProtectedSurface:
+# HasVisibility
+class HasProtectedSurface(HasProtectedHitbox):
 
     def __init__(self, surface):
 
@@ -544,6 +634,9 @@ class HasProtectedSurface:
         NEW_SURF is emitted right after set_surface()
         """
         self._surface = surface
+
+        HasProtectedHitbox.__init__(self, size=surface.get_size())
+
         self.create_signal("NEW_SURF")
 
     surface = property(lambda self: self._surface)
@@ -595,7 +688,7 @@ class HasProtectedSurface:
             self.signal.NEW_SURF.emit()
 
 
-class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtectedHitbox, metaclass=MetaPaintLocker):
+class Widget(HasStyle, HasProtectedSurface, metaclass=MetaPaintLocker):
     STYLE = HasStyle.STYLE
     STYLE.create(
         pos=(0, 0),
@@ -621,8 +714,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         self._name = name if name else "NoName"
 
         HasStyle.__init__(self, parent, options=kwargs)
-        Communicative.__init__(self)
-        HasProtectedSurface.__init__(self, surface)
 
         # NOTE : Since self is a parent's child, it doesn't need to use a weakref
         self._parent = parent
@@ -631,48 +722,12 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         # weakref will return None after widget.kill()
         self._weakref = WeakRef(self)
 
-        # Visibility
-        self._is_visible = visible
-        self.create_signal("SHOW")
-        self.create_signal("HIDE")
-
         # Sleep
         self._is_asleep = False
         self._sleep_parent_ref = lambda: None
-        self.create_signal("SLEEP")
-        self.create_signal("WAKE")
-
-        # Locks
-        self._has_locked = Object(
-            origin=False,
-            width=False,
-            height=False,
-            size=False,
-            visibility=False,
-        )
-
-        self.create_signal("KILL")
 
         # NOTE : Since self is a scene's child, it doesn't need to use a weakref
         self.__scene = parent.scene
-
-        self._col = None
-        self._row = None
-        if (col is not None) or (row is not None):
-            """col and row attributes are dedicated to GridLayer"""
-            if (self.style["pos"] != (0, 0)) or \
-                    (self.style["ref"] is not None) or \
-                    (self.style["refloc"] != "topleft"):
-                raise PermissionError("When the layer manages the widget's position, "
-                                      "all you can define is row, col and loc")
-            if col is None:
-                col = 0
-            if row is None:
-                row = 0
-            assert isinstance(col, int) and col >= 0
-            assert isinstance(row, int) and row >= 0
-            self._col = col
-            self._row = row
 
         # SHORTCUT
         # NOTE : Can only use one shortcut
@@ -692,6 +747,24 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
                     self.style.modify(pos=kwargs.pop(key), loc=key)
                     break
 
+        self._col = None
+        self._row = None
+        if (col is not None) or (row is not None):
+            """col and row attributes are dedicated to GridLayer"""
+            if (self.style["pos"] != (0, 0)) or \
+                    (self.style["ref"] is not None) or \
+                    (self.style["refloc"] != "topleft"):
+                raise PermissionError("When the layer manages the widget's position, "
+                                      "all you can define is row, col and loc")
+            if col is None:
+                col = 0
+            if row is None:
+                row = 0
+            assert isinstance(col, int) and col >= 0
+            assert isinstance(row, int) and row >= 0
+            self._col = col
+            self._row = row
+
         # LAYOUT
         if layer is None:
             if parent is not self:  # scene prevention
@@ -703,7 +776,14 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
         self._layer = layer
 
         # INITIALIZATIONS
-        HasProtectedHitbox.__init__(self)
+        HasProtectedSurface.__init__(self, surface)
+
+        self._is_visible = visible
+
+        self.create_signal("KILL")
+        self.create_signal("SLEEP")
+        self.create_signal("WAKE")
+
         parent._add_child(self)
 
         if touchable is False:
@@ -735,8 +815,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
     is_asleep = property(lambda self: self._is_asleep)
     is_awake = property(lambda self: not self._is_asleep)
     is_dead = property(lambda self: self._weakref._ref is None)
-    is_hidden = property(lambda self: not self._is_visible)
-    is_visible = property(lambda self: self._is_visible)
     layer = property(lambda self: self._layer)
     name = property(lambda self: self._name)
     parent = property(lambda self: self._parent)
@@ -759,13 +837,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
             assert callable(callback)
             self.signal.KILL.connect(callback, owner=None)
         return self._weakref
-
-    def has_locked(self, key):
-
-        try:
-            return getattr(self._has_locked, key)
-        except AttributeError:
-            raise KeyError(f"Unknown key: {key}, availible keys are:{tuple(self._has_locked.__dict__.keys())}")
 
     def hide(self):
 
@@ -800,34 +871,6 @@ class Widget(WidgetDoc, HasStyle, Communicative, HasProtectedSurface, HasProtect
             self._weakref._ref = None
 
         del self
-
-    def send_display_request(self, rect=None):
-
-        if self._parent is not None:  # False when asleep
-            if rect is None:
-                rect = self.hitbox
-            self._parent._warn_change(rect)
-
-    def set_lock(self, **kwargs):
-        """
-        In kwargs, keys can be:
-            height
-            width
-            size
-            visibility
-            origin
-        In kwargs, values are interpreted as booleans
-        """
-        for key, locked in kwargs.items():
-            if not hasattr(self._has_locked, key):
-                raise KeyError(f"Unknown key: {key}, availible keys are:{tuple(self._has_locked.__dict__.keys())}")
-
-            self._has_locked.__setattr__(key, bool(locked))
-            if key in ("height", "width"):
-                self._has_locked.size = self._has_locked.height and self._has_locked.width
-            elif key == "size":
-                self._has_locked.height = bool(locked)
-                self._has_locked.width = bool(locked)
 
     def set_nontouchable(self):
         """Cannot go back"""

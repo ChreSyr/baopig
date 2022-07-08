@@ -272,8 +272,8 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
             LOGGER.warning('This widget should be dead :', self)
 
         old_pos = self.topleft
-        self.y = self.line.y
-        self.x = self.line.find_pixel(self.char_index)
+        self.set_pos(top=self.line.top)
+        self.set_pos(left=self.line.find_pixel(self.char_index))
 
         """if self.x > self.parent.w - self.w:
             dx = self.x - (self.parent.w - self.w)

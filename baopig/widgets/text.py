@@ -482,7 +482,7 @@ class _LineSelection(Rectangle):
         else:
             self.resize_width(abs(self.line.find_pixel(self.index_end) -
                                   self.line.find_pixel(self.index_start)))
-        self.left = self.line.x + self.line.find_pixel(self.index_start)
+        self.set_pos(left=self.line.x + self.line.find_pixel(self.index_start))
 
     def set_start(self, index):
 
@@ -491,7 +491,7 @@ class _LineSelection(Rectangle):
 
         self._index_start = self._index_end = index
         self.resize_width(0)
-        self.left = self.line.find_pixel(self._index_start)
+        self.set_pos(left=self.line.find_pixel(self._index_start))
 
         if self.is_asleep:
             self.wake()
@@ -593,14 +593,14 @@ class Text(Zone, SelectableWidget):
         h = self.content_rect.top
         for i, line in enumerate(self.lines):
             line._line_index = i
-            line.top = h
+            line.set_pos(top=h)
             h = line.bottom
             if self.align_mode == "left":
-                line.left = self.content_rect.left
+                line.set_pos(left=self.content_rect.left)
             elif self.align_mode == "center":
-                line.centerx = centerx
+                line.set_pos(centerx=centerx)
             elif self.align_mode == "right":
-                line.right = self.content_rect.right
+                line.set_pos(right=self.content_rect.right)
 
         # Adaptable resize
         if self._height_is_adaptable and self._width_is_adaptable:

@@ -37,7 +37,7 @@ class SliderBloc(Rectangle):
     x_max = property(lambda self: self._max_index)
 
     def update(self):
-        self.x = self.slider.get_pourcent() * self.x_max
+        self.set_pos(left=self.slider.get_pourcent() * self.x_max)
 
 
 class SliderBar(Rectangle):
