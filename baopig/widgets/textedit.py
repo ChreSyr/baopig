@@ -452,7 +452,6 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
 
         # Write
         else:
-            assert keyboard.last_event.key == key
             unicode = keyboard.last_event.unicode
             if key == pygame.K_RETURN:
                 unicode = '\n'

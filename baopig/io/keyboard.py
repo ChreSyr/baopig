@@ -1,32 +1,27 @@
 
 import pygame
-from baopig.pybao.objectutilities import Object
+from baopig.communicative import Communicative
 from baopig.time.timer import RepeatingTimer
 from .logging import LOGGER
 
 
-class KeyEvent(Object):
-
-    def __init__(self, event):
-
-        Object.__init__(self, **event.__dict__)
-        keyboard.last_event = self
-
-    def __str__(self):
-        return "<KeyEvent({}-{} {})>".format(
-            self.type,
-            "KEYDOWN" if self.type == pygame.KEYDOWN else "KEYUP" if self.type == pygame.KEYUP else "Unknown",
-            self.__dict__
-        )
-
-
-class _Keyboard:
+class _Keyboard(Communicative):
+    _signals = "KEYDOWN", "KEYUP"
 
     def __init__(self):
 
-        # self._keys = [0] * 512          # 512 = len(pygame.key.get_pressed())
+        Communicative.__init__(self)
+
+        # 2 signals :
+        #     - KEYDOWN
+        #     - KEYUP
+        for signal in self._signals:
+            self.create_signal(signal)
+
         self._keys = {}
         self._application = None
+        self.last_event = None
+
         class Mod:
             def __init__(self):
                 self.l_alt = False
@@ -43,9 +38,7 @@ class _Keyboard:
                 self.maj = self.l_maj or self.r_maj
             # def __str__(self):
             #     return Object.__str__(self)
-
         self._mod = Mod()
-        self.last_event = None
 
         # repeat
         self._pressedkeys_timers = {}  # the time when the key have been pressed
@@ -75,6 +68,8 @@ class _Keyboard:
     def receive(self, event):
         """Receive pygame events from the application"""
 
+        self.last_event = event
+
         # ACTUALIZING KEYBOARD STATES
         if event.type == pygame.KEYDOWN:
             self._keys[event.key] = 1
@@ -94,9 +89,8 @@ class _Keyboard:
                 self._pressedkeys_timers[event.key].cancel()
                 self._pressedkeys_timers[event.key] = None
         else:
-            LOGGER.warning("Unexpected event : {}".format(event))
+            LOGGER.warning(f"Unexpected event : {event}")
             return
-        KeyEvent(event)  # keyboard.last_event
 
         if event.key == pygame.K_RALT:
             self.mod.r_alt = event.type == pygame.KEYDOWN
@@ -122,6 +116,12 @@ class _Keyboard:
         elif event.key == pygame.K_LSHIFT:
             self.mod.l_maj = event.type == pygame.KEYDOWN
             self.mod.maj = self.mod.l_maj or self.mod.r_maj
+
+        # EVENT TRANSMISSION
+        for signal_id in self._signals:
+            if event.type == getattr(pygame, signal_id):
+                getattr(self.signal, signal_id).emit(event)
+                break
 
     def set_repeat(self, first_delay, delay):
         """Control how held keys are repeated, with delays in milliseconds"""
