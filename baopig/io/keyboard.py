@@ -59,11 +59,6 @@ class _Keyboard:
     is_repeating = property(lambda self: self._is_repeating)
     mod = property(lambda self: self._mod)
 
-    def _release_all(self):
-
-        for key in tuple(self._keys):
-            self.receive(pygame.event.Event(type=pygame.KEYUP, key=key))
-
     def is_pressed(self, key):
         """Return True if the key with identifier 'key' (an integer) is pressed"""
 

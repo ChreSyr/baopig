@@ -125,33 +125,6 @@ class Application(HasStyle):
                         import gc
                         gc.collect()
                         LOGGER.info("Garbage collected")
-                    # Cmd + u -> application freeze
-                    elif event.key == pygame.K_u:
-                        def u_is_pressed():
-                            for event in pygame.event.get():
-                                if event.type == pygame.KEYDOWN:
-                                    if event.key == pygame.K_F6:
-                                        self.exit("Pressed F6")
-                                    elif event.key == pygame.K_u:
-                                        return True
-                                    elif event.key == pygame.K_ESCAPE:  # quit fullscreen or exit
-                                        if self.is_fullscreen:
-                                            self.exit_fullscreen()
-                                        else:
-                                            self.exit("pressed ESCAPE")
-                                    elif event.key == pygame.K_F5:  # fullscreen
-                                        self.focused_scene.toggle_fullscreen()
-                                    elif event.key == pygame.K_F4:  # minimize
-                                        self.iconify()
-                                    elif event.key == pygame.K_F3:  # refresh
-                                        self.refresh()
-                                        LOGGER.info("Display refreshed")
-                                    elif event.key == pygame.K_F2:  # screenshot TODO : A faire avec un clic droit
-                                        self.painter.screenshot()
-                                        LOGGER.info("Screenchot !")
-                            return False
-
-                        self.freeze(until=u_is_pressed)
                     # Cmd + r -> toggle recording (if Maj: save application.surface only when it changes)
                     elif event.key == pygame.K_r:
                         if self.painter.is_recording:
@@ -304,21 +277,6 @@ class Application(HasStyle):
         Can be used when an error occurs, like a wrong user input
         """
         pass  # TODO : implemented this functionnality
-
-    def freeze(self, until):  # TODO : remove this, not a supported functionnality
-        """Freeze the application until 'freeze' function returns True"""
-
-        assert callable(until)
-
-        with paint_lock:
-            self.painter._can_draw.clear()
-            self._time_manager.pause()
-            mouse._release_all()
-            keyboard._release_all()
-            while not until(): pass
-            mouse.update_hovered_widget()
-            self._time_manager.resume()
-            self.painter._can_draw.set()
 
     def handle_app_close(self):
         """Stuff to do when the app is closed"""

@@ -177,14 +177,6 @@ class _Mouse(Communicative):
         self._is_hovering_display = True
         self.update_hovered_widget()
 
-    def _release_all(self):
-        """
-        Only called by Application.freeze()
-        Release the pressed button
-        """
-        if self.pressed_button is not None:
-            self.receive(pygame.event.Event(type=pygame.MOUSEBUTTONUP, button=self.pressed_button))
-
     def _unhover_display(self):
 
         if not self.is_hovering_display:
