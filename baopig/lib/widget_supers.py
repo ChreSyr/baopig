@@ -277,7 +277,7 @@ class ResizableWidget(ResizableWidgetDoc, Widget):
             size = list(size)
             for i, coord in enumerate(size):
                 if isinstance(coord, str):
-                    size[i] = self.parent.size[i] * int(coord[:-1]) / 100
+                    size[i] = self.parent.size[i] * float(coord[:-1]) / 100
 
         return size
 

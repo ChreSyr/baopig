@@ -152,7 +152,7 @@ class _Origin:
         ref_rect = getattr(self.reference, rect)
         for i, c in enumerate(self._asked_pos):
             if isinstance(c, str):
-                c = ref_rect.size[i] * int(c[:-1]) / 100
+                c = ref_rect.size[i] * float(c[:-1]) / 100
             pos.append(int(c))
 
         # Transition at reference_location
