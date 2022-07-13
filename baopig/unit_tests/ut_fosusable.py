@@ -18,11 +18,11 @@ class UT_Focusable_Zone(Zone):
         b0 = PosButton(self, pos=(80, 80))
 
         z = Zone(self, pos=(-5, 5), sticky="topright",
-                 size=(self.w-155, self.h-10), background_color=(10, 30, 20, 128))
+                 size=(self.rect.w - 155, self.rect.h - 10), background_color=(10, 30, 20, 128))
         import random
         for i in range(10):
-            x = random.randrange(z.w - b0.w)
-            y = random.randrange(z.h - b0.h)
+            x = random.randrange(z.rect.w - b0.rect.w)
+            y = random.randrange(z.rect.h - b0.rect.h)
             PosButton(z, pos=(x, y))
 
 

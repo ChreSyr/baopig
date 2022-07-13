@@ -31,9 +31,9 @@ class Image(ResizableWidget):
 
         ResizableWidget.__init__(self, parent=parent, surface=surface, **kwargs)
         if self._asked_size[0] is None:
-            self._asked_size = (self.w, self._asked_size[1])
+            self._asked_size = (self.rect.w, self._asked_size[1])
         if self._asked_size[1] is None:
-            self._asked_size = (self._asked_size[0], self.h)
+            self._asked_size = (self._asked_size[0], self.rect.h)
 
         self._original = image
 
@@ -50,16 +50,16 @@ class Image(ResizableWidget):
             surface.blit(self._original, (0, 0))
             original_w, original_h = self._original.get_size()
 
-            if self.w > original_w:
-                for i in range(int(self.w / original_w)):
+            if self.rect.w > original_w:
+                for i in range(int(self.rect.w / original_w)):
                     surface.blit(self.surface, (original_w * (i + 1), 0))
 
-            if self.h > original_h:
-                row = surface.subsurface((0, 0, self.w, original_h)).copy()
-                for i in range(int(self.h / original_h)):
+            if self.rect.h > original_h:
+                row = surface.subsurface((0, 0, self.rect.w, original_h)).copy()
+                for i in range(int(self.rect.h / original_h)):
                     surface.blit(row, (0, original_h * (i + 1)))
 
             self.set_surface(surface)
 
         else:
-            self.set_surface(pygame.transform.scale(self._original, self.size))
+            self.set_surface(pygame.transform.scale(self._original, self.rect.size))

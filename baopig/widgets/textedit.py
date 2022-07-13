@@ -111,12 +111,12 @@ class HaveHistory:
     def __init__(self):
 
         """
-        An History element is created when :
+        A History element is created when :
             - A new text insert
             - A part of text pop
             - Just before a selected data is delete
 
-        An History element store these data :
+        A History element store these data :
             - the entire text of parent
             - the cusror indexes (line and char)
             - the selection start and end, if the parent was selecting
@@ -199,7 +199,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         Rectangle.__init__(
             self,
             parent=parent,
-            pos=(parent.lines[line_index].find_pixel(char_index), parent.lines[line_index].top),
+            pos=(parent.lines[line_index].find_pixel(char_index), parent.lines[line_index].rect.top),
             size=(int(h / 10), h),
             # color=ressources.font.color,
             name=parent.name + " -> cursor"
@@ -254,7 +254,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
 
         if selecting is True and self.parent.selection_rect.start is None:
             pos = self.parent.find_pos(self.text_index)
-            abs_pos = self.parent.abs_left + pos[0], self.parent.abs_top + pos[1]
+            abs_pos = self.parent.abs.left + pos[0], self.parent.abs.top + pos[1]
             self.parent.start_selection(abs_pos)
 
         def fit(v, mini, maxi):
@@ -274,8 +274,8 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         if self.get_weakref()._ref is None:
             LOGGER.warning('This widget should be dead :', self)
 
-        old_pos = self.topleft
-        self.set_pos(top=self.line.top)
+        old_pos = self.rect.topleft
+        self.set_pos(top=self.line.rect.top)
         self.set_pos(left=self.line.find_pixel(self.char_index))
 
         """if self.x > self.parent.w - self.w:
@@ -294,8 +294,8 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         if selecting == "done":
             pass
         elif selecting is True:
-            if self.parent.selection_rect.end is None or old_pos != self.pos:
-                self.parent.end_selection((self.abs_left, self.abs_top))
+            if self.parent.selection_rect.end is None or old_pos != self.rect.pos:
+                self.parent.end_selection(self.abs.topleft)
         elif selecting is False:
             if self.parent.is_selecting:
                 self.parent.close_selection()

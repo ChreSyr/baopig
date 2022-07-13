@@ -3,9 +3,8 @@
 import pygame
 
 from baopig.pybao.issomething import *
-from .layer import Layer
 from .widget_supers import ResizableWidget, Paintable
-from .utilities import Color, paint_lock
+from .utilities import Color
 from .widget import Widget
 
 
@@ -64,7 +63,7 @@ class Rectangle(ResizableWidget, Paintable):
     def paint(self):
         self.surface.fill(self.color)
         if self.border_color is not None:
-            pygame.draw.rect(self.surface, self.border_color, (0, 0) + self.size, self.border_width * 2 - 1)
+            pygame.draw.rect(self.surface, self.border_color, (0, 0) + self.rect.size, self.border_width * 2 - 1)
         self.signal.NEW_SURFACE.emit()
         self.send_display_request()
 
@@ -113,13 +112,13 @@ class Highlighter(Rectangle):
         if "size" in kwargs:
             raise PermissionError("A Highlighter's' size depends on its target")
 
-        Rectangle.__init__(self, parent, ref=target, size=target.size, **kwargs)
+        Rectangle.__init__(self, parent, ref=target, size=target.rect.size, **kwargs)
 
         self._target_ref = target.get_weakref()
         self.set_touchable_by_mouse(False)
 
         def handle_targetresize():
-            self.resize(*self.target.size)
+            self.resize(*self.target.rect.size)
 
         self.target.signal.RESIZE.connect(handle_targetresize, owner=self)
 

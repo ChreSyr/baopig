@@ -26,11 +26,11 @@ class ButtonText(Text):
         content_rect = button.content_rect
         if content_rect.height < self.font.height:
             self.font.config(height=content_rect.height)  # changing the font will automatically update the text
-        while self.width > content_rect.width:
+        while self.rect.width > content_rect.width:
             if self.font.height == 2:
                 raise ValueError(f"This text is too long for the text area : {text} (area={content_rect})")
             self.font.config(height=self.font.height - 1)  # changing the font will automatically update the text
-        if self.height > content_rect.height:
+        if self.rect.height > content_rect.height:
             self.resize_height(content_rect.height)
 
 

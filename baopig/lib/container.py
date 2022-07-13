@@ -306,7 +306,7 @@ class Container(ContainerDoc, ResizableWidget):
             self._rect_to_update = None
             self.surface.fill(self.background_color, rect=rect)
             if self._border_width:
-                pygame.draw.rect(self.surface, self._border_color, (0, 0) + self.size, self._border_width * 2 - 1)
+                pygame.draw.rect(self.surface, self._border_color, (0, 0) + self.rect.size, self._border_width * 2 - 1)
 
             for layer in self.layers:
                 for child in layer.visible:
@@ -354,16 +354,16 @@ class Container(ContainerDoc, ResizableWidget):
             children_list = self.children
         children = tuple(children_list)
         self.resize(
-            (max(widget.right for widget in children) + self.padding.right
-             if children else self.padding.left + self.padding.right) if horizontally else self.w,
-            (max(widget.bottom for widget in children) + self.padding.bottom
-             if children else self.padding.top + self.padding.bottom) if vertically else self.h
+            (max(widget.hitbox.right for widget in children) + self.padding.right
+             if children else self.padding.left + self.padding.right) if horizontally else self.rect.w,
+            (max(widget.hitbox.bottom for widget in children) + self.padding.bottom
+             if children else self.padding.top + self.padding.bottom) if vertically else self.rect.h
         )
 
     def handle_resize(self):
 
         if self.background_image is not None:
-            self.background_image.resize(*self.size)
+            self.background_image.resize(*self.rect.size)
         self._content_rect = BoxRect(self.auto_rect, self.padding)
         self._flip_without_update()
 
@@ -398,8 +398,8 @@ class Container(ContainerDoc, ResizableWidget):
                 with paint_lock:
                     self.background_image.kill()
             return
-        if background_adapt and surf.get_size() != self.size:
-            surf = pygame.transform.scale(surf, self.size)
+        if background_adapt and surf.get_size() != self.rect.size:
+            surf = pygame.transform.scale(surf, self.rect.size)
         if self.background_layer is None:
             self.background_layer = Layer(self, Image, name="background_layer", level=self.layers_manager.BACKGROUND)
         with paint_lock:

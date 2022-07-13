@@ -36,10 +36,10 @@ class DialogButtonsZone(Zone):
         choices = dialog_frame.parent.choices
         Zone.__init__(
             self, dialog_frame,
-            size=(dialog_frame.w - 60, 46 * ((len(choices) - 1) / 3 + 1)),
+            size=(dialog_frame.rect.w - 60, 46 * ((len(choices) - 1) / 3 + 1)),
         )
         GridLayer(self, nbrows=int((len(choices) - 1) / 3) + 1, nbcols=min(len(choices), 3),
-                  row_height=46, col_width=int(self.w / min(len(choices), 3)))
+                  row_height=46, col_width=int(self.rect.w / min(len(choices), 3)))
         for i, choice in enumerate(choices):
             assert isinstance(choice, str), "Other types are not implemented"
             self.dialog.style["answerbutton_class"](self, choice, col=i % 3, row=i // 3, loc="center")
@@ -77,16 +77,16 @@ class DialogFrame(Zone):
             font_height=38,
             center=("50%", 40),
         )
-        bottom = self.title_label.bottom
+        bottom = self.title_label.rect.bottom
         if dialog.description is not None:
             self.description_label = Text(
                 self, dialog.description,
-                font_height=27, width=self.w - 60,
-                pos=(30, self.title_label.bottom + 15),
+                font_height=27, width=self.rect.w - 60,
+                pos=(30, self.title_label.rect.bottom + 15),
             )
-            bottom = self.description_label.bottom
+            bottom = self.description_label.rect.bottom
 
-        self.resize_height(max(bottom + 50 + self.buttons_zone.height + 10, self.height))
+        self.resize_height(max(bottom + 50 + self.buttons_zone.rect.height + 10, self.rect.height))
 
 
 class Dialog(Scene):

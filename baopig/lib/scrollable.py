@@ -36,22 +36,22 @@ class Scrollable(HoverableByMouse):
         window = Rect(self.window)
 
         if dx < 0:
-            right = self.right + dx
+            right = self.rect.right + dx
             if window.right > right:
-                dx = window.right - self.right
+                dx = window.right - self.rect.right
         elif dx > 0:
-            left = self.left + dx
+            left = self.rect.left + dx
             if window.left < left:
-                dx = window.left - self.left
+                dx = window.left - self.rect.left
 
         if dy < 0:
-            bottom = self.bottom + dy
+            bottom = self.rect.bottom + dy
             if window.bottom > bottom:
-                dy = window.bottom - self.bottom
+                dy = window.bottom - self.rect.bottom
         elif dy > 0:
-            top = self.top + dy
+            top = self.rect.top + dy
             if window.top < top:
-                dy = window.top - self.top
+                dy = window.top - self.rect.top
 
         if (dx == 0) and (dy == 0):
             return

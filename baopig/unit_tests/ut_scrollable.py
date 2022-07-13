@@ -13,12 +13,12 @@ class UT_Scrollable_Zone(Zone):
         import string
         i = 0
         for h in range(10, 1000, 60):
-            b = Button(scroller, pos=(10, h), text=string.ascii_letters[i], padding = 0)
+            b = Button(scroller, pos=(10, h), text=string.ascii_letters[i], padding=0)
             i += 1
             Indicator(b, "Empty")
             def cut():
                 scrollslider = scroller.scrollsliders[0]
-                scrollslider.resize_width(scrollslider.w - 20)
+                scrollslider.resize_width(scrollslider.rect.w - 20)
             if h == 10:
                 b.command = cut
             else:

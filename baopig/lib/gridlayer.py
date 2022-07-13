@@ -363,8 +363,8 @@ class GridLayer(Layer):
 
             row = self.rows[widget.row]
             col = self.cols[widget.col]
-            new_h = row.is_adaptable and widget.height > row.get_height()
-            new_w = col.is_adaptable and widget.width > col.get_width()
+            new_h = row.is_adaptable and widget.rect.height > row.get_height()
+            new_w = col.is_adaptable and widget.rect.width > col.get_width()
             self._data[widget.row][widget.col] = widget
             if new_h:
                 row._update_height()

@@ -18,7 +18,7 @@ class UT_LayerPack_Zone(Zone):
         def add():
             zone = Zone(self.package, name="zone", background_color="green4", padding=3, children_margins=3,
                         pos=(random.randint(0, 200), random.randint(0, 200)))
-            Rectangle(parent=zone, color=(255, 255, 0), size=(zone.w, 10), pos=(0, 0), name="Cobaye")
+            Rectangle(parent=zone, color=(255, 255, 0), size=(zone.rect.w, 10), pos=(0, 0), name="Cobaye")
             Text(zone, f"layer's length : {len(self.package.default_layer)}")
             Button(zone, "REMOVE", command=zone.kill)
             zone.default_layer.pack()
@@ -26,7 +26,8 @@ class UT_LayerPack_Zone(Zone):
 
         Button(classiclayer_tester, "ADD", command=add)
         b = Button(classiclayer_tester, "PACK", command=self.package.pack)
-        b.set_window((b.left, b.top, b.w, 20), follow_movements=True)  # TODO : remove, here for some tests
+        b.set_window((b.rect.left, b.rect.top, b.rect.w, 20),
+                     follow_movements=True)  # TODO : remove, here for some tests
         Indicator(b, "NOTE : By default, pack() sorts widgets by position", loc="bottom", width=200)
         Button(classiclayer_tester, "CLEAR", command=self.package.default_layer.clear)
         safe_layer.pack(axis="horizontal")
@@ -56,7 +57,7 @@ class UT_LayerPack_Zone(Zone):
 
         s.signal.NEW_VAL.connect(new_childrenmargins_bottom, owner=None)
         Text(classiclayer_tester, "NOTE : Only children_margins.top and children_margins.left are being used",
-             width=self.w - s.right - 10, ref=s, refloc="midright", midleft=(10, 0))
+             width=self.rect.w - s.rect.right - 10, ref=s, refloc="midright", midleft=(10, 0))
 
         # GRID TESTING
         gridlayer_tester = Zone(self, size=("100%", "50%"))

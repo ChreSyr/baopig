@@ -51,6 +51,10 @@ class Communicative:
         """ Kills all the connections owned by this object """
 
 
+class ProtectedRect:
+    pass
+
+
 class Widget(Communicative):
     """
     Abstract class for the graphical elements of the screen
@@ -127,15 +131,33 @@ class Widget(Communicative):
         send_display_request(rect=None) -> sends a request who will update the display
     """
 
+    application: ...
     is_alive: bool
+    is_asleep: bool
+    is_awake: bool
     is_dead: bool
+    is_hidden: bool
     is_touchable_by_mouse: bool
+    is_visible: bool
+    origin: ...
+    parent: ...
     scene: ...
     surface: pygame.Surface
 
+    # HITBOX
+    abs: ProtectedRect
+    abs_hitbox: ProtectedRect
+    abs_rect: ProtectedRect
+    auto: ProtectedRect
+    auto_hitbox: ProtectedRect
+    auto_rect: ProtectedRect
+    hitbox: ProtectedRect
+    rect: ProtectedRect
+    window: ProtectedRect
+
     def hide(self):
         """
-        Stops displaying the widget
+        Stop displaying the widget
 
         Behaviour:
         ----------

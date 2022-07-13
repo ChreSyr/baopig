@@ -19,7 +19,7 @@ class UT_Text_Zone(Zone):
                                      "\nWhat do you want to do ?", width=250, padding=5)
         self.set_style_for(Text, font_file="Arial Narrow Bold Italic.ttf")
         Text(parent=z1, text="Hello world\nIamaverylongword,canyoureadmecorrectly?"
-                             "\nWhat do you want to do ?", width=hello.width)
+                             "\nWhat do you want to do ?", width=hello.rect.width)
         z1.pack(axis="horizontal")
 
         # Z2
@@ -36,7 +36,7 @@ class UT_Text_Zone(Zone):
                          "Et il partit. (vert fonce)")
         text.set_background_color((255, 255, 255, 128))
         text.font.config(color=(10, 50, 30))
-        TextEdit(z2, text="Green", width=text.width)
+        TextEdit(z2, text="Green", width=text.rect.width)
         z2.pack(axis="horizontal")
 
         # Z3
@@ -72,7 +72,7 @@ class UT_Text_Zone(Zone):
 
         # Z4
         t = Text(z4, "width:75", width=75)
-        Text(z4, "width:75", width=75, height_is_adaptable=False, height=t.lines[0].h)
+        Text(z4, "width:75", width=75, height_is_adaptable=False, height=t.lines[0].rect.h)
         Text(z4, "padding:5", padding=5)
         Text(z4, "1\n2\n3", width=85, padding=10, children_margins=10)
         z4.pack()

@@ -27,7 +27,7 @@ class UT_Paintable_Zone(Zone):
         Button(buttons_zone, text="dirty = 2", command=PrefilledFunction(rainbow.set_dirty, 2))
         Button(buttons_zone, text="paint request", command=rainbow.send_paint_request)
         buttons_zone.pack(axis="horizontal", adapt=True)
-        rainbow.resize(*buttons_zone.size)
+        rainbow.resize(*buttons_zone.rect.size)
         z1.pack(adapt=True)
 
     def load_sections(self):

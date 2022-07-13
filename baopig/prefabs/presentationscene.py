@@ -35,7 +35,7 @@ class UTMenu_Scene(Scene):
         Text(self, text="", row=2)
 
         back = Button(self, "Menu", command=PrefilledFunction(app.open, "PresentationScene"), col=1)
-        back.set_pos(bottomright=self.bottomright)
+        back.set_pos(bottomright=self.rect.bottomright)
 
         def get_ut_filenames():
             import os

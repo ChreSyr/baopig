@@ -68,12 +68,12 @@ class ScrollableZone(Zone, ScrollableByMouse):
         self.scrollsliders = []
         scrollslider_class = self.style["scrollslider_class"]
 
-        self.set_window(self.pos + window_size)
+        self.set_window(self.rect.topleft + window_size)
         assert self.rect.contains(self.rect.__class__(self.window))  # TODO : remove
-        if self.width > window_size[0]:
+        if self.rect.width > window_size[0]:
             self._scrollaxis += "x"
             self.scrollsliders.append(scrollslider_class(self, "x", bar_style))
-        if self.height > window_size[1]:
+        if self.rect.height > window_size[1]:
             self._scrollaxis += "y"
             self.scrollsliders.append(scrollslider_class(self, "y", bar_style))
         ScrollableByMouse.__init__(self, self.scrollaxis)
@@ -83,6 +83,6 @@ class ScrollableZone(Zone, ScrollableByMouse):
         assert axis in "x", "y"
 
         if axis == "x":
-            return self.window[0] / (self.width - self.window[2])
+            return self.window[0] / (self.rect.width - self.window[2])
         else:
-            return self.window[1] / (self.height - self.window[3])
+            return self.window[1] / (self.rect.height - self.window[3])

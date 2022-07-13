@@ -117,10 +117,10 @@ class Slider(Container, LinkableByMouse):
         self.bloc = self.style["bloc_class"](self)
 
         self.resize(
-            self.bar.width + max(0, self.bloc.border_width - self.bar.border_width) * 2,
-            max(self.bar.height, self.bloc.height),
+            self.bar.rect.width + max(0, self.bloc.border_width - self.bar.border_width) * 2,
+            max(self.bar.rect.height, self.bloc.rect.height),
         )
-        self._max_bloc_index = self.bloc._max_index = self.width - self.bloc.width
+        self._max_bloc_index = self.bloc._max_index = self.rect.width - self.bloc.rect.width
         self.bloc.update()
 
         self.create_signal("NEW_VAL")
@@ -129,7 +129,7 @@ class Slider(Container, LinkableByMouse):
             if title:
                 if printed_title:
                     self.title = Text(self, title, sticky="center", selectable=False, font_color=(96, 96, 96),
-                                      font_height=int((self.bar.height - self.bar.border_width * 2) * .9),
+                                      font_height=int((self.bar.rect.height - self.bar.border_width * 2) * .9),
                                       font_bold=True)
                     self.title.set_touchable_by_mouse(False)
                 DynamicIndicator(self, get_text=lambda: f"{title} : {self.val}")
@@ -148,7 +148,7 @@ class Slider(Container, LinkableByMouse):
 
         assert (val is None) != (x is None)
         if x is not None:
-            if x == self.bloc.x:
+            if x == self.bloc.rect.left:
                 return
             # val = x * (max - min) / max_index + min
             val = x * self.range / self._max_bloc_index + self.minval
@@ -172,7 +172,7 @@ class Slider(Container, LinkableByMouse):
         self._val = val
         # x = (val - min) / (max - min) * max_index
         self.bloc.update()
-        if self.bloc.x == 0:
+        if self.bloc.rect.left == 0:
             self._val = self.minval  # prevent approximations
         self.signal.NEW_VAL.emit(self.val)
 
@@ -189,7 +189,7 @@ class Slider(Container, LinkableByMouse):
         if self.bloc.collidemouse():
             self._link_origin = mouse.get_pos_relative_to(self.bloc)[0]
         else:
-            self._link_origin = self.bloc.width / 2
+            self._link_origin = self.bloc.rect.width / 2
             self._update_val(x=clamp(mouse.get_pos_relative_to(self)[0] - self._link_origin,
                                      0, self._max_bloc_index))
 
@@ -208,7 +208,7 @@ class Slider(Container, LinkableByMouse):
     def handle_resize(self):
 
         bar_margin = max(0, self.bloc.border_width - self.bar.border_width) * 2
-        self.bar.resize_width(self.width - bar_margin)
+        self.bar.resize_width(self.rect.width - bar_margin)
 
     def resize(self, w, h):
 

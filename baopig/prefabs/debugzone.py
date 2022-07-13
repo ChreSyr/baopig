@@ -23,7 +23,7 @@ class DebugZone(Zone, Handler_SceneClose):
         h = 200
         self.debug_zone = Zone(
             parent=self,
-            size=(self.w - 10, h),
+            size=(self.rect.w - 10, h),
             background_color=(255, 255, 255, 145),
             name=self.name + " -> debug_zone",
             bottomleft=(5, -5), refloc="bottomleft"
@@ -32,13 +32,13 @@ class DebugZone(Zone, Handler_SceneClose):
         presentators_zone = Zone(
             parent=self.debug_zone,
             pos=(5, 5),
-            size=(120, self.debug_zone.h),
+            size=(120, self.debug_zone.rect.h),
             name=self.debug_zone.name + " -> presentators_zone"
         )
         trackers_zone = Zone(
             parent=self.debug_zone,
-            pos=(presentators_zone.right, 5),
-            size=(4000, self.debug_zone.h),
+            pos=(presentators_zone.rect.right, 5),
+            size=(4000, self.debug_zone.rect.h),
             name=self.debug_zone.name + " -> trackers_zone"
         )
 
@@ -80,7 +80,7 @@ class DebugZone(Zone, Handler_SceneClose):
         self.print_text = Text(
             parent=self.debug_zone,
             text="This text is aimed to debug",
-            pos=(5, self.debug_zone.h - 5 - 15),
+            pos=(5, self.debug_zone.rect.h - 5 - 15),
             name=self.debug_zone.name + " -> print_text"
         )
 
@@ -99,7 +99,7 @@ class DebugZone(Zone, Handler_SceneClose):
     def handle_scene_resize(self):
 
         self.resize(*self.scene.size)
-        self.debug_zone.resize_width(self.size[0] - 10)
+        self.debug_zone.resize_width(self.rect.w - 10)
         self.update_pointed_outline()
 
     def print(self, obj):

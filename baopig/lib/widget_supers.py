@@ -274,7 +274,7 @@ class ResizableWidget(ResizableWidgetDoc, Widget):
             size = list(size)
             for i, coord in enumerate(size):
                 if isinstance(coord, str):
-                    size[i] = self.parent.size[i] * float(coord[:-1]) / 100
+                    size[i] = self.parent.rect.size[i] * float(coord[:-1]) / 100
 
         return size
 
@@ -301,7 +301,7 @@ class ResizableWidget(ResizableWidgetDoc, Widget):
             return
 
         asked_size = self._get_asked_size()
-        if asked_size == self.size:
+        if asked_size == self.rect.size:
             return
 
         self.set_surface(pygame.Surface(asked_size, pygame.SRCALPHA))

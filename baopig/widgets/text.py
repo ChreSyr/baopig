@@ -43,8 +43,8 @@ class _Line(Widget):
         assert isinstance(parent, Text)
 
         self._line_index = line_index
-        Widget.__init__(self, parent=parent, surface=pygame.Surface((parent.w, parent.font.height), pygame.SRCALPHA),
-                        layer=parent.lines, name=f"{self.__class__.__name__[1:]}({text})")
+        Widget.__init__(self, parent=parent, layer=parent.lines, name=f"{self.__class__.__name__[1:]}({text})",
+                        surface=pygame.Surface((parent.rect.w, parent.font.height), pygame.SRCALPHA))
 
         self.__text = ""
         self.__end = ''
@@ -341,7 +341,7 @@ class _SelectableLine(_Line):
     def handle_select(self):
 
         selection = self.selector.selection_rect
-        if self.selection is None and not selection.w and not selection.h:
+        if self.selection is None and not selection.rect.w and not selection.rect.h:
             return
 
         if self.selection is None:
@@ -435,8 +435,8 @@ class _LineSelection(Rectangle):
         self._line_index = line.line_index
         Rectangle.__init__(self,
                            parent=line.parent,
-                           pos=line.topleft,
-                           size=(0, line.h),
+                           pos=line.rect.topleft,
+                           size=(0, line.rect.h),
                            name=line.name + " -> selection"
                            )
 
@@ -477,12 +477,12 @@ class _LineSelection(Rectangle):
             assert self.line is not self.parent.lines[-1]
 
         if self._is_selecting_line_end:
-            self.resize_width(self.line.parent.width -  # parent because it goes all the way long, further than line.w
+            self.resize_width(self.line.parent.rect.width -  # parent because all the way long, further than line.w
                               self.line.find_pixel(self.index_start))
         else:
             self.resize_width(abs(self.line.find_pixel(self.index_end) -
                                   self.line.find_pixel(self.index_start)))
-        self.set_pos(left=self.line.x + self.line.find_pixel(self.index_start))
+        self.set_pos(left=self.line.rect.x + self.line.find_pixel(self.index_start))
 
     def set_start(self, index):
 
@@ -537,15 +537,15 @@ class Text(Zone, SelectableWidget):
 
         self._height_is_adaptable = self.style["height_is_adaptable"]
         if self._height_is_adaptable is None:
-            self._height_is_adaptable = self.h == 0
+            self._height_is_adaptable = self.rect.h == 0
             self.style.modify(height_is_adaptable=self._height_is_adaptable)
-        elif self._height_is_adaptable is False and self.h == 0:
+        elif self._height_is_adaptable is False and self.rect.h == 0:
             raise PermissionError("When 'height_is_adaptable' is set to False, 'height' must also be set")
         self._width_is_adaptable = self.style["width_is_adaptable"]
         if self._width_is_adaptable is None:
-            self._width_is_adaptable = self.w == 0
+            self._width_is_adaptable = self.rect.w == 0
             self.style.modify(width_is_adaptable=self._width_is_adaptable)
-        elif self._width_is_adaptable is False and self.w == 0:
+        elif self._width_is_adaptable is False and self.rect.w == 0:
             raise PermissionError("When 'width_is_adaptable' is set to False, 'width' must also be set")
 
         self._font = Font(self)
@@ -584,7 +584,7 @@ class Text(Zone, SelectableWidget):
         centerx = None  # warning shut down
         if self.align_mode == "center":  # only usefull for the widget creation
             if self._width_is_adaptable:
-                centerx = max(line.w for line in self.lines) / 2 + self.content_rect.left
+                centerx = max(line.rect.w for line in self.lines) / 2 + self.content_rect.left
             else:
                 centerx = self.content_rect.centerx
 
@@ -594,7 +594,7 @@ class Text(Zone, SelectableWidget):
         for i, line in enumerate(self.lines):
             line._line_index = i
             line.set_pos(top=h)
-            h = line.bottom
+            h = line.rect.bottom
             if self.align_mode == "left":
                 line.set_pos(left=self.content_rect.left)
             elif self.align_mode == "center":
@@ -604,23 +604,23 @@ class Text(Zone, SelectableWidget):
 
         # Adaptable resize
         if self._height_is_adaptable and self._width_is_adaptable:
-            right = max(line.right for line in self.lines)
-            bottom = max(line.bottom for line in self.lines)
-            assert bottom == self.lines[-1].bottom
+            right = max(line.rect.right for line in self.lines)
+            bottom = max(line.rect.bottom for line in self.lines)
+            assert bottom == self.lines[-1].rect.bottom
             self.resize(w=right + self.padding.right, h=bottom + self.padding.bottom)
         elif self._height_is_adaptable:
-            bottom = max(line.bottom for line in self.lines)
-            assert bottom == self.lines[-1].bottom
-            if bottom + self.padding.bottom != self.h:  # TODO : without this line, the printing bug, find why
+            bottom = max(line.rect.bottom for line in self.lines)
+            assert bottom == self.lines[-1].rect.bottom
+            if bottom + self.padding.bottom != self.rect.h:  # TODO : without this line, the printing bug, find why
                 self.resize_height(bottom + self.padding.bottom)
         elif self._width_is_adaptable:
-            right = max(line.right for line in self.lines)
+            right = max(line.rect.right for line in self.lines)
             self.resize_width(right + self.padding.right)
 
         # New positions in _lines_pos
         self._lines_pos = []
         for line in self.lines:
-            self._lines_pos.append(line.top)
+            self._lines_pos.append(line.rect.top)
 
     def _find_index(self, pos):
         """
@@ -633,13 +633,13 @@ class Text(Zone, SelectableWidget):
 
         if pos[1] < 0:
             return self.lines[0].find_index(pos[0])
-        elif pos[1] >= self.h:
+        elif pos[1] >= self.rect.h:
             return self.find_index(len(self.lines) - 1, self.lines[-1].find_index(pos[0]))
         else:
             for line_index, line in enumerate(self.lines):
-                if pos[1] < line.bottom:
+                if pos[1] < line.rect.bottom:
                     return self.find_index(line_index, line.find_index(pos[0]))
-        assert self.lines[-1].bottom == self.h, str(self.lines[-1].bottom) + ' ' + str(self.h)
+        assert self.lines[-1].rect.bottom == self.rect.h, str(self.lines[-1].rect.bottom) + ' ' + str(self.rect.h)
         raise Exception
 
     def find_index(self, line_index, char_index):
@@ -675,11 +675,11 @@ class Text(Zone, SelectableWidget):
 
         if pos[1] < 0:
             return 0, 0
-        elif pos[1] >= self.h:
+        elif pos[1] >= self.rect.h:
             return len(self.lines) - 1, len(self.lines[-1].text)
         else:
             for line_index, line in enumerate(self.lines):
-                if line.bottom > pos[1]:
+                if line.rect.bottom > pos[1]:
                     return line_index, line.find_index(pos[0])
 
         raise Exception
@@ -727,7 +727,7 @@ class Text(Zone, SelectableWidget):
         super().resize(w, h)
 
         if self._width_is_adaptable:
-            lines_width = max(line.w for line in self.lines)
+            lines_width = max(line.rect.w for line in self.lines)
 
             """
             
@@ -746,7 +746,7 @@ class Text(Zone, SelectableWidget):
                 self.set_text(self.get_text())
 
         if self._height_is_adaptable:
-            lines_height = self.lines[-1].bottom - self.content_rect.top
+            lines_height = self.lines[-1].rect.bottom - self.content_rect.top
             if self.content_rect.h != lines_height:
                 self._height_is_adaptable = False
                 self.set_text(self.get_text())
@@ -786,12 +786,12 @@ class Text(Zone, SelectableWidget):
             self._pack()
             self._name = self.lines[0].text
 
-            if not self.height_is_adaptable and self.lines[-1].bottom > self.content_rect.bottom:
-                while self.lines[-1].bottom > self.content_rect.bottom:
+            if not self.height_is_adaptable and self.lines[-1].rect.bottom > self.content_rect.bottom:
+                while self.lines[-1].rect.bottom > self.content_rect.bottom:
                     if self.font.height == 2:
                         raise ValueError(
                             f"This text is too long for the text area : {text} (area={self.content_rect}), "
-                            f"{self.align_mode}, {self.width}")
+                            f"{self.align_mode}, {self.rect.width}")
                     self.font.config(height=self.font.height - 1)  # changing the font automatically updates the text
 
     # Selectable methods

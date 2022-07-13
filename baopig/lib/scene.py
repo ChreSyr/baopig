@@ -41,7 +41,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         Selector.__init__(self, parent=self, can_select=can_select)
 
         # self._mode = 0
-        self._asked_size = self.size
+        self._asked_size = self.rect.size
         self._mode_before_fullscreen = None
         self._size_before_fullscreen = None
         self._focused_widget_ref = lambda: None
@@ -50,8 +50,6 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
         return self.name
 
-    abs_left = 0  # End of recursive call
-    abs_top = 0  # End of recursive call
     asked_size = property(lambda self: self._asked_size)
     focused_widget = property(lambda self: self._focused_widget_ref())
     # mode = property(lambda self: self._mode)
@@ -67,10 +65,11 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
     def _close(self):
 
-        if self.application.focused_scene is not self: return
+        if self.application.focused_scene is not self:
+            return
         self._container_close()
         self.handle_scene_close()
-        Widget.set_surface(self, pygame.Surface(self.size))  # not pygame.display anymore
+        Widget.set_surface(self, pygame.Surface(self.rect.size))  # not pygame.display anymore
         self.focus(None)
         self.application._focused_scene = None
 
@@ -170,7 +169,8 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
     def set_mode_TBR(self, mode):
 
-        if mode is self.mode: return
+        if mode is self.mode:
+            return
 
         assert mode in (0, pygame.NOFRAME, pygame.RESIZABLE, pygame.FULLSCREEN)
 

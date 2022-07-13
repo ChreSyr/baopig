@@ -17,7 +17,7 @@ class Zone(Container):
         if side == "left":
             self.rect.left = width
             self.rect.w -= width
-            if self.w <= 0:
+            if self.rect.w <= 0:
                 raise ValueError("the new zone shouldn't completly override the central zone")
             zone = Zone((width, self.rect.h))
         else:
@@ -33,7 +33,7 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
 
         Zone.__init__(self, parent, **kwargs)
         try:
-            self._surface = self.parent.surface.subsurface(self.pos + self.size)
+            self._surface = self.parent.surface.subsurface(self.rect.topleft + self.rect.size)
         except ValueError:
             assert not self.parent.auto.contains(self.rect)
             raise PermissionError("A SubZone must fit inside its parent")
@@ -45,7 +45,7 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
 
         with paint_lock:
             try:
-                Widget.set_surface(self, self.parent.surface.subsurface(self.pos + self.size))
+                Widget.set_surface(self, self.parent.surface.subsurface(self.rect.topleft + self.rect.size))
             except ValueError:
                 assert not self.parent.auto.contains(self.rect)
                 Widget.set_surface(self, self.parent.surface.subsurface(
@@ -72,7 +72,7 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
     def _warn_parent(self, rect):
         """Request updates at rects referenced by self"""
 
-        rect = (self.left + rect[0], self.top + rect[1]) + tuple(rect[2:])
+        rect = (self.rect.left + rect[0], self.rect.top + rect[1]) + tuple(rect[2:])
 
         # because of subsurface, we can skip self.parent._update_rect()
         if self.parent is self.scene:
@@ -92,14 +92,14 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
         self._asked_size = w, h
 
         asked_size = self._get_asked_size()
-        if asked_size == self.size:
+        if asked_size == self.rect.size:
             return
 
         # self.set_surface(pygame.Surface(asked_size, pygame.SRCALPHA))
 
         with paint_lock:
             try:
-                Widget.set_surface(self, self.parent.surface.subsurface(self.pos + asked_size))
+                Widget.set_surface(self, self.parent.surface.subsurface(self.rect.topleft + asked_size))
             except ValueError:
                 assert not self.parent.auto.contains(self.rect)
                 raise PermissionError("A SubZone must fit inside its parent")

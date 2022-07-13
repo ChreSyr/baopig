@@ -13,7 +13,8 @@ class ColorSliderBloc(SliderBloc):
         self.surface.fill(self.border_color)
         pygame.draw.rect(
             self.surface, self.slider.color,
-            (self.border_width, self.border_width, self.w - self.border_width * 2, self.h - self.border_width * 2)
+            (self.border_width, self.border_width,
+             self.rect.w - self.border_width * 2, self.rect.h - self.border_width * 2)
         )
         self.signal.NEW_SURFACE.emit()
         self.send_display_request()
@@ -29,8 +30,8 @@ class ColorSliderBar(SliderBar):
 
         color = self.slider.color.copy()
         if self.border_color is not None:
-            pygame.draw.rect(self.surface, self.border_color, (0, 0) + self.size, self.border_width * 2 - 1)
-        bar_width = self.w - self.border_width * 2
+            pygame.draw.rect(self.surface, self.border_color, (0, 0) + self.rect.size, self.border_width * 2 - 1)
+        bar_width = self.rect.w - self.border_width * 2
         for i in range(bar_width):
             if self.parent.attr in ("s", "v", "l"):
                 color = self.slider.parent.color.copy()
@@ -38,7 +39,7 @@ class ColorSliderBar(SliderBar):
             pygame.draw.line(
                 self.surface, color,
                 (i + self.border_width, self.border_width),
-                (i + self.border_width, self.h - self.border_width * 2)
+                (i + self.border_width, self.rect.h - self.border_width * 2)
             )
         self.signal.NEW_SURFACE.emit()
         self.send_display_request()

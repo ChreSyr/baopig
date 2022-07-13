@@ -34,23 +34,30 @@ class Layer(Communicative):
         if not filter: filter = [Widget]
         if level is None: level = container.layers_manager.DEFAULT_LEVEL
         if weight is None: weight = 2
-        if padding is None: padding = container.padding  # Same object
-        else: padding = MarginType(padding)
-        if children_margins is None: children_margins = container.children_margins  # Same object
-        else: children_margins = MarginType(children_margins)
+        if padding is None:
+            padding = container.padding  # Same object
+        else:
+            padding = MarginType(padding)
+        if children_margins is None:
+            children_margins = container.children_margins  # Same object
+        else:
+            children_margins = MarginType(children_margins)
         if sort_by_pos:
             assert default_sortkey is None
-            default_sortkey = lambda c: (c.top, c.left)
+            default_sortkey = lambda c: (c.rect.top, c.rect.left)
 
-        for filter_class in filter: assert issubclass(filter_class, Widget), filter_class
+        for filter_class in filter:
+            assert issubclass(filter_class, Widget), filter_class
         assert isinstance(name, str), name
         assert name not in container.layers, name
         assert level in container.layers_manager.levels, level
         assert isinstance(weight, (int, float)), weight
         assert isinstance(padding, MarginType), padding
         assert isinstance(children_margins, MarginType), children_margins
-        if default_sortkey is not None: assert callable(default_sortkey), default_sortkey
-        if maxlen is not None: assert isinstance(maxlen, int), maxlen
+        if default_sortkey is not None:
+            assert callable(default_sortkey), default_sortkey
+        if maxlen is not None:
+            assert isinstance(maxlen, int), maxlen
 
         Communicative.__init__(self)
 
@@ -178,11 +185,16 @@ class Layer(Communicative):
         axis can either be horizontal or vertical
         NOTE : if motivated, can add 'sticky' param, which places the packed children from a corner or the center
         """
-        if key is None: key = lambda o: (o.top, o.left)
-        if children_margins is None: children_margins = self._children_margins
-        if padding is None: padding = self._padding
-        if not isinstance(children_margins, MarginType): children_margins = MarginType(children_margins)
-        if not isinstance(padding, MarginType): padding = MarginType(padding)
+        if key is None:
+            key = lambda o: (o.rect.top, o.rect.left)
+        if children_margins is None:
+            children_margins = self._children_margins
+        if padding is None:
+            padding = self._padding
+        if not isinstance(children_margins, MarginType):
+            children_margins = MarginType(children_margins)
+        if not isinstance(padding, MarginType):
+            padding = MarginType(padding)
 
         sorted_children = sorted(self, key=key)
 

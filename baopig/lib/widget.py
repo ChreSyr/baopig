@@ -208,14 +208,9 @@ class ProtectedHitbox(pygame.Rect):
         raise self.ERR
 
     pos = property(lambda self: tuple(self[:2]))
-    lpos = property(lambda self: self[:2], doc="A list containing the rect topleft")
 
     def clamp_ip(self, rect):
         raise self.ERR
-
-    def colliderect(self, rect):
-        # TODO : collidemask
-        return super().colliderect(rect)
 
     def inflate_ip(self, x, y):
         raise self.ERR
@@ -234,10 +229,6 @@ class ProtectedHitbox(pygame.Rect):
             hitbox.referencing(pos) -> (5, 5)
         """
         return pos[0] - self.left, pos[1] - self.top
-
-    def set_mask(self):
-        # TODO : use cases
-        raise PermissionError("not implemented yet")
 
     def union_ip(self, rect):
         raise self.ERR
@@ -524,8 +515,8 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         # SETUP
         pygame.Rect.__setattr__(self.rect, self.origin.location, self.origin.pos)
         pygame.Rect.__setattr__(self.abs_rect, "topleft",
-                                (self.parent.abs.left + self.left, self.parent.abs.top + self.top))
-        pygame.Rect.__setattr__(self.hitbox, "topleft", self.topleft)
+                                (self.parent.abs.left + self.rect.left, self.parent.abs.top + self.rect.top))
+        pygame.Rect.__setattr__(self.hitbox, "topleft", self.rect.topleft)
         pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs.topleft)
 
         # Connections
@@ -562,29 +553,29 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
     abs_hitbox = property(lambda self: self._abs_hitbox)
     auto_hitbox = property(lambda self: self._auto_hitbox)
 
-    bottom = property(lambda self: self._rect.bottom)
-    bottomleft = property(lambda self: self._rect.bottomleft)
-    bottomright = property(lambda self: self._rect.bottomright)
-    center = property(lambda self: self._rect.center)
-    centerx = property(lambda self: self._rect.centerx)
-    centery = property(lambda self: self._rect.centery)
-    left = property(lambda self: self._rect.left)
-    midbottom = property(lambda self: self._rect.midbottom)
-    midleft = property(lambda self: self._rect.midleft)
-    midright = property(lambda self: self._rect.midright)
-    midtop = property(lambda self: self._rect.midtop)
-    pos = topleft = property(lambda self: self._rect.topleft)
-    right = property(lambda self: self._rect.right)
-    top = property(lambda self: self._rect.top)
-    topright = property(lambda self: self._rect.topright)
-    x = property(lambda self: self._rect.x)
-    y = property(lambda self: self._rect.y)
+    # bottom = property(lambda self: self._rect.bottom)
+    # bottomleft = property(lambda self: self._rect.bottomleft)
+    # bottomright = property(lambda self: self._rect.bottomright)
+    # center = property(lambda self: self._rect.center)
+    # centerx = property(lambda self: self._rect.centerx)
+    # centery = property(lambda self: self._rect.centery)
+    # left = property(lambda self: self._rect.left)
+    # midbottom = property(lambda self: self._rect.midbottom)
+    # midleft = property(lambda self: self._rect.midleft)
+    # midright = property(lambda self: self._rect.midright)
+    # midtop = property(lambda self: self._rect.midtop)
+    # pos = topleft = property(lambda self: self._rect.topleft)
+    # right = property(lambda self: self._rect.right)
+    # top = property(lambda self: self._rect.top)
+    # topright = property(lambda self: self._rect.topright)
+    # x = property(lambda self: self._rect.x)
+    # y = property(lambda self: self._rect.y)
 
-    h = property(lambda self: self._rect.h)
-    height = property(lambda self: self._rect.height)
-    size = property(lambda self: self._rect.size)
-    w = property(lambda self: self._rect.w)
-    width = property(lambda self: self._rect.width)
+    # h = property(lambda self: self._rect.h)
+    # height = property(lambda self: self._rect.height)
+    # size = property(lambda self: self._rect.size)
+    # w = property(lambda self: self._rect.w)
+    # width = property(lambda self: self._rect.width)
 
     def _move(self, dx, dy):
 
@@ -597,7 +588,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
             pygame.Rect.__setattr__(self.rect, "left", self.rect.left + dx)
             pygame.Rect.__setattr__(self.rect, "top", self.rect.top + dy)
             pygame.Rect.__setattr__(self.abs_rect, "topleft",
-                                    (self.parent.abs.left + self.left, self.parent.abs.top + self.top))
+                                    (self.parent.abs.left + self.rect.left, self.parent.abs.top + self.rect.top))
 
             if self.window is not None:
 
@@ -617,7 +608,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
                         pygame.Rect.__setattr__(self.abs_hitbox, "size", self.hitbox.size)
                         pygame.Rect.__setattr__(self.auto_hitbox, "size", self.hitbox.size)
             else:
-                pygame.Rect.__setattr__(self.hitbox, "topleft", self.topleft)
+                pygame.Rect.__setattr__(self.hitbox, "topleft", self.rect.topleft)
                 pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs.topleft)
 
             # We reset the asked_pos after the MOTION in order to allow cycles of origin referecing
@@ -719,8 +710,8 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
             pygame.Rect.__setattr__(self.auto_hitbox, "size", self.hitbox.size)
 
             if old_pos != self.hitbox.topleft:
-                self.signal.MOTION.emit(self.left - old_pos[0], self.top - old_pos[1])
-            if old_size != self.size:
+                self.signal.MOTION.emit(self.rect.left - old_pos[0], self.rect.top - old_pos[1])
+            if old_size != self.rect.size:
                 self.signal.RESIZE.emit(old_size)
 
         else:
@@ -770,11 +761,11 @@ class HasProtectedSurface(HasProtectedHitbox):
 
         if self._has_locked.height and self.rect.height != surface.get_height():
             raise PermissionError(
-                f"Wrong surface : {surface} (this widget's surface height is locked at {self.h})")
+                f"Wrong surface : {surface} (this widget's surface height is locked at {self.rect.h})")
 
         if self._has_locked.width and self.rect.width != surface.get_width():
             raise PermissionError(
-                f"Wrong surface : {surface} (this widget's surface width is locked at {self.w})")
+                f"Wrong surface : {surface} (this widget's surface width is locked at {self.rect.w})")
 
         with paint_lock:
             if self.rect.size != surface.get_size():

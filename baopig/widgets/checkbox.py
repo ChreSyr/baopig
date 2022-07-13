@@ -31,7 +31,7 @@ class CheckMarkFrame(Rectangle):
 
     def __init__(self, checkbox):
 
-        mid = checkbox.height / 2
+        mid = checkbox.rect.height / 2
         Rectangle.__init__(self, checkbox, midleft=(checkbox.padding.left, mid))
 
 
@@ -64,7 +64,7 @@ class CheckBox(Button):
         self._checkmarkframe_ref = CheckMarkFrame(self).get_weakref()
         self._checkmark_ref = CheckMark(self).get_weakref()
 
-        self.text_widget.set_pos(left=self.checkmarkframe.right + self.children_margins.left)
+        self.text_widget.set_pos(left=self.checkmarkframe.rect.right + self.children_margins.left)
 
         self.checkmark.hide()
 
@@ -72,15 +72,15 @@ class CheckBox(Button):
         # TODO : when the text is too long, and the width is not specified, the box is lengthen
 
         # Sliding the text to the right
-        assert self.w > self.h
+        assert self.rect.w > self.rect.h
         # self.text_widget.center = ((self.w + self.checkmarkframe.right) / 2, self.h / 2)
         area = pygame.Rect(self.content_rect)
-        area.left += self.left
-        area.top += self.top
+        area.left += self.rect.left
+        area.top += self.rect.top
         area_end = area.right
-        area.left = self.checkmarkframe.right + self.checkmarkframe.left
+        area.left = self.checkmarkframe.rect.right + self.checkmarkframe.rect.left
         area.w = area_end - area.left
-        while self.text_widget.w > area.w:
+        while self.text_widget.rect.w > area.w:
             if self.text_widget.font.height == 2:
                 raise ValueError(f"This text is too long for the text area : {text} (area={area})")
             self.text_widget.font.config(height=self.text_widget.font.height - 1)

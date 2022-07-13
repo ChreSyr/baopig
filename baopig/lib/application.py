@@ -66,7 +66,7 @@ class Application(HasStyle):
     name = property(lambda self: self._name)
     painter = property(lambda self: self._painter)
     scenes = property(lambda self: self._scenes)
-    size = property(lambda self: self._focused_scene.size)
+    size = property(lambda self: self._focused_scene.rect.size)
 
     def _add_scene(self, scene):
 

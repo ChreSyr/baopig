@@ -15,9 +15,10 @@ class TesterScene(Scene):
         self.menu_zone = Zone(self, size=("50%", 35), pos=(0, 10), name="menu")
 
         # Section
-        self.sections_zone = Zone(self, size=("50%", self.h - self.menu_zone.h - 20), background_color="lightgray",
-                                  pos=(0, self.menu_zone.bottom + 10), name="sections")
-        GridLayer(self.sections_zone, name="sections_layer", col_width=self.sections_zone.w, nbcols=1)
+        self.sections_zone = Zone(self, size=("50%", self.rect.h - self.menu_zone.rect.h - 20),
+                                  background_color="lightgray",
+                                  pos=(0, self.menu_zone.rect.bottom + 10), name="sections")
+        GridLayer(self.sections_zone, name="sections_layer", col_width=self.sections_zone.rect.w, nbcols=1)
         self.add_section(title="NO TEST SECTION YET", tests=[])
 
         # Run button
@@ -53,7 +54,7 @@ class TesterScene(Scene):
         Button(self.menu_zone, "Try it yourself !", col=1, command=try_it_yourself)
 
         # Content
-        self.content = content_zone_class(self, size=("50%", self.h - 20), name="content", pos=(0, 10),
+        self.content = content_zone_class(self, size=("50%", self.rect.h - 20), name="content", pos=(0, 10),
                                           sticky="topright")
         if hasattr(self.content, "load_sections"):
             self.content.load_sections()
@@ -78,8 +79,8 @@ app = Application(size=(700, 700))
 main_zone = {self.content.__class__.__name__}(Scene(app), size=("90%", "90%"), sticky="center")
 app.launch()"""
 
-        self.try_it_yourself = Zone(self, size=("50%", self.h-20), children_margins=10,
-                                    pos=(0, self.menu_zone.bottom + 10), name="try_it_yourself")
+        self.try_it_yourself = Zone(self, size=("50%", self.rect.h - 20), children_margins=10,
+                                    pos=(0, self.menu_zone.rect.bottom + 10), name="try_it_yourself")
         self.try_it_yourself.code = TextEdit(self.try_it_yourself, text=code, width="100%",
                                              font_file="monospace")
         self.try_it_yourself.console = Text(self.try_it_yourself, width="100%",
@@ -104,10 +105,10 @@ app.launch()"""
         self.sections.append([title, tests])
         Text(self.sections_zone, f"--- SECTION {len(self.sections)} : {title} ---",
              font_height=self.theme.get_style_for(Text)["font_height"] + 2, font_bold=True,
-             row=len(self.sections_zone.children), width=self.sections_zone.w)
+             row=len(self.sections_zone.children), width=self.sections_zone.rect.w)
         for i, v in enumerate(tests):
             cb = CheckBox(self.sections_zone, text=f"TEST {i + 1} : {v}",  # {:0>2} for 01, 02...
-                          row=len(self.sections_zone.children), width=self.sections_zone.w)
+                          row=len(self.sections_zone.children), width=self.sections_zone.rect.w)
             if v.startswith("TODO"):
                 cb.text_widget.font.config(color="red3")
         Text(self.sections_zone, "", row=len(self.sections_zone.children))

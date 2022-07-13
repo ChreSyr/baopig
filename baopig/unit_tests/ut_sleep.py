@@ -37,24 +37,24 @@ class UT_Sleep_Zone(Zone):
         # Z2
         def add():
             if z2.test_zone.texts.is_dead:
-                z2.test_zone.texts = Zone(z2.test_zone, size=(z2.w - 100, "100%"))
+                z2.test_zone.texts = Zone(z2.test_zone, size=(z2.rect.w - 100, "100%"))
                 z2.test_zone.togglers.default_layer.clear()
                 z2.test_zone.default_layer.pack(axis="horizontal")
             t = Text(z2.test_zone.texts, text=f"index:{z2.index}",
                      width="100%", border_width=2, padding=5, align_mode="center", pos=(0, z2.index * 35))
-            Button(z2.test_zone.togglers, text="state:AWAKE", command=PrefilledFunction(tog, t), pos=t.pos)
+            Button(z2.test_zone.togglers, text="state:AWAKE", command=PrefilledFunction(tog, t), pos=t.rect.topleft)
             z2.index += 1
 
         z2.index = 0
         z2.param_zone = Zone(z2, size=("100%", 35))
-        z2.test_zone = Zone(z2, size=("100%", z2.h - z2.param_zone.h), background_color=(130, 130, 130))
+        z2.test_zone = Zone(z2, size=("100%", z2.rect.h - z2.param_zone.rect.h), background_color=(130, 130, 130))
         z2.default_layer.pack()
-        z2.test_zone.texts = Zone(z2.test_zone, size=(z2.w - 100, "100%"))
+        z2.test_zone.texts = Zone(z2.test_zone, size=(z2.rect.w - 100, "100%"))
         z2.test_zone.togglers = Zone(z2.test_zone, size=(100, "100%"))
         z2.test_zone.default_layer.pack(axis="horizontal")
         b = Button(z2.param_zone, "ADD", command=add)
         DynamicText(z2.param_zone, get_text=lambda: f"LEN:{len(z2.test_zone.texts.children)}",
-                    size=b.size, align_mode="center", padding=(0, b.text_widget.top))
+                    size=b.rect.size, align_mode="center", padding=(0, b.text_widget.rect.top))
 
         def clear():
             if z2.test_zone.texts.is_alive:
@@ -82,15 +82,15 @@ class UT_Sleep_Zone(Zone):
         clone_zone = Zone(z3, size=("100%", 150))
         original_zone = Zone(z3, size=("100%", 150))
         original = DraggableRectangle(original_zone, color=(116, 0, 32))
-        clone = Rectangle(clone_zone, size=original.size, pos=(0, - 150 - 35), ref=original)
-        clone2 = Rectangle(clone_zone, size=clone.size, pos=(50, 0), ref=clone, color=(110, 100, 100))
+        clone = Rectangle(clone_zone, size=original.rect.size, pos=(0, - 150 - 35), ref=original)
+        clone2 = Rectangle(clone_zone, size=clone.rect.size, pos=(50, 0), ref=clone, color=(110, 100, 100))
         # TODO : solve: an adaptable size is not linked to the ref but to the parent
         b = Button(z3, text="state:AWAKE", width="25%", command=PrefilledFunction(tog, clone))
         b.move_behind(original_zone)
         z3.default_layer.pack()
 
         def handle_resize():
-            clone.resize(*original.size)
+            clone.resize(*original.rect.size)
 
         original.signal.RESIZE.connect(handle_resize, owner=clone)
 
@@ -103,7 +103,7 @@ class UT_Sleep_Zone(Zone):
         handle_new_surface()
 
         def handle_resize():
-            clone2.resize(*clone.size)
+            clone2.resize(*clone.rect.size)
 
         clone.signal.RESIZE.connect(handle_resize, owner=clone2)
 
@@ -116,9 +116,9 @@ class UT_Sleep_Zone(Zone):
         handle_new_surface()
 
         def resize():
-            if original.width == 30:
+            if original.rect.width == 30:
                 original.resize(40, 40)
-            elif original.width == 40:
+            elif original.rect.width == 40:
                 original.resize(20, 20)
             else:
                 original.resize(30, 30)

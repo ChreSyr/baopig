@@ -48,7 +48,7 @@ class UT_Origin_Zone(Zone):
         z = DragableZone(self, sticky="midright", size=(100, 100), background_color=(0, 64, 64), name="right")
         r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), center=z.auto.center)
         wb = Rectangle(z, center=("50%", "50%"), color=(0, 0, 0, 0),
-                       size=[z.w - 20] * 2, border_color=(0, 0, 0), border_width=1, touchable=False)
+                       size=[z.rect.w - 20] * 2, border_color=(0, 0, 0), border_width=1, touchable=False)
         r.set_window(wb.rect)
 
         # CLOCK
@@ -62,13 +62,13 @@ class UT_Origin_Zone(Zone):
         radius = 100
         step = int(math.degrees((2 * math.pi) / 8))
         for i in range(0, int(math.degrees(2 * math.pi)), step):
-            r = Rectangle(z2, color=(150, 120, 0), size=ref.size,
+            r = Rectangle(z2, color=(150, 120, 0), size=ref.rect.size,
                           pos=(math.cos(math.radians(i)) * radius,
                                math.sin(math.radians(i)) * radius),
                           ref=ref, name="rect({})".format(i))
         for i in range(0, int(math.degrees(2 * math.pi)), step):
             i += step / 2
-            r = Rectangle(z3, color=ref.color, size=ref.size,
+            r = Rectangle(z3, color=ref.color, size=ref.rect.size,
                           pos=(math.cos(math.radians(i)) * radius,
                                math.sin(math.radians(i)) * radius),
                           ref=ref, name="rect({})".format(i))
