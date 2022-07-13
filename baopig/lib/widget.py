@@ -352,7 +352,7 @@ class Widget_VisibleSleepy(WidgetCore, HasLock):
 
         # Sleep
         self._is_asleep = False
-        self._sleep_parent_ref = lambda: None
+        self._sleep_parent_ref = lambda: ...
         self.create_signal("SLEEP")
         self.create_signal("WAKE")
 
@@ -375,13 +375,6 @@ class Widget_VisibleSleepy(WidgetCore, HasLock):
             return
 
         self._is_visible = False
-
-        # TODO : the mouse manages itself
-        #  -> mouse.focused_widget.signal.HIDE
-        #  -> mouse.linked_widget.signal.HIDE
-        #  -> mouse.linked_widget.signal.SLEEP
-        if self == mouse.linked_widget:
-            mouse._unlink()
 
         self.send_display_request()
         self.signal.HIDE.emit()
@@ -650,7 +643,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
 
     def collidemouse(self):
 
-        return self.is_visible & self.abs_hitbox.collidepoint(mouse.pos)
+        return self.is_visible and self.abs_hitbox.collidepoint(mouse.pos)
 
     def move(self, dx=0, dy=0):
 

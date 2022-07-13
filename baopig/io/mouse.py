@@ -109,7 +109,11 @@ class _Mouse(Communicative):
 
             self._linked_widget = widget
             widget.is_linked = True
-            # self.linked_widget.signal.LINK.emit()
+
+            widget.signal.HIDE.connect(self._unlink, owner=None)
+            widget.signal.SLEEP.connect(self._unlink, owner=None)
+            widget.signal.KILL.connect(self._unlink, owner=None)
+
             self.linked_widget.handle_link()
 
     def _get_touched_widget(self):
@@ -156,17 +160,27 @@ class _Mouse(Communicative):
             assert old_hovered.is_hovered
             old_hovered._is_hovered = False
 
+            old_hovered.signal.HIDE.disconnect(self.update_hovered_widget)
+            old_hovered.signal.SLEEP.disconnect(self.update_hovered_widget)
+            old_hovered.signal.KILL.disconnect(self.update_hovered_widget)
+
         self._hovered_widget = widget
 
         # HOVER
         if widget is not None:
             assert widget.is_visible, repr(widget)
+
             assert not widget.is_hovered
             widget._is_hovered = True
+
+            widget.signal.HIDE.connect(self.update_hovered_widget, owner=None)
+            widget.signal.SLEEP.connect(self.update_hovered_widget, owner=None)
+            widget.signal.KILL.connect(self.update_hovered_widget, owner=None)
 
         # SIGNALS
         if old_hovered is not None:
             old_hovered.signal.UNHOVER.emit()
+
         if widget is not None:
             widget.signal.HOVER.emit()
 
@@ -188,7 +202,11 @@ class _Mouse(Communicative):
 
         if widget.is_alive:
             widget.is_linked = False
-            # widget.signal.UNLINK.emit()
+
+            widget.signal.HIDE.disconnect(self._unlink)
+            widget.signal.SLEEP.disconnect(self._unlink)
+            widget.signal.KILL.disconnect(self._unlink)
+
             widget.handle_unlink()
         # While the mouse left button was press, we didn't update hovered_widget
         self.update_hovered_widget()
@@ -298,9 +316,8 @@ class _Mouse(Communicative):
             self._pos = event.pos
 
             # Linkable and Hoverable stuff
-            if self.is_pressed(button_id=1):
-                if self.linked_widget:
-                    self.linked_widget.handle_link_motion(event.rel)
+            if self.is_pressed(button_id=1) and self.linked_widget:
+                self.linked_widget.handle_link_motion(event.rel)
             else:
                 self.update_hovered_widget()
 
