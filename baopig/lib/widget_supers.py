@@ -150,7 +150,7 @@ class LinkableByMouse(LinkableByMouseDoc, HoverableByMouse):
     def handle_link(self):
         """Stuff to do when the widget gets linked"""
 
-    def handle_link_motion(self, link_motion_event):
+    def handle_link_motion(self, rel):
         """Stuff to do when the widget'link has changed"""
 
     def handle_unlink(self):
@@ -229,8 +229,8 @@ class DraggableByMouse(LinkableByMouse):
     Class for widgets who want to be moved by mouse
     """
 
-    def handle_link_motion(self, link_motion_event):
-        self.move(*link_motion_event.rel)
+    def handle_link_motion(self, rel):
+        self.move(*rel)
 
 
 class ResizableWidget(ResizableWidgetDoc, Widget):

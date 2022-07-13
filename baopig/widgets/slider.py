@@ -193,7 +193,7 @@ class Slider(Container, LinkableByMouse):
             self._update_val(x=clamp(mouse.get_pos_relative_to(self)[0] - self._link_origin,
                                      0, self._max_bloc_index))
 
-    def handle_link_motion(self, link_motion_event):
+    def handle_link_motion(self, rel):
 
         def clamp(val, min_, max_):
             """Clamp f between min and max"""

@@ -1,7 +1,7 @@
 import pygame
 from baopig.documentation import Selector as SelectorDoc
 from baopig.pybao.issomething import is_point
-from baopig.io import keyboard
+from baopig.io import keyboard, mouse
 from .utilities import paint_lock
 from .widget import Widget
 from .widget_supers import Focusable
@@ -244,13 +244,12 @@ class Selector(SelectorDoc, Container, Focusable):
             if hasattr(s, "handle_selector_link"):
                 s.handle_selector_link()  # double & triple clicks on text
 
-    def handle_link_motion(self, link_motion_event):
+    def handle_link_motion(self, rel):
         with paint_lock:
             if self.selection_rect is None:
-                origin = link_motion_event.pos[0] - link_motion_event.rel[0], \
-                         link_motion_event.pos[1] - link_motion_event.rel[1]
+                origin = mouse.x - rel[0], mouse.y - rel[1]
                 self.start_selection(origin)
-            self.end_selection(link_motion_event.pos)
+            self.end_selection(mouse.pos)
 
     def handle_unlink(self):
 

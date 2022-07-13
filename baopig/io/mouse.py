@@ -307,7 +307,7 @@ class _Mouse(Communicative):
             # Linkable and Hoverable stuff
             if self.is_pressed(button_id=1):
                 if self.linked_widget:
-                    self.linked_widget.handle_link_motion(event)
+                    self.linked_widget.handle_link_motion(event.rel)
             else:
                 self.update_hovered_widget()
 
