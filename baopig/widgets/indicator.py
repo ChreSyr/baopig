@@ -1,6 +1,6 @@
 
 
-from baopig.lib import Hoverable
+from baopig.lib import HoverableByMouse
 from .text import Text, DynamicText
 
 
@@ -31,7 +31,7 @@ class Indicator(Text):
     def __init__(self, widget, text, indicator=None, loc="top", **kwargs):
         """Create a Text above the widget when hovered"""
 
-        assert isinstance(widget, Hoverable), "Indicator can only indicate Hoverable widgets"
+        assert isinstance(widget, HoverableByMouse), "Indicator can only indicate HoverableByMouse widgets"
         if widget._indicator is not None:
             raise PermissionError("A Widget can only have one indicator")
         if indicator is not None:
@@ -45,7 +45,7 @@ class Indicator(Text):
         Text.__init__(
             self, widget.parent, text, font_color=(255, 255, 255), font_height=15, pos=pos,
             ref=widget, refloc=loc, referenced_by_hitbox=True,
-            background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False, layer_level=2, **kwargs
+            background_color=(0, 0, 0, 192), padding=(8, 4), selectable=False, layer_level=2, **kwargs
         )
 
         widget._indicator = self
@@ -73,7 +73,7 @@ class DynamicIndicator(DynamicText):
         DynamicText.__init__(
             self, widget.parent, get_text, font_color=(255, 255, 255), font_height=15, pos=pos,
             ref=widget, refloc=loc, referenced_by_hitbox=True,
-            background_color=(0, 0, 0, 192), padding=(8, 4), touchable=False, layer_level=2, **kwargs
+            background_color=(0, 0, 0, 192), padding=(8, 4), selectable=False, layer_level=2, **kwargs
         )
 
         widget._indicator = self

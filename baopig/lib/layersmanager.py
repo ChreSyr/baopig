@@ -54,8 +54,10 @@ class LayersManager:
 
         assert len(layer) == 0
         self._layers.remove(layer)
-        if layer.touchable: self._touchable_layers.remove(layer)
-        if layer == self.default_layer: self._default_layer = None
+        if layer.touchable:
+            self._touchable_layers.remove(layer)
+        if layer == self.default_layer:
+            self._default_layer = None
 
     def _sort_layers(self):
 

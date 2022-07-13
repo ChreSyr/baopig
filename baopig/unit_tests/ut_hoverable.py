@@ -1,7 +1,7 @@
 from baopig import *
 
 
-class HoverableRectangle(Rectangle, Hoverable):
+class HoverableRectangle(Rectangle, HoverableByMouse):
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
         color="blue"
@@ -10,8 +10,8 @@ class HoverableRectangle(Rectangle, Hoverable):
     def __init__(self, parent, **kwargs):
         Rectangle.__init__(self, parent, **kwargs)
 
-        self.is_main = True  # needed in Hoverable.__init__()
-        Hoverable.__init__(self, parent)
+        self.is_main = True  # needed in HoverableByMouse.__init__()
+        HoverableByMouse.__init__(self, parent)
 
     def handle_hover(self):
         self.set_color("yellow" if self.is_main else "yellow4")
@@ -89,7 +89,7 @@ class TestingZone(Zone, Focusable):
                 self.controlled.resize(30, 30)
 
         elif key == pygame.K_n:
-            self.controlled.set_nontouchable()
+            self.controlled.set_touchable_by_mouse(False)  # TODO : tests
 
 
 class UT_Hoverable_Zone(Zone):
@@ -133,25 +133,19 @@ class UT_Hoverable_Zone(Zone):
             ]
         )
         self.parent.add_section(
-            title="Hoverable can manage mouse.hovered_widget",
+            title="HoverableByMouse can manage mouse.hovered_widget",
             tests=[
-                "When a hovered Hoverable disappears (hide, sleep, kill), it drops the hover",
-                "When a hovered Hoverable moves or get resized, if needed, it drops the hover",
-                "When a Hoverable appears (creation, show, wake), if needed, it gains the hover",
-                "When a Hoverable moves or get resized, if needed, it gains the hover",
+                "When a hovered HoverableByMouse disappears (hide, sleep, kill), it drops the hover",
+                "When a hovered HoverableByMouse moves or get resized, if needed, it drops the hover",
+                "When a HoverableByMouse appears (creation, show, wake), if needed, it gains the hover",
+                "When a HoverableByMouse moves or get resized, if needed, it gains the hover",
             ]
         )
         self.parent.add_section(
             title="signal.HOVER & signal.UNHOVER",
             tests=[
-                "When a Hoverable is just hovered, the signal HOVER is emitted",
-                "When a hovered Hoverable is unhovered, the signal UNHOVER is emitted",
-            ]
-        )
-        self.parent.add_section(
-            title="touchable",
-            tests=[
-                "If a Widget is set nontouchable, it cannot get hovered",
+                "When a HoverableByMouse is just hovered, the signal HOVER is emitted",
+                "When a hovered HoverableByMouse is unhovered, the signal UNHOVER is emitted",
             ]
         )
 

@@ -73,10 +73,10 @@ class UT_Sleep_Zone(Zone):
         z2.param_zone.default_layer.pack(axis="horizontal")
 
         # Z3
-        class DraggableRectangle(Rectangle, Draggable):
+        class DraggableRectangle(Rectangle, DraggableByMouse):
             def __init__(self, parent, **kwargs2):
                 Rectangle.__init__(self, parent, **kwargs2)
-                Draggable.__init__(self, parent, **kwargs2)
+                DraggableByMouse.__init__(self, parent, **kwargs2)
 
         z3.set_style_for(Rectangle, color=(110, 80, 90))
         clone_zone = Zone(z3, size=("100%", 150))

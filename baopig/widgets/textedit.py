@@ -30,7 +30,7 @@ class TextEdit(Text, Selector):
         self.selector.selectables.add(self)
 
         self._cursor_ref = lambda: None
-        self.cursors_layer = Layer(self, Cursor, name="cursors_layer", touchable=False)
+        self.cursors_layer = Layer(self, Cursor, name="cursors_layer")
 
     cursor = property(lambda self: self._cursor_ref())
 
@@ -66,9 +66,12 @@ class TextEdit(Text, Selector):
 
     def handle_defocus(self):
 
+        super().handle_defocus()
         self.cursor.sleep()
 
     def handle_focus(self):
+
+        super().handle_focus()
 
         line_index = len(self.lines) - 1
         char_index = len(self.lines[-1].text)
@@ -211,7 +214,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
 
         self.parent._cursor_ref = self.get_weakref()
         self.swap_layer("cursors_layer")
-        self.set_nontouchable()
+        self.set_touchable_by_mouse(False)
         self.start_animation()
 
         self.config(line_index=line_index, char_index=char_index)

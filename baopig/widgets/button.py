@@ -1,7 +1,7 @@
 import pygame
 from baopig.pybao.objectutilities import Object
-from baopig.lib import Clickable, Layer
-from baopig.lib import Rectangle, Image, Container, Hoverable
+from baopig.lib import Focusable, Layer, Validable
+from baopig.lib import Rectangle, Image, Container
 from .text import Text
 
 
@@ -34,9 +34,12 @@ class ButtonText(Text):
             self.resize_height(content_rect.height)
 
 
-class AbstractButton(Container, Clickable, Hoverable):
+class AbstractButton(Container, Focusable, Validable):
     """
     Abstract button
+
+    A button is clicked when the link is released while the mouse is still
+    hovering it (for more explanations about links, see LinkableByMouse)
 
     - background color
     - focus
@@ -59,8 +62,8 @@ class AbstractButton(Container, Clickable, Hoverable):
     def __init__(self, parent, command=None, hover=None, link=None, focus=None, **kwargs):
 
         Container.__init__(self, parent, **kwargs)
-        Hoverable.__init__(self, parent)
-        Clickable.__init__(self, parent, catching_errors=self.style["catching_errors"])
+        Focusable.__init__(self, parent, **kwargs)
+        Validable.__init__(self, catching_errors=self.style["catching_errors"])
 
         if command is None:
             self.command = lambda: None
@@ -137,24 +140,17 @@ class AbstractButton(Container, Clickable, Hoverable):
     hover_sail = property(lambda self: self._hover_sail_ref())
     link_sail = property(lambda self: self._link_sail_ref())
 
+    def disable(self):
+
+        self.set_touchable_by_mouse(False)
+
+    def enable(self):
+
+        self.set_touchable_by_mouse(True)
+
     def handle_defocus(self):
 
         self.focus_sail.hide()
-
-    def handle_disable(self):
-
-        self.disable_sail.show()
-        self.hover_sail.hide()
-        self.hover_sail.set_lock(visibility=True)
-        self.hover_sail.show()
-        assert self.hover_sail.is_hidden
-
-    def handle_enable(self):
-
-        self.disable_sail.hide()
-        self.hover_sail.set_lock(visibility=False)
-        if self.is_hovered:
-            self.hover_sail.show()
 
     def handle_focus(self):
 
@@ -163,6 +159,13 @@ class AbstractButton(Container, Clickable, Hoverable):
     def handle_hover(self):
 
         self.hover_sail.show()
+
+    def handle_keydown(self, key):
+
+        if key == pygame.K_RETURN:
+            self.validate()
+        else:
+            super().handle_keydown(key)
 
     def handle_keyup(self, key):
 
@@ -183,14 +186,26 @@ class AbstractButton(Container, Clickable, Hoverable):
         self.hover_sail.hide()
 
     def handle_unlink(self):
+        # TODO : test : if a linked Clickable is hidden, handle_unlink() is called but validate() is not called
 
-        super().handle_unlink()
+        if self.collidemouse():
+            self.validate()
+
         self.link_sail.hide()
 
     def handle_validate(self):
 
         self.command()
         self.link_sail.show()  # For validation via RETURN key
+
+    def set_touchable_by_mouse(self, val):
+
+        super().set_touchable_by_mouse(val)
+
+        if self.is_touchable_by_mouse:
+            self.disable_sail.hide()
+        else:
+            self.disable_sail.show()
 
 
 class Button(AbstractButton):

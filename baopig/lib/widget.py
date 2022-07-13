@@ -1,6 +1,5 @@
-# TODO : replace sticky and ref and refloc by flags ?
-# TODO : smart to use static, interactive, dynamic ?
 
+# TODO : smart to use static, interactive, dynamic ?
 
 import pygame
 from baopig.pybao.issomething import *
@@ -102,7 +101,8 @@ class _Origin:
                 return False
 
         elif hasattr(coord, "__iter__"):
-            if len(coord) != 2: return False
+            if len(coord) != 2:
+                return False
             return False not in (_Origin.accept(c) for c in coord)
 
         try:
@@ -266,8 +266,8 @@ class WidgetCore(WidgetDoc, Communicative):
     parent = property(lambda self: self._parent)
     scene = property(lambda self: self.__scene)
 
-    is_alive = property(lambda self: self._weakref._ref is not None)
-    is_dead = property(lambda self: self._weakref._ref is None)
+    is_alive = property(lambda self: self._weakref() is not None)
+    is_dead = property(lambda self: self._weakref() is None)
 
     def get_weakref(self, callback=None):
         """
@@ -292,9 +292,9 @@ class WidgetCore(WidgetDoc, Communicative):
             return
 
         with paint_lock:
-            self.signal.KILL.emit(self._weakref)
             if self.parent is not None:  # False when called by Widget.wake()
                 self.parent._remove_child(self)
+            self.signal.KILL.emit(self._weakref)
             self.disconnect()
             self._weakref._ref = None
 
@@ -425,7 +425,18 @@ class Widget_VisibleSleepy(WidgetCore, HasLock):
         self.signal.WAKE.emit()
 
 
-class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle):
+class TouchableByMouse:
+
+    def __init__(self, touchable):
+        self._is_touchable_by_mouse = touchable
+
+    is_touchable_by_mouse = property(lambda self: self._is_touchable_by_mouse)
+
+    def set_touchable_by_mouse(self, val):
+        self._is_touchable_by_mouse = bool(val)
+
+
+class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
     STYLE = HasStyle.STYLE
     STYLE.create(
         pos=(0, 0),
@@ -446,7 +457,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle):
         "pos",  # pos = topleft
     )
 
-    def __init__(self, parent, size, **kwargs):
+    def __init__(self, parent, size, touchable=True, **kwargs):
         """
         rect is the surface hitbox, relative to the parent
         abs_rect is the rect relative to the application (also called 'abs')
@@ -460,6 +471,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle):
 
         Widget_VisibleSleepy.__init__(self, parent)
         HasStyle.__init__(self, parent, options=kwargs)
+        TouchableByMouse.__init__(self, touchable)
 
         # Shortcuts :                                             - NOTE : Can only use one shortcut
         #   sticky="center"   <=>  loc="center", refloc="center"
@@ -694,7 +706,8 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle):
         follow_movements default to False"""
 
         if window is not None:
-            if window == self.window: return
+            if window == self.window:
+                return
             assert is_typed_iterable(window, int, 4) or isinstance(window, pygame.Rect), \
                 "Wrong recstyle object : {}".format(window)
             self._window = _Window(window)
@@ -794,7 +807,7 @@ class HasProtectedSurface(HasProtectedHitbox):
 class Widget(HasProtectedSurface, metaclass=MetaPaintLocker):
 
     def __init__(self, parent, surface=None, layer=None, layer_level=None, name=None, row=None, col=None,
-                 visible=True, touchable=True, **kwargs):
+                 visible=True, **kwargs):
 
         if hasattr(self, "_weakref"):  # Widget.__init__() has already been called
             return
@@ -838,9 +851,6 @@ class Widget(HasProtectedSurface, metaclass=MetaPaintLocker):
 
         self._is_visible = visible
 
-        if touchable is False:
-            self.set_nontouchable()
-
         parent._add_child(self)
 
     def __repr__(self):
@@ -868,14 +878,6 @@ class Widget(HasProtectedSurface, metaclass=MetaPaintLocker):
     # ...
 
     # ...
-
-    def set_nontouchable(self):
-        """Cannot go back"""
-
-        # TODO : documentation
-        # TODO : rework
-        # TODO : if Hoverable, mouse.update_hovered_widget() ?
-        self.collidemouse = lambda: False
 
     # TODO : move these methods to Layer
     def move_behind(self, widget):

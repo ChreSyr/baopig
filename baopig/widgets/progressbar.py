@@ -22,7 +22,7 @@ class ProgressBar(Rectangle, Runable):
         self.set_border_color(2)  # TODO : style
         self.set_border_width((0, 0, 0))  # TODO : style
         self.run()
-        self.start_running()
+        self.set_running(True)
 
     progression = property(lambda self: self._progression)
 

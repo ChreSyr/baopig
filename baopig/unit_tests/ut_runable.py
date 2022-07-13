@@ -8,12 +8,17 @@ class RainbowRect(Rectangle, Runable):
         Runable.__init__(self, parent)
         self.console = None
 
-    def handle_startrunning(self):
-        self.console.set_text(self.console.text + "\nMethod called : handle_startrunning")
-        self.console.parent.pack(adapt=True)
+    def set_running(self, val):
 
-    def handle_stoprunning(self):
-        self.console.set_text(self.console.text + "\nMethod called : handle_stoprunning")
+        if val == self.is_running:
+            return
+
+        super().set_running(val)
+
+        if self.is_running:
+            self.console.set_text(self.console.text + "\nMethod called : set_running(True)")
+        else:
+            self.console.set_text(self.console.text + "\nMethod called : set_running(False)")
         self.console.parent.pack(adapt=True)
 
     def paint(self):
@@ -36,8 +41,8 @@ class UT_Runable_Zone(Zone):
         rainbow = RainbowRect(z1)
         buttons_zone = Zone(z1, children_margins=10)
         buttons_zone.set_style_for(Button, width=200)
-        Button(buttons_zone, text="start running", command=rainbow.start_running)
-        Button(buttons_zone, text="stop running", command=rainbow.stop_running)
+        Button(buttons_zone, text="start running", command=PrefilledFunction(rainbow.set_running, True))
+        Button(buttons_zone, text="stop running", command=PrefilledFunction(rainbow.set_running, False))
         buttons_zone.pack(axis="horizontal", adapt=True)
         rainbow.resize(*buttons_zone.size)
         rainbow.console = Text(z1, text="Console:", width=rainbow.w)
@@ -45,17 +50,10 @@ class UT_Runable_Zone(Zone):
 
     def load_sections(self):
         self.parent.add_section(
-            title="Paintable.start_running() & Paintable.stop_running()",
+            title="Paintable.set_running()",
             tests=[
-                "After start_running(), the Runable is running",
-                "After stop_running(), the Runable is stopped",
-            ]
-        )
-        self.parent.add_section(
-            title="Handlers",
-            tests=[
-                "When a Runable starts to run, the method handle_startrunning() is called",
-                "When a Runable is stopped, the method handle_stoprunning() is called",
+                "After set_running(True), the Runable is running",
+                "After set_running(False), the Runable is stopped",
             ]
         )
 

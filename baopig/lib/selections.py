@@ -1,9 +1,10 @@
 import pygame
+from baopig.documentation import Selector as SelectorDoc
 from baopig.pybao.issomething import is_point
 from baopig.io import keyboard
 from .utilities import paint_lock
 from .widget import Widget
-from .widget_supers import Linkable
+from .widget_supers import Focusable
 from .shapes import Rectangle
 from .container import Container
 
@@ -107,7 +108,6 @@ class SelectionRect(Rectangle):
         self.start = None
         self.end = None
         self.parent._selection_rect_ref = self.get_weakref()
-        self.parent.signal.UNLINK.connect(self.hide, owner=self)
 
         self.set_start(start)
         self.set_end(end)
@@ -137,26 +137,18 @@ class SelectionRect(Rectangle):
             self.hide()
 
 
-class Selector(Container, Linkable):
-    """
-    Abstract class for containers who need to handle when they are linked
-    and then, while the mouse is still pressed, to handle the mouse drag in
-    order to simulate a rect from the link origin to the link position and
-    select every SelectableWidget object who collide with this rect
-    """
+class Selector(SelectorDoc, Container, Focusable):
 
     def __init__(self, parent, can_select=True, **kwargs):
 
         Container.__init__(self, parent, **kwargs)
-        Linkable.__init__(self, parent)
+        Focusable.__init__(self, parent)
 
         self.selectables = set()
         self._can_select = can_select
         self._selection_rect_ref = lambda: None
         self._selectionrect_visibility = True
         self.selectionrect_layer = None
-
-        self.signal.DEFOCUS.connect(self.close_selection, owner=self)
 
     def _get_iselected(self):
         for widget in self.selectables:
@@ -212,6 +204,11 @@ class Selector(Container, Linkable):
         sorted_selected = sorted(selected, key=lambda o: (o.abs.top, o.abs.left))
         return '\n'.join(str(s.get_selected_data()) for s in sorted_selected)
 
+    def handle_defocus(self):
+
+        super().handle_defocus()
+        self.close_selection()
+
     def handle_keydown(self, key):
 
         super().handle_keydown(key)  # TAB and arrows management
@@ -254,6 +251,11 @@ class Selector(Container, Linkable):
                          link_motion_event.pos[1] - link_motion_event.rel[1]
                 self.start_selection(origin)
             self.end_selection(link_motion_event.pos)
+
+    def handle_unlink(self):
+
+        if self.selection_rect:
+            self.selection_rect.hide()
 
     def paste(self, data):
         """This method is called when the user press Ctrl + V"""

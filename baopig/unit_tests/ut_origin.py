@@ -2,16 +2,16 @@
 from baopig import *
 
 
-class DragableRectangle(Rectangle, Draggable):
+class DragableRectangle(Rectangle, DraggableByMouse):
     def __init__(self, parent, **kwargs):
         Rectangle.__init__(self, parent, **kwargs)
-        Draggable.__init__(self, parent, **kwargs)
+        DraggableByMouse.__init__(self, parent, **kwargs)
 
 
-class DragableZone(Zone, Draggable):
+class DragableZone(Zone, DraggableByMouse):
     def __init__(self, parent, **kwargs):
         Zone.__init__(self, parent, **kwargs)
-        Draggable.__init__(self, parent, **kwargs)
+        DraggableByMouse.__init__(self, parent, **kwargs)
 
 
 class UT_Origin_Zone(Zone):

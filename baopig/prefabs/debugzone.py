@@ -1,5 +1,5 @@
-from baopig import PrefilledFunction, mouse
-from baopig import Zone, Handler_SceneClose, Text, DynamicText, Highlighter
+from baopig import mouse
+from baopig import Zone, Handler_SceneClose, Text, DynamicText, Highlighter, GridLayer
 
 
 # --- DEBUG ---
@@ -32,7 +32,7 @@ class DebugZone(Zone, Handler_SceneClose):
         presentators_zone = Zone(
             parent=self.debug_zone,
             pos=(5, 5),
-            size=(80, self.debug_zone.h),
+            size=(120, self.debug_zone.h),
             name=self.debug_zone.name + " -> presentators_zone"
         )
         trackers_zone = Zone(
@@ -44,94 +44,38 @@ class DebugZone(Zone, Handler_SceneClose):
 
         if True:
             # FPS TRACKER
-            fps_presentator = Text(
-                parent=presentators_zone,
-                text="FPS : ",
-                pos=(0, 5),
-                name="FPS_presentator")
-            DynamicText(
-                parent=trackers_zone,
-                get_text=lambda: self.parent.painter.get_current_fps(),
-                pos=(0, fps_presentator.top),
-                name="FPS_tracker")
+            Text(presentators_zone, text="FPS : ")
+            DynamicText(trackers_zone, get_text=lambda: self.parent.painter.get_current_fps())
 
             # MOUSE TRACKER
-            mouse_pos_presentator = Text(
-                parent=presentators_zone,
-                text="Mouse : ",
-                pos=(0, fps_presentator.bottom),
-                name="mouse_pos_presentator")
-            DynamicText(
-                parent=trackers_zone,
-                get_text=PrefilledFunction(lambda: mouse.pos),
-                pos=(0, mouse_pos_presentator.top),
-                name="mouse_pos_tracker")
+            Text(presentators_zone, text="Mouse pos : ")
+            DynamicText(trackers_zone, get_text=lambda: mouse.pos)
 
-            pointed_widget_presentator = Text(
-                parent=presentators_zone,
-                text="Hovered : ",
-                pos=(0, mouse_pos_presentator.bottom),
-                name="pointed_widget_presentator")
+            Text(presentators_zone, text="Pointed widget : ")
+            Text(trackers_zone)
 
             # CLASS TRACKER
-            class_presentator = Text(
-                parent=presentators_zone,
-                text="- class : ",
-                pos=(0, pointed_widget_presentator.bottom),
-                name="class_presentator")
-            DynamicText(
-                parent=trackers_zone,
-                get_text=lambda: mouse.pointed_widget.__class__.__name__ if mouse.pointed_widget else None,
-                pos=(0, class_presentator.top),
-                name="class_tracker")
+            Text(presentators_zone, text="- class : ")
+            DynamicText(trackers_zone, get_text=lambda: self._pointed.__class__.__name__ if self._pointed else None)
 
             # NAME TRACKER
-            name_presentator = Text(
-                parent=presentators_zone,
-                text="- name : ",
-                pos=(0, class_presentator.bottom),
-                name="name_presentator")
-            DynamicText(
-                parent=trackers_zone,
-                get_text=lambda: mouse.pointed_widget.name if mouse.pointed_widget else None,
-                pos=(0, name_presentator.top),
-                name="name_tracker")
+            Text(presentators_zone, text="- name : ")
+            DynamicText(trackers_zone, get_text=lambda: self._pointed.name if self._pointed else None)
 
             # HITBOX TRACKER
-            hitbox_presentator = Text(
-                parent=presentators_zone,
-                text="- hitbox : ",
-                pos=(0, name_presentator.bottom),
-                name="hitbox_presentator")
-            DynamicText(
-                parent=trackers_zone,
-                get_text=lambda: mouse.pointed_widget.hitbox if mouse.pointed_widget else None,
-                pos=(0, hitbox_presentator.top),
-                name="hitbox_tracker")
+            Text(presentators_zone, text="- hitbox : ")
+            DynamicText(trackers_zone, get_text=lambda: self._pointed.hitbox if self._pointed else None)
 
             # HITBOX TRACKER
-            abs_hitbox_presentator = Text(
-                parent=presentators_zone,
-                text="- abs_hitbox : ",
-                pos=(0, hitbox_presentator.bottom),
-                name="abs_hitbox_presentator")
-            DynamicText(
-                parent=trackers_zone,
-                get_text=lambda: mouse.pointed_widget.abs_hitbox if mouse.pointed_widget else None,
-                pos=(0, abs_hitbox_presentator.top),
-                name="abs_hitbox_tracker")
+            Text(presentators_zone, text="- abs_hitbox : ")
+            DynamicText(trackers_zone, get_text=lambda: self._pointed.abs_hitbox if self._pointed else None)
 
             # PARENT TRACKER
-            parent_presentator = Text(
-                parent=presentators_zone,
-                text="- parent : ",
-                pos=(0, abs_hitbox_presentator.bottom),
-                name="parent_presentator")
-            DynamicText(
-                parent=trackers_zone,
-                get_text=lambda: mouse.pointed_widget.parent if mouse.pointed_widget else None,
-                pos=(0, parent_presentator.top),
-                name="parent_tracker")
+            Text(presentators_zone, text="- parent : ")
+            DynamicText(trackers_zone, get_text=lambda: self._pointed.parent if self._pointed else None)
+
+        presentators_zone.pack()
+        trackers_zone.pack()
 
         self.print_text = Text(
             parent=self.debug_zone,
@@ -145,7 +89,6 @@ class DebugZone(Zone, Handler_SceneClose):
 
         self.update_pointed_outline()
         self.debug_zone.adapt(self.debug_zone.default_layer, horizontally=False)
-        self.set_nontouchable()
 
     is_debugging = property(lambda self: self.is_awake)
 
@@ -187,10 +130,26 @@ class DebugZone(Zone, Handler_SceneClose):
 
     def update_pointed_outline(self):
 
+        def collidemouse(widget):
+            return widget.is_visible and widget.abs_hitbox.collidepoint(mouse.pos)
+
+        def get_pointed_widget(cont):
+
+            for layer in reversed(tuple(cont.layers_manager.touchable_layers)):
+                assert layer.touchable
+                for child in reversed(layer):
+                    if child is self:
+                        continue
+                    if collidemouse(child):
+                        if hasattr(child, "children"):
+                            return get_pointed_widget(child)
+                        return child
+            return cont
+
         if self.is_asleep:
             return
 
-        pointed = mouse.pointed_widget
+        pointed = get_pointed_widget(self.scene)
         if pointed:
             if self._pointed == pointed:
                 return

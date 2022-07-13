@@ -1,7 +1,6 @@
+
 import threading
 import pygame
-
-paint_lock = threading.RLock()
 
 
 # TODO : deproteger les attributs handle_something
@@ -137,5 +136,9 @@ class Handler_SceneClose:
     """
     A Handler_SceneClose is a widget whose 'handle_scene_close' function is called when its scene is closed
     """
+
     def handle_scene_close(self):
         """Stuff to do when the widget'scene is closed"""
+
+
+paint_lock = threading.RLock()

@@ -74,7 +74,7 @@ class PainterThread(ExtraThread):
             else:
                 return None
         else:
-            return self.clock.get_fps()
+            return self.clock.get_fps()  # TODO : fps track even with infinite fps
 
     def init(self):
 

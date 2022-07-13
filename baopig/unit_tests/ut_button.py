@@ -13,7 +13,8 @@ class UT_Button_Zone(Zone):
 
         # Z1
         class MyButton(Button):
-            def validate(self):
+            def handle_validate(self):
+                super().handle_validate()
                 t.set_text(f"You clicked on : {self.text}")
         MyButton(z1, "Hello world")
         MyButton(z1, "Dlrow olleh")

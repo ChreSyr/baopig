@@ -78,9 +78,10 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
     def _focus(self, widget):
 
-        if widget == self.focused_widget: return
+        if widget == self.focused_widget:
+            return
 
-        # DEFOCUS
+        # Defocus
         old_focused = self.focused_widget
         if old_focused is not None:
             assert old_focused.is_focused
@@ -92,12 +93,15 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             assert widget.is_visible
         assert not widget.is_focused
 
-        # FOCUS
+        # Focus
         widget._is_focused = True
         self._focused_widget_ref = widget.get_weakref()  # (lambda: None) if widget is None else
 
-        if old_focused is not None: old_focused.signal.DEFOCUS.emit()
-        widget.signal.FOCUS.emit()
+        if old_focused is not None:
+            # old_focused.signal.DEFOCUS_.emit()
+            old_focused.handle_defocus()
+        # widget.signal.FOCUS_.emit()
+        widget.handle_focus()
 
     def _warn_parent(self, rect):
 
@@ -111,6 +115,9 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
     def divide(self, side, width):
         raise PermissionError("Cannot divide a Scene")  # TODO : rework Zone.divide
+
+    def handle_event(self, event):
+        """This method is called at every pygame event"""
 
     def kill(self):
 
@@ -150,9 +157,6 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
     def pre_open(self):
         """Stuff to do right before this scene is open"""
-
-    def receive(self, event):
-        """This method is called at every pygame event"""
 
     def resize(self, w, h):
 
@@ -196,12 +200,12 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         else:
             self.set_mode(pygame.FULLSCREEN)
 
-    def sleep(self): raise PermissionError("A Scene cannot sleep")
-    def wake(self):
+    # FORBIDDEN METHODS
+    def sleep(self):
         raise PermissionError("A Scene cannot sleep")
 
-    def show(self):
-        pass  # TODO : PermissionError ?
-
     def hide(self):
-        pass
+        raise PermissionError("A Scene cannot be hidden")
+
+    def set_touchable_by_mouse(self, val):
+        raise PermissionError("A Scene has to be touchable")

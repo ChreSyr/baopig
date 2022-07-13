@@ -119,6 +119,8 @@ class Widget(Communicative):
         send_display_request(rect=None) -> sends a request who will update the display
     """
 
+    is_touchable_by_mouse: bool
+
     def hide(self):
         """
         Stops displaying the widget
@@ -137,8 +139,8 @@ class Widget(Communicative):
 
         Behaviour:
         ----------
-            Emits the KILL signal
             Detaches the widget from its parent
+            Emits the KILL signal
             Kills all the connections owned by the widget
             Kills the widget's weakref
         """
@@ -189,12 +191,16 @@ class Widget(Communicative):
         """
 
 
-class Hoverable(Widget):
+class HoverableByMouse(Widget):
     """
     Class for widgets who need to handle when they are hovered or unhovered by the mouse.
 
-    A Hoverable can have an Indicator, i.e. a Text that appears when the Hoverable is hovered.
+    A HoverableByMouse can have an Indicator, i.e. a Text that appears when the HoverableByMouse is hovered.
     For more details, see TODO : link to Indicator documentation
+
+    TODO : test : a disabled HoverableByMouse cannot be hovered
+    TODO : test : an enabled HoverableByMouse can grab the hover
+    TODO : test : a disabled & hovered HoverableByMouse drops the hover
 
     :Signals:
     ---------
@@ -293,30 +299,99 @@ class Runable(Widget):
     ---------
         run() -> abstract - called as much as possible, while the object is running
 
-        start_running() -> starts to run the widget
-        stop_running()  -> stops the widget
-
-        handle_startrunning() -> abstract - called when the widget starts to run
-        handle_stoprunning()  -> abstract - called when the widget stops
+        set_running(val) -> starts or stops to run the widget
     """
 
-    def handle_startrunning(self):
-        """ Abstract - called when the widget starts to run """
-
-    def handle_stoprunning(self):
-        """ Abstract - called when the widget stops """
+    is_running: bool
 
     def run(self):
         """ Abstract - called as much as possible, while the object is running """
 
-    def start_running(self):
-        """ Starts to run the widget """
-
-    def stop_running(self):
-        """ Stops the widget """
+    def set_running(self, val):
+        """ Starts or stops to run the widget """
 
 
 # ...
+
+
+"""
+
+                                      Widget   -> set_touchable_by_mouse()
+                                 
+                                         |
+                                 
+                                 HoverableByMouse
+                                 
+                                         |
+                                 
+                                 LinkableByMouse       
+                                 
+                                          \
+                                 
+                                           Focusable  ( KeyEventsListener )
+                                 
+                                                \     
+                                                 \    
+                    Clickable                     \     
+                                                   \  
+                                                    \ 
+                                         --------------------------------------
+                                         |                                    |
+                                     
+                                       Button                             Selector
+                                       
+                                                                              |
+                                                                              
+                                                                          TextEdit
+                                                                          LineEdit
+                                                                          Entry
+                                                                          NumEntry
+                                                                          ColorEntry
+
+
+"""
+
+
+class Validable:
+    pass
+
+
+class LinkableByMouse(HoverableByMouse):
+    """
+    Class for widgets who need to capture mouse clicks
+
+    A LinkableByMouse is linked when a mouse LEFT BUTTON DOWN collide with it,
+    and unlinked when the LEFT BUTTON UP occurs
+
+    It has no 'link' or 'link_motion' method since it is the mouse who manages links.
+    However, it can unlink itself
+
+    WARNING : If a LinkableByMouse parent contains a LinkableByMouse child, and the LEFT BUTTON
+              DOWN has occured on the child, then only the child will be linked
+
+    NOTE : when a widget is linked, you can access it via mouse.linked_widget
+    """
+
+
+class Focusable(LinkableByMouse):
+    """
+    Class for widget who listen to keyboard input, when it has the focus. Only one
+    widget can be focused in the same time. When a new clic occurs, and it doesn't collide
+    this widget, it is defocused.
+
+    It has no 'focus' method since it is the application who decide who is focused or not.
+    However, it can defocus itself.
+
+    When the mouse click on a Text inside a Button inside a focusable Zone inside a Scene,
+    then only the youngest Focusable is focused
+    Here, it is the Button -> scene.focused_widget = Button
+    """
+
+    def handle_keydown(self, key: int):
+        """ Called when a key is pressed """
+
+    def handle_keyup(self, key: int):
+        """ Called when a key is released """
 
 
 class Container(Widget):
@@ -326,6 +401,15 @@ class Container(Widget):
     Attributes:
     -----------
         children: list -> the list of all the children
+    """
+
+
+class Selector(Container, Focusable):
+    """
+    Class for containers who need to handle when they are linked
+    and then, while the mouse is still pressed, to handle the mouse drag in
+    order to simulate a rect from the link origin to the link position and
+    select every SelectableWidget object who collide with this rect
     """
 
 
@@ -362,3 +446,7 @@ class Scene(Zone):
     Methods:
         open
     """
+
+
+class ApplicationExit(Exception):
+    pass

@@ -22,13 +22,14 @@ class Entry(LineEdit, Validable):
         """
 
         LineEdit.__init__(self, parent, **kwargs)
-        Validable.__init__(self, parent, catching_errors=False)
+        Validable.__init__(self, catching_errors=False)
 
         self._entry_type = entry_type
         self.command = command
+        self.validate_on_defocus = validate_on_defocus
 
-        if validate_on_defocus:
-            self.signal.DEFOCUS.connect(self.validate, owner=self)
+        # if validate_on_defocus:
+        #     self.signal.DEFOCUS_.connect(self.validate, owner=self)
 
     def accept(self, text):
 
@@ -38,6 +39,12 @@ class Entry(LineEdit, Validable):
             LOGGER.warning(e)
             return False
         return True
+
+    def handle_defocus(self):
+
+        super().handle_defocus()
+        if self.validate_on_defocus:
+            self.validate()
 
     def handle_keydown(self, key):
 

@@ -115,6 +115,3 @@ app.launch()"""
     def handle_scene_close(self):
 
         self.kill()
-
-    def set_code(self, code):
-        self.try_it_yourself.code.set_text(code)

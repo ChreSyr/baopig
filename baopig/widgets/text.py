@@ -849,7 +849,7 @@ class DynamicText(Text, Runable):
 
         self._get_new_text = get_text
 
-        self.start_running()
+        self.set_running(True)
 
     def run(self):
         new_text = str(self._get_new_text())

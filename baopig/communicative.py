@@ -3,11 +3,8 @@
 import inspect
 from baopig.pybao.objectutilities import Object
 from baopig.io.logging import LOGGER
+from .documentation import ApplicationExit
 from .documentation import Communicative as CommunicativeDoc
-
-
-class ApplicationExit(Exception):
-    pass
 
 
 class Signal:

@@ -4,7 +4,7 @@
 import time
 
 from baopig.pybao import WeakList
-from baopig.communicative import ApplicationExit
+from baopig.documentation import ApplicationExit
 from baopig.io import keyboard, mouse, LOGGER
 from .style import HasStyle, Theme, StyleClass
 from .widget import Widget
@@ -179,15 +179,23 @@ class Application(HasStyle):
                     LOGGER.info("Screenchot !")
 
             # TRANSMITTING EVENT
-            if event.type in (pygame.KEYDOWN, pygame.KEYUP) and self.focused_scene.focused_widget is not None:
+            focused = self.focused_scene.focused_widget
+            if focused is not None:
+                if event.type in (pygame.KEYDOWN, pygame.KEYUP):
+                    assert focused.is_focused
+                    assert focused.is_alive
+                    assert focused.is_visible  # ?
+                    assert focused.is_awake
                 if event.type == pygame.KEYDOWN:
-                    self.focused_scene.focused_widget.signal.KEYDOWN.emit(event.key)
-                else:
-                    self.focused_scene.focused_widget.signal.KEYUP.emit(event.key)
+                    focused.handle_keydown(event.key)
+                elif event.type == pygame.KEYUP:
+                    focused.handle_keyup(event.key)
+            # TODO
+            # else:
+            #     raise AssertionError
 
             # Events optionnal treatment
-            if self.focused_scene.is_enabled:
-                self.focused_scene.receive(event)
+            self.focused_scene.handle_event(event)
 
     def _run(self):
         """

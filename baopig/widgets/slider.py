@@ -1,6 +1,6 @@
 
 from baopig.io import mouse
-from baopig.lib import Rectangle, Container, Linkable, Hoverable
+from baopig.lib import Rectangle, Container, LinkableByMouse
 from .indicator import DynamicIndicator
 from .text import Text
 
@@ -68,7 +68,7 @@ class SliderBar(Rectangle):
         self.resize(w=self.style["length"], h=self.style["wideness"])
 
 
-class Slider(Container, Linkable, Hoverable):
+class Slider(Container, LinkableByMouse):
     """Widget that contains a bar and a slideable bloc"""
 
     STYLE = Container.STYLE.substyle()
@@ -103,8 +103,7 @@ class Slider(Container, Linkable, Hoverable):
             assert step > 0
 
         Container.__init__(self, parent, **kwargs)
-        Linkable.__init__(self, parent)
-        Hoverable.__init__(self, parent)
+        LinkableByMouse.__init__(self, parent)
 
         self._minval = minval
         self._maxval = maxval
@@ -129,9 +128,10 @@ class Slider(Container, Linkable, Hoverable):
         if self.style["has_indicator"]:
             if title:
                 if printed_title:
-                    self.title = Text(self, title, sticky="center", touchable=False, font_color=(96, 96, 96),
+                    self.title = Text(self, title, sticky="center", selectable=False, font_color=(96, 96, 96),
                                       font_height=int((self.bar.height - self.bar.border_width * 2) * .9),
                                       font_bold=True)
+                    self.title.set_touchable_by_mouse(False)
                 DynamicIndicator(self, get_text=lambda: f"{title} : {self.val}")
             else:
                 DynamicIndicator(self, get_text=lambda: self.val)

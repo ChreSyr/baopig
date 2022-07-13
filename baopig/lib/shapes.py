@@ -116,7 +116,7 @@ class Highlighter(Rectangle):
         Rectangle.__init__(self, parent, ref=target, size=target.size, **kwargs)
 
         self._target_ref = target.get_weakref()
-        self.set_nontouchable()
+        self.set_touchable_by_mouse(False)
 
         def handle_targetresize():
             self.resize(*self.target.size)

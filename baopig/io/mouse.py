@@ -4,6 +4,7 @@ import time
 import pygame
 from baopig.pybao.objectutilities import Object, History
 from baopig.communicative import Communicative
+from baopig.documentation import Focusable, HoverableByMouse, LinkableByMouse
 from .logging import LOGGER
 
 
@@ -147,25 +148,27 @@ class _Mouse(Communicative):
 
             self._linked_widget = widget
             widget.is_linked = True
-            self.linked_widget.signal.LINK.emit()
+            # self.linked_widget.signal.LINK.emit()
+            self.linked_widget.handle_link()
 
-    def _get_pointed_widget(self):  # TODO : improve
+    def _get_touched_widget(self):
+        """ Return the youngest touchable widget that is touched """
 
-        def get_pointed_widget(cont):
+        def get_touched_widget(cont):
 
-            if cont.collidemouse():
-                for layer in reversed(tuple(cont.layers_manager.touchable_layers)):
-                    assert layer.touchable
-                    for child in reversed(layer):
-                        if child.collidemouse():
-                            if hasattr(child, "children"):
-                                return get_pointed_widget(child)
-                            return child
+            for layer in reversed(tuple(cont.layers_manager.touchable_layers)):
+                assert layer.touchable
+                for child in reversed(layer):
+                    if child.is_touchable_by_mouse and child.collidemouse():
+                        if hasattr(child, "children"):  # TODO : isinstance
+                            touched = get_touched_widget(child)
+                            if touched is not None:
+                                return touched
+                        return child
+            if cont.is_touchable_by_mouse:
                 return cont
 
-        return get_pointed_widget(self.scene)
-
-    pointed_widget = property(_get_pointed_widget)
+        return get_touched_widget(self.scene)
 
     def _hover_display(self):
 
@@ -216,10 +219,10 @@ class _Mouse(Communicative):
 
     def _unlink(self):
         """
-        This method unlinks a Linkable widget from the mouse
+        This method unlinks a LinkableByMouse widget from the mouse
 
         It can exceptionnaly be called when a clicked widget disappears
-        Then the widget calls itself this function, trougth Linkable.unlink()
+        Then the widget calls itself this function, trougth LinkableByMouse.unlink()
         """
 
         try:
@@ -232,7 +235,8 @@ class _Mouse(Communicative):
 
         if widget.is_alive:
             widget.is_linked = False
-            widget.signal.UNLINK.emit()
+            # widget.signal.UNLINK.emit()
+            widget.handle_unlink()
         # While the mouse left button was press, we didn't update hovered_widget
         self.update_hovered_widget()
 
@@ -305,22 +309,24 @@ class _Mouse(Communicative):
             if event.button == 1:
                 # UPDATING CLICKS, FOCUSES, HOVERS...
 
-                def first_focusable_in_family_tree(widget):
-                    # The recursivity always come to an end because a Scene is focusable
-                    if hasattr(widget, "is_focused") and widget.is_enabled:
+                def first_linkable_in_family_tree(widget):
+                    # The recursivity always ends because a Scene is a LinkableByMouse
+                    if isinstance(widget, LinkableByMouse) and widget.is_touchable_by_mouse:
                         return widget
-                    if widget.parent is widget:
-                        return None
+                    return first_linkable_in_family_tree(widget.parent)
+
+                def first_focusable_in_family_tree(widget):
+                    # The recursivity always ends because a Scene is a Focusable
+                    if isinstance(widget, Focusable) and widget.is_touchable_by_mouse:
+                        return widget
                     return first_focusable_in_family_tree(widget.parent)
 
-                # Le focus passe avant le link parce que Linkable est une sous-class de Focusable
-                pointed = self._get_pointed_widget()
-                focused = first_focusable_in_family_tree(pointed)
+                pointed = self._get_touched_widget()
+                linked = first_linkable_in_family_tree(pointed)
+                focused = first_focusable_in_family_tree(linked)
+                # Le focus passe avant le link
                 self.scene._focus(focused)
-                if hasattr(focused, "is_linked"):
-                    self._link(focused)
-                else:
-                    self._link(None)
+                self._link(linked)
 
             # MOUSE EVENTS TRANSMISSION
 
@@ -398,10 +404,11 @@ class _Mouse(Communicative):
                 rel=event.rel,
             )
 
-            # LINK MOTION or HOVER signals
+            # LINK_MOTION or HOVER signals
             if self.is_pressed(button_id=1):
                 if self.linked_widget:
-                    self.linked_widget.signal.LINK_MOTION.emit(self.last_event)
+                    # self.linked_widget.signal.LINK_MOTION.emit(self.last_event)
+                    self.linked_widget.handle_link_motion(self.last_event)
             else:
                 self.update_hovered_widget()
 
@@ -414,15 +421,15 @@ class _Mouse(Communicative):
 
         def first_hoverable_in_family_tree(widget):
             if widget.scene is widget:
-                if hasattr(widget, "is_hovered"):
+                if isinstance(widget, HoverableByMouse):
                     return widget
                 return None
-            if hasattr(widget, "is_hovered"):
+            if isinstance(widget, HoverableByMouse):
                 return widget
             else:
                 return first_hoverable_in_family_tree(widget.parent)
 
-        pointed = self._get_pointed_widget()
+        pointed = self._get_touched_widget()
         if pointed is None:
             self._hover(None)
         else:

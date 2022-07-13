@@ -3,11 +3,11 @@
 import time
 from pygame import Rect
 from baopig.io import mouse
-from .widget_supers import Hoverable
+from .widget_supers import HoverableByMouse
 from .container import Container
 
 
-class Scrollable(Hoverable):
+class Scrollable(HoverableByMouse):
     """If the widget is hovered and the mouse is scrolling, scroll
 
     scrollaxis is one of '', 'x', 'y', 'xy'
@@ -20,7 +20,7 @@ class Scrollable(Hoverable):
 
     def __init__(self, parent, scrollaxis=None, **kwargs):
 
-        Hoverable.__init__(self, parent, **kwargs)
+        HoverableByMouse.__init__(self, parent, **kwargs)
 
         assert isinstance(self, Container)
         if scrollaxis is None:
@@ -75,8 +75,10 @@ class ScrollableByMouse(Scrollable):
         If a widget is hovering this one, it still can be scrolled
         """
 
-        if self.window is None: return
-        if not self.collidemouse(): return
+        if self.window is None:
+            return
+        if not self.collidemouse():
+            return
         accelerator = 1
         old_scroll_time = self._last_scroll_time
         self._last_scroll_time = time.time()
