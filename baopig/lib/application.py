@@ -312,7 +312,7 @@ class Application(HasStyle):
         assert self.focused_scene is scene
 
         pygame.display.set_mode(self.size, self.default_mode)  # prevents a threading lag with painter.start()
-        self.focused_scene._focus(self.focused_scene)
+        self.focused_scene.focus(self.focused_scene)
         self.painter.start()
 
         pygame.scrap.init()  # clipboard uses

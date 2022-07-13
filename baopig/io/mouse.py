@@ -24,11 +24,6 @@ class _Mouse(Communicative):
         for signal in self._signals:
             self.create_signal(signal)
 
-        # for attr_name in pygame.__dict__.keys():
-        #     if attr_name.startswith("MOUSE"):
-        #         print("MOUSE signal : ", attr_name)
-        #         self.create_signal(attr_name)
-
         self._pos = (-1, -1)  # No collision at application launch
         self._rel = (0, 0)  # Le dernier deplacement de la souris
 
@@ -100,8 +95,6 @@ class _Mouse(Communicative):
     x = property(lambda self: self._pos[0])
     y = property(lambda self: self._pos[1])
 
-    application = property(lambda self: self._application)
-    scene = property(lambda self: self._application._focused_scene)
     is_hovering_display = property(lambda self: self._is_hovering_display)
     linked_widget = property(lambda self: self._linked_widget)
     hovered_widget = property(lambda self: self._hovered_widget)
@@ -136,7 +129,7 @@ class _Mouse(Communicative):
             if cont.is_touchable_by_mouse:
                 return cont
 
-        return get_touched_widget(self.scene)
+        return get_touched_widget(self._application.focused_scene)
 
     def _hover_display(self):
 
@@ -285,7 +278,7 @@ class _Mouse(Communicative):
                 linked = first_linkable_in_family_tree(pointed)
                 focused = first_focusable_in_family_tree(linked)
                 # Le focus passe avant le link
-                self.scene._focus(focused)
+                self._application.focused_scene.focus(focused)
                 self._link(linked)
 
         elif event.type == pygame.MOUSEBUTTONUP:

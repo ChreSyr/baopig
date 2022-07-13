@@ -176,7 +176,7 @@ class Focusable(FocusableDoc, LinkableByMouse):
     def defocus(self):
         """ Send a request for defocusing this widget """
         if self.is_focused:
-            self.scene._focus(None)
+            self.scene.focus(None)
 
     def handle_defocus(self):
         """ Called when the widget looses the focus """
@@ -221,7 +221,7 @@ class Focusable(FocusableDoc, LinkableByMouse):
 
         if len(all_focs) > 1:
             all_focs.sort(key=lambda c: (c.top, c.left))
-            self.scene._focus(all_focs[(all_focs.index(self) + d) % len(all_focs)])
+            self.scene.focus(all_focs[(all_focs.index(self) + d) % len(all_focs)])
 
 
 class DraggableByMouse(LinkableByMouse):

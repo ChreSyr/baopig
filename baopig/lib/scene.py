@@ -71,12 +71,25 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         self._container_close()
         self.handle_scene_close()
         Widget.set_surface(self, pygame.Surface(self.size))  # not pygame.display anymore
-        self._focus(None)
+        self.focus(None)
         self.application._focused_scene = None
 
         # LOGGER.debug("Close scene : {}".format(self))
 
-    def _focus(self, widget):
+    def _warn_parent(self, rect):
+
+        pygame.display.update(rect)
+
+        if self.painter.is_recording and self.painter.is_recording.only_at_change:
+            pygame.image.save(self.surface,
+                              self.painter.out_directory + "record_{:0>3}.png".format(
+                                  self.painter.record_index))
+            self.painter.record_index += 1
+
+    def divide(self, side, width):
+        raise PermissionError("Cannot divide a Scene")  # TODO : rework Zone.divide
+
+    def focus(self, widget):
 
         if widget == self.focused_widget:
             return
@@ -102,19 +115,6 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             old_focused.handle_defocus()
         # widget.signal.FOCUS_.emit()
         widget.handle_focus()
-
-    def _warn_parent(self, rect):
-
-        pygame.display.update(rect)
-
-        if self.painter.is_recording and self.painter.is_recording.only_at_change:
-            pygame.image.save(self.surface,
-                              self.painter.out_directory + "record_{:0>3}.png".format(
-                                  self.painter.record_index))
-            self.painter.record_index += 1
-
-    def divide(self, side, width):
-        raise PermissionError("Cannot divide a Scene")  # TODO : rework Zone.divide
 
     def handle_event(self, event):
         """This method is called at every pygame event"""

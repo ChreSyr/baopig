@@ -120,6 +120,7 @@ class Widget(Communicative):
     """
 
     is_touchable_by_mouse: bool
+    scene: ...
 
     def hide(self):
         """
@@ -407,7 +408,7 @@ class Container(ResizableWidget):
         children: list -> the list of all the children
     """
 
-    layers_manager: None
+    layers_manager: ...
 
 
 class Selector(Container, Focusable):

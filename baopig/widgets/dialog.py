@@ -150,7 +150,7 @@ class Dialog(Scene):
         self.set_background_image(background_image)
 
     def handle_scene_open(self):
-        self._focus(self.frame.buttons_zone.default_layer[self.default_choice_index])
+        self.focus(self.frame.buttons_zone.default_layer[self.default_choice_index])
 
     def _answer(self, ans):
         """Only called by DialogAnswerButton"""
