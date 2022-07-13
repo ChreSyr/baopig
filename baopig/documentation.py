@@ -1,5 +1,7 @@
 from typing import Iterable
 
+import pygame
+
 
 class Communicative:
     """
@@ -56,11 +58,18 @@ class Widget(Communicative):
     A widget has only one parent (baopig bio-logic, hmmm...)
     A widget has to initialize its surface at its creation
 
+    WARNING : A widget's surface is not connected to its widget (that is way too hard)
+              Any change on the surface has to come with :
+                  - a signal emission : widget.signal.NEW_SURFACE.emit()
+                  - a display request : widget.send_display_request()
+              This is not required when you use the set_surface() method
+
     :Constructor:
     -------------
         parent: Container       -> the widget's parent
         surface: pygame.Surface -> the widget's image
         visible: bool           -> if False, the widget's hide() method is called
+        sticky: Location        -> if set, overrides 2 style attributes : pos_loc & refloc
         **style: keyword args   -> the widget's style attributes
 
     :Signals:
@@ -77,15 +86,14 @@ class Widget(Communicative):
         :Style attributes:
         -----------------------
             pos: Iterable[int]         -> the origin's position
-            loc: Location        -> the origin's location on the widget's rect
+            loc: Location              -> the origin's location on the widget's rect
             ref: Container | None      -> the origin's position reference, if None, set to parent
-            refloc: Location     -> the origin's position reference location, from the reference's rect
+            refloc: Location           -> the origin's position reference location, from the reference's rect
             referenced_by_hitbox: bool -> if True, origin is referenced by the ref's hitbox  # TODO : tests
-            sticky: Location     -> if set, overrides pos_loc & refloc # TODO
 
         parent: Container -> the manager
 
-        surface: pygame.Surface -> the widget's appearance
+        surface: pygame.Surface -> the widget's image
         rect: pygame.Rect       -> the widget's size
         hitbox: pygame.Rect     -> the widget's size on the screen
         origin: object          -> the widget's position manager. See documentation at TODO
@@ -119,8 +127,11 @@ class Widget(Communicative):
         send_display_request(rect=None) -> sends a request who will update the display
     """
 
+    is_alive: bool
+    is_dead: bool
     is_touchable_by_mouse: bool
     scene: ...
+    surface: pygame.Surface
 
     def hide(self):
         """
@@ -257,15 +268,16 @@ class Paintable(Widget):
 
         WARNING : It is deprecated to call paint() yourself, use send_paint_request() instead.
 
-        In your implementation, update the widget's surface via Widget.set_surface()
-        If you want to see your changes updated to the screen, don't forget to include :
-            self.send_display_request()
+        :Examples:
 
-        Example:
             def paint(self):
                 surf = get_the_new_surface()
                 self.set_surface(surf)
-                self.send_display_request()  # TODO : set_surface() or self.surface.blit() & NEW_SURFACE.emit() & send()
+
+            def paint(self):
+                self.surface.blit(another_surface, (0, 0))
+                self.signal.NEW_SURFACE.emit()
+                self.send_display_request()
         """
 
     def send_paint_request(self):

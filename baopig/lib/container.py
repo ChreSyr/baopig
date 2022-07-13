@@ -150,10 +150,6 @@ class Container(ContainerDoc, ResizableWidget):
         self._padding = self.style["padding"]
         self._content_rect = BoxRect(self.auto_rect, self.padding)
 
-        # if self.is_hidden:
-        #     self.set_dirty(1)
-        # TODO : test to create a hidden button and then let it show
-
         # BACKGROUND
         self._background_color = self.style["background_color"]
         self.background_layer = None
@@ -162,8 +158,8 @@ class Container(ContainerDoc, ResizableWidget):
         if background_image is not None:
             self.set_background_image(background_image)
 
-        # self._flip()  # TODO : remove flip_all at application launch, because a Zone created during the process
-        #        is not correctly printed
+        # self._flip()  # TODO : remove flip_all at application launch, because a Zone created
+        #                   during the app lifetime is not correctly printed
 
     children = property(lambda self: self._children_manager.all)
     background_color = property(lambda self: self._background_color)

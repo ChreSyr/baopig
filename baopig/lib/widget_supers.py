@@ -158,9 +158,8 @@ class LinkableByMouse(LinkableByMouseDoc, HoverableByMouse):
 
     def unlink(self):
         """Send a request for unlinking this widget"""
-        if self is not mouse.linked_widget:
-            raise PermissionError(f"{self} is not linked")
-        mouse._unlink()
+        if self.is_linked:
+            mouse._unlink()
 
 
 class Focusable(FocusableDoc, LinkableByMouse):
@@ -202,12 +201,10 @@ class Focusable(FocusableDoc, LinkableByMouse):
         if key == pygame.K_TAB:
             self.handle_tab()
 
-    def handle_keyup(self, key):
-        """ Called when a key is released """
-
     def handle_tab(self):
         """
-        Give the focus to the next focusable (ranked by position) in parent
+        Give the focus to the next Focusable (ranked by position) in parent
+        If maj is pressed, gives the focus to the previous Focusable
         """
         all_focs = []
         for child in self.parent.children:

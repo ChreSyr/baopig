@@ -258,18 +258,15 @@ class Application(HasStyle):
     def exit(self, reason=None):
 
         self._is_running = False
-        with paint_lock:
-            self.painter.stop()
-            self.handle_app_close()
+        self.painter.stop()
+        self.handle_app_close()
 
-            # If the program launch the app again
-            # self._is_launched = False
-            # self._current_size = self._current_mode = None
-            # NOTE : after some tests, a pygame error makes it impossible to restart a closed application
-            # If you make it work, be sure to remove the following line
-            # application_keeper[0] = None
+        # NOTE : after some tests, a pygame error makes it impossible to restart a closed application
+        #        If I can make it work, and the program launches the app again
+        # self._is_launched = False
+        # self._current_size = self._current_mode = None
 
-            raise ApplicationExit(reason)
+        raise ApplicationExit(reason)
 
     def flash(self):
         """

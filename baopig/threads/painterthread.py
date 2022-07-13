@@ -45,24 +45,6 @@ class PainterThread(ExtraThread):
     is_recording = property(lambda self: self._is_recording)
     required_fps = property(lambda self: self._required_fps)
 
-    def _paint(self):
-
-        # Updating then drawing
-        with paint_lock:
-            try:
-                self.app.focused_scene._container_paint()
-            except Exception as e:
-                LOGGER.exception(e)
-
-        # FPS Tracer
-        """if self.fps_label.is_visible:
-            for i, required_fps in enumerate(self.fps_history):
-                color = 127
-                pygame.draw.line(self.display,
-                                 (color, color, color),
-                                 (i + 10, self.rect.bottom - 10),
-                                 (i + 10, self.rect.bottom - 10 - required_fps * 10))"""
-
     def get_current_fps(self):
         """
 
@@ -96,9 +78,10 @@ class PainterThread(ExtraThread):
 
     def stop(self):
 
-        super().stop()
-        if self.app._debug_averagefps:
-            self.fps_history_updater.cancel()
+        with paint_lock:
+            super().stop()
+            if self.app._debug_averagefps:
+                self.fps_history_updater.cancel()
 
     def start_recording(self, only_at_change=False):
 
@@ -117,10 +100,21 @@ class PainterThread(ExtraThread):
 
         try:
 
-            # Threads communication
-
             # Drawings
-            self._paint()
+            with paint_lock:
+                try:
+                    self.app.focused_scene._container_paint()
+                except Exception as e:
+                    LOGGER.exception(e)
+
+            # FPS Tracer
+            """if self.fps_label.is_visible:
+                for i, required_fps in enumerate(self.fps_history):
+                    color = 127
+                    pygame.draw.line(self.display,
+                                     (color, color, color),
+                                     (i + 10, self.rect.bottom - 10),
+                                     (i + 10, self.rect.bottom - 10 - required_fps * 10))"""
 
             # launch time
             if self.app._debug_launchtime and self.app.launch_time is not None:
@@ -131,7 +125,7 @@ class PainterThread(ExtraThread):
             # record
             if self.is_recording:
                 if not self.is_recording.only_at_change:
-                    pygame.image.save(self.app.display, self.out_directory + "record_{:0>3}.png".format(self.record_index))
+                    pygame.image.save(self.app.display, self.out_directory + f"record_{self.record_index:0>3}.png")
                     self.record_index += 1
 
             # FPS

@@ -72,7 +72,7 @@ class _Origin:
         replaced by an integer value
         """
 
-        old_pos = self.pos
+        old_pos = self.get_pos_relative_to_owner_parent()
         current_pos = getattr(self.owner.rect, self.location)
         if old_pos == current_pos:
             return
