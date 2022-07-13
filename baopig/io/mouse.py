@@ -8,57 +8,26 @@ from baopig.documentation import Focusable, HoverableByMouse, LinkableByMouse
 from .logging import LOGGER
 
 
-class MouseEvent(Object):
-
-    def __init__(self, signal, **kwargs):
-
-        Object.__init__(self, signal=signal, type=getattr(mouse, signal), **kwargs)
-        mouse.last_event = self
-
-    def __str__(self):
-        return f"<MouseEvent({self.type}-" \
-               f"{list(mouse._signals.keys())[list(mouse._signals.values()).index(self.type)]} {self.__dict__})>"
-    __repr__ = __str__
-
-
-iterator = (i for i in range(60, 100))
 class _Mouse(Communicative):
 
-    LEFTBUTTON_DOWN = next(iterator)
-    WHEELBUTTON_DOWN = next(iterator)
-    RIGHTBUTTON_DOWN = next(iterator)
-
-    LEFTBUTTON_UP = next(iterator)
-    WHEELBUTTON_UP = next(iterator)
-    RIGHTBUTTON_UP = next(iterator)
-
-    SCROLL = next(iterator)
-
-    MOTION = next(iterator)
-    RELEASEDRAG = next(iterator)
-
-    _signals = {
-
-        "LEFTBUTTON_DOWN": LEFTBUTTON_DOWN,
-        "WHEELBUTTON_DOWN": WHEELBUTTON_DOWN,
-        "RIGHTBUTTON_DOWN": RIGHTBUTTON_DOWN,
-
-        "LEFTBUTTON_UP": LEFTBUTTON_UP,
-        "WHEELBUTTON_UP": WHEELBUTTON_UP,
-        "RIGHTBUTTON_UP": RIGHTBUTTON_UP,
-
-        "SCROLL": SCROLL,
-
-        "MOTION": MOTION,
-        "RELEASEDRAG": RELEASEDRAG,
-    }
+    _signals = "MOUSEMOTION", "MOUSEBUTTONDOWN", "MOUSEBUTTONUP", "MOUSEWHEEL"
 
     def __init__(self):
 
         Communicative.__init__(self)
 
+        # 4 signals :
+        #     - MOUSEMOTION
+        #     - MOUSEBUTTONDOWN
+        #     - MOUSEBUTTONUP
+        #     - MOUSEWHEEL
         for signal in self._signals:
             self.create_signal(signal)
+
+        # for attr_name in pygame.__dict__.keys():
+        #     if attr_name.startswith("MOUSE"):
+        #         print("MOUSE signal : ", attr_name)
+        #         self.create_signal(attr_name)
 
         self._pos = (-1, -1)  # No collision at application launch
         self._rel = (0, 0)  # Le dernier deplacement de la souris
@@ -120,13 +89,12 @@ class _Mouse(Communicative):
         self._application = None
         self._display = None
         self._is_hovering_display = True
-        self.last_event = None
 
     def __repr__(self):
         return "<Mouse(" + str(self.__dict__) + ")>"
 
     def __str__(self):
-        return f"<Mouse(pos={self.pos}, pressed_buttons={self._pressed_buttons}, last_event={self.last_event})>"
+        return f"<Mouse(pos={self.pos}, pressed_buttons={self._pressed_buttons})>"
 
     pos = property(lambda self: self._pos)
     x = property(lambda self: self._pos[0])
@@ -249,7 +217,7 @@ class _Mouse(Communicative):
 
         # Unknown & skipable events
         if event.type not in (pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
-            LOGGER.warning("Unknown event : {}".format(event))
+            LOGGER.warning(f"Unknown event : {event}")
             return
         if event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN):
 
@@ -320,36 +288,6 @@ class _Mouse(Communicative):
                 self.scene._focus(focused)
                 self._link(linked)
 
-            # MOUSE EVENTS TRANSMISSION
-
-            if event.button == 1:
-                MouseEvent(
-                    signal="LEFTBUTTON_DOWN",
-                    pos=self.pos,
-                )
-            elif event.button == 2:
-                MouseEvent(
-                    signal="WHEELBUTTON_DOWN",
-                    pos=self.pos,
-                )
-            elif event.button == 3:
-                MouseEvent(
-                    signal="RIGHTBUTTON_DOWN",
-                    pos=self.pos,
-                )
-            elif event.button == 4:
-                MouseEvent(
-                    signal="SCROLL",
-                    direction=1,
-                )
-                self.update_hovered_widget()
-            elif event.button == 5:
-                MouseEvent(
-                    signal="SCROLL",
-                    direction=-1,
-                )
-                self.update_hovered_widget()
-
         elif event.type == pygame.MOUSEBUTTONUP:
 
             assert self.is_pressed(event.button)
@@ -357,30 +295,7 @@ class _Mouse(Communicative):
             # ACTUALIZING MOUSE STATE
             self._pressed_buttons[event.button] = False
 
-            # MOUSE EVENTS TRANSMISSION
-            if event.button == 1:  # release left button
-
-                MouseEvent(
-                    signal="LEFTBUTTON_UP",
-                    pos=self.pos
-                )
-
-            elif event.button == 2:  # release wheel button
-
-                MouseEvent(
-                    signal="WHEELBUTTON_UP",
-                    pos=self.pos,
-                )
-
-            elif event.button == 3:  # release right button
-
-                MouseEvent(
-                    signal="RIGHTBUTTON_UP",
-                    pos=self.pos,
-                )
-
-            # UPDATING CLICKS, FOCUSES, HOVERS...
-
+            # Linkable stuff
             if self.linked_widget:
                 self._unlink()
 
@@ -389,22 +304,18 @@ class _Mouse(Communicative):
             # ACTUALIZING MOUSE STATE
             self._pos = event.pos
 
-            # MOUSE EVENTS TRANSMISSION
-            MouseEvent(
-                signal="MOTION",
-                pos=self.pos,
-                rel=event.rel,
-            )
-
-            # LINK_MOTION or HOVER signals
+            # Linkable and Hoverable stuff
             if self.is_pressed(button_id=1):
                 if self.linked_widget:
-                    # self.linked_widget.signal.LINK_MOTION.emit(self.last_event)
-                    self.linked_widget.handle_link_motion(self.last_event)
+                    self.linked_widget.handle_link_motion(event)
             else:
                 self.update_hovered_widget()
 
-        getattr(self.signal, self.last_event.signal).emit(self.last_event)
+        # EVENT TRANSMISSION
+        for signal_id in self._signals:
+            if event.type == getattr(pygame, signal_id):
+                getattr(self.signal, signal_id).emit(event)
+                break
 
     def update_hovered_widget(self):
 

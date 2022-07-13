@@ -66,7 +66,7 @@ class ScrollableByMouse(Scrollable):
         Scrollable.__init__(self, scrollaxis)
 
         self._last_scroll_time = time.time()  # for faster scroll when together
-        mouse.signal.SCROLL.connect(self.handle_mouse_scroll, owner=self)
+        mouse.signal.MOUSEWHEEL.connect(self.handle_mouse_scroll, owner=self)
 
     def handle_mouse_scroll(self, scroll_event):
         """
@@ -74,6 +74,9 @@ class ScrollableByMouse(Scrollable):
         If this widget contains a Scrollable widget, both can scroll together
         If a widget is hovering this one, it still can be scrolled
         """
+        print(scroll_event)
+        if scroll_event:
+            raise NotImplemented
 
         if self.window is None:
             return
