@@ -46,7 +46,7 @@ class _Keyboard(Communicative):
         self._repeat_first_delay = None
         self._repeat_delay = None
 
-        self.set_repeat(500, 50)
+        self.set_repeat(.5, .05)
 
     application = property(lambda self: self._application)
     is_repeating = property(lambda self: self._is_repeating)
@@ -76,7 +76,7 @@ class _Keyboard(Communicative):
             if event.key not in self._pressedkeys_timers:
                 self._pressedkeys_timers[event.key] = None
             if self._is_repeating and self._pressedkeys_timers[event.key] is None:
-                repeat = RepeatingTimer((self._repeat_first_delay / 1000, self._repeat_delay / 1000),
+                repeat = RepeatingTimer((self._repeat_first_delay, self._repeat_delay),
                                         pygame.event.post, event)
                 repeat.start()
                 self._pressedkeys_timers[event.key] = repeat
@@ -124,7 +124,7 @@ class _Keyboard(Communicative):
                 break
 
     def set_repeat(self, first_delay, delay):
-        """Control how held keys are repeated, with delays in milliseconds"""
+        """Control how held keys are repeated, with delays in seconds"""
         # This solves a bug in pygame, who can't repeat two keys
 
         assert first_delay >= 0
