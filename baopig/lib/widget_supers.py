@@ -5,6 +5,7 @@ from baopig.documentation import Focusable as FocusableDoc
 from baopig.documentation import HoverableByMouse as HoverableByMouseDoc
 from baopig.documentation import LinkableByMouse as LinkableByMouseDoc
 from baopig.documentation import Paintable as PaintableDoc
+from baopig.documentation import ResizableWidget as ResizableWidgetDoc
 from baopig.documentation import Runable as RunableDoc
 from baopig.documentation import Validable as ValidableDoc
 from baopig.time.timer import RepeatingTimer
@@ -85,7 +86,7 @@ class Runable(RunableDoc, Widget):
         self._is_running = bool(val)
 
 
-class HoverableByMouse(HoverableByMouseDoc, Widget):
+class HoverableByMouse(HoverableByMouseDoc, Widget):  # TODO : auomatic update when scroll
 
     def __init__(self, parent, **kwargs):
         Widget.__init__(self, parent, **kwargs)
@@ -232,9 +233,7 @@ class DraggableByMouse(LinkableByMouse):
         self.move(*link_motion_event.rel)
 
 
-class ResizableWidget(Widget):
-    """Class for widgets who can be resized"""
-
+class ResizableWidget(ResizableWidgetDoc, Widget):
     STYLE = Widget.STYLE.substyle()
     STYLE.create(
         width=None,  # must be filled

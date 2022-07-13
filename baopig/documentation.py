@@ -394,7 +394,11 @@ class Focusable(LinkableByMouse):
         """ Called when a key is released """
 
 
-class Container(Widget):
+class ResizableWidget(Widget):
+    """Class for widgets who can be resized"""
+
+
+class Container(ResizableWidget):
     """
     Widgets parent
 
@@ -402,6 +406,8 @@ class Container(Widget):
     -----------
         children: list -> the list of all the children
     """
+
+    layers_manager: None
 
 
 class Selector(Container, Focusable):

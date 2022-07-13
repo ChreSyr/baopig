@@ -1,6 +1,7 @@
 
 
 from baopig.pybao.objectutilities import *
+from baopig.documentation import Container as ContainerDoc
 from .imagewidget import Image
 from .layer import Layer
 from .layersmanager import LayersManager
@@ -94,7 +95,7 @@ class ChildrenManager:
             self._owner._warn_change(child.hitbox)
 
 
-class Container(ResizableWidget):
+class Container(ContainerDoc, ResizableWidget):
     """
     Abstract class for widgets who need to contain other widgets
 

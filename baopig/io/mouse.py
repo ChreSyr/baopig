@@ -4,7 +4,7 @@ import time
 import pygame
 from baopig.pybao.objectutilities import Object, History
 from baopig.communicative import Communicative
-from baopig.documentation import Focusable, HoverableByMouse, LinkableByMouse
+from baopig.documentation import Container, Focusable, HoverableByMouse, LinkableByMouse
 from .logging import LOGGER
 
 
@@ -128,7 +128,7 @@ class _Mouse(Communicative):
                 assert layer.touchable
                 for child in reversed(layer):
                     if child.is_touchable_by_mouse and child.collidemouse():
-                        if hasattr(child, "children"):  # TODO : isinstance
+                        if isinstance(child, Container):
                             touched = get_touched_widget(child)
                             if touched is not None:
                                 return touched
