@@ -202,7 +202,7 @@ class Layer(Communicative):
         for widget in sorted_children:
             if widget.has_locked("origin"):
                 raise PermissionError("Cannot pack a layer who contains locked children")
-            widget.set_pos(topleft=(left - widget.auto_hitbox.left, top - widget.auto_hitbox.top))  # TODO : view.offset
+            widget.set_pos(topleft=(left, top))
 
             if axis == "horizontal":
                 left = widget.hitbox.right + children_margins.left

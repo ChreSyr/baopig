@@ -39,7 +39,7 @@ class UT_Origin_Zone(Zone):
             rect = pygame.Rect(b.abs)
             rect.top -= z.abs.top
             rect.left -= z.abs.left
-            r.set_window(rect)
+            r.set_window(rect, follow_movements=False)
 
         z.signal.MOTION.connect(PrefilledFunction(handle_motion, z, b, r), owner=None)
         handle_motion(z, b, r, 0, 0)
@@ -49,7 +49,7 @@ class UT_Origin_Zone(Zone):
         r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), center=z.auto.center)
         wb = Rectangle(z, center=("50%", "50%"), color=(0, 0, 0, 0),
                        size=[z.rect.w - 20] * 2, border_color=(0, 0, 0), border_width=1, touchable=False)
-        r.set_window(wb.rect)
+        r.set_window(wb.rect, follow_movements=False)
 
         # CLOCK
         z2 = DragableZone(self, midtop=("-50%", 186), refloc="topright",

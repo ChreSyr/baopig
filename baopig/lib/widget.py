@@ -2,7 +2,6 @@
 # TODO : smart to use static, interactive, dynamic ?
 
 import pygame
-from baopig.pybao.issomething import *
 from baopig.io import mouse
 from baopig.documentation import Widget as WidgetDoc
 from baopig.communicative import Communicative
@@ -175,8 +174,51 @@ class _Origin:
     pos = property(get_pos_relative_to_owner_parent)
 
 
-class _Window(tuple):
-    follow_movements = False
+class _Window:
+
+    def __init__(self, owner):
+
+        self._owner = owner
+
+        self._is_following_movements = True
+        self._is_set = False
+        self._offset = (0, 0)  # referenced from owner
+        self._size = owner.rect.size
+        self._surface = None
+
+        # self._update_surface()
+
+    is_following_movements = property(lambda self: self._is_following_movements)
+    is_set = property(lambda self: self._is_set)
+    offset = property(lambda self: self._offset)
+    size = property(lambda self: self._size)
+    surface = property(lambda self: self._surface)
+
+    def _update_surface(self):
+
+        subsurface_rect = self._owner.auto.clip(self._offset + self.size)
+        self._surface = self._owner.surface.subsurface(subsurface_rect)
+
+    def config(self, offset=None, size=None):
+
+        if offset is not None:
+            self._offset = tuple(offset)
+
+        if size is not None:
+            self._size = tuple(size)
+
+        # self._update_surface()
+
+    def get_hitbox(self):
+
+        offset_refed_from_owner_parent = (
+            self._offset[0] + self._owner.rect.left,
+            self._offset[1] + self._owner.rect.top,
+        )
+
+        return pygame.Rect(offset_refed_from_owner_parent, self._size).clip(self._owner.rect)
+
+        return offset_refed_from_owner_parent + self._size
 
 
 class Location(str):
@@ -497,7 +539,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         self._rect = ProtectedHitbox((0, 0), size)
         self._abs_rect = ProtectedHitbox((0, 0), size)
         self._auto_rect = ProtectedHitbox((0, 0), size)
-        self._window = None
+        self._window = _Window(self)
         self._hitbox = ProtectedHitbox((0, 0), size)
         self._abs_hitbox = ProtectedHitbox((0, 0), size)
         self._auto_hitbox = ProtectedHitbox((0, 0), size)
@@ -556,16 +598,15 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
             pygame.Rect.__setattr__(self.abs_rect, "topleft",
                                     (self.parent.abs.left + self.rect.left, self.parent.abs.top + self.rect.top))
 
-            if self.window is not None:
+            if self.window.is_set:
 
-                if self.window.follow_movements:
-                    self._window = _Window((self.window[0] + dx, self.window[1] + dy) + self.window[2:])
-                    self.window.follow_movements = True
+                if self.window.is_following_movements:
                     pygame.Rect.__setattr__(self.hitbox, "topleft", (self.hitbox.left + dx, self.hitbox.top + dy))
                     pygame.Rect.__setattr__(self.abs_hitbox, "topleft",
                                             (self.abs_hitbox.left + dx, self.abs_hitbox.top + dy))
                 else:
-                    self._hitbox = ProtectedHitbox(self.rect.clip(self.window))
+                    self._window.config(offset=(self.window.offset[0] - dx, self.window.offset[1] - dy))
+                    self._hitbox = ProtectedHitbox(self.window.get_hitbox())
                     pygame.Rect.__setattr__(self.abs_hitbox, "topleft", (
                         self.parent.abs.left + self.hitbox.left, self.parent.abs.top + self.hitbox.top))
                     pygame.Rect.__setattr__(self.auto_hitbox, "topleft",
@@ -650,23 +691,27 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         for key, value in kwargs.items():
             self.move_at(value, key=key)
 
-    def set_window(self, window, follow_movements=None):
+    def set_window(self, window, follow_movements):  # TODO : refed from self
         """window is a rect relative to the parent
 
         follow_movements default to False"""
 
-        if window is not None:
-            if window == self.window:
-                return
-            assert is_typed_iterable(window, int, 4) or isinstance(window, pygame.Rect), \
-                "Wrong recstyle object : {}".format(window)
-            self._window = _Window(window)
-            if follow_movements is not None:
-                self._window.follow_movements = bool(follow_movements)
+        self.window._is_set = window is not None
+        if window is None:
+            self.window.config(offset=(0, 0), size=self.rect.size)
+        else:
+            offset_from_parent = window[:2]
+            offset_from_self = (
+                offset_from_parent[0] - self.rect.left,
+                offset_from_parent[1] - self.rect.top
+            )
+            self.window.config(offset=offset_from_self, size=window[2:])
 
-            old_pos = self.hitbox.topleft
-            old_size = self.hitbox.size
-            self._hitbox = ProtectedHitbox(self.rect.clip(self.window))
+            self.window._is_following_movements = bool(follow_movements)
+
+            old_pos = self.rect.topleft
+            old_size = self.rect.size
+            self._hitbox = ProtectedHitbox(self.window.get_hitbox())
             pygame.Rect.__setattr__(self.abs_hitbox, "topleft",
                                     (self.parent.abs.left + self.hitbox.left, self.parent.abs.top + self.hitbox.top))
             # NOTE : should auto_hitbox.topleft be (0, 0) or the difference between self.pos and self.window.topleft ?
@@ -675,15 +720,12 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
             pygame.Rect.__setattr__(self.abs_hitbox, "size", self.hitbox.size)
             pygame.Rect.__setattr__(self.auto_hitbox, "size", self.hitbox.size)
 
-            if old_pos != self.hitbox.topleft:
+            if old_pos != self.rect.topleft:
                 self.signal.MOTION.emit(self.rect.left - old_pos[0], self.rect.top - old_pos[1])
             if old_size != self.rect.size:
                 self.signal.RESIZE.emit(old_size)
 
-        else:
-            self._window = None
-
-        self.send_display_request(rect=self.rect)  # rect is to cover all possibilities
+        self.send_display_request(rect=self.rect)  # rect covers all possibilities
 
 
 # HasVisibility
@@ -714,8 +756,8 @@ class HasProtectedSurface(HasProtectedHitbox):
             pygame.Rect.__setattr__(self.rect, "size", size)
             pygame.Rect.__setattr__(self.abs_rect, "size", size)
             pygame.Rect.__setattr__(self.auto_rect, "size", size)
-            if self.window:
-                size = self.rect.clip(self.window).size
+            if self.window.is_set:
+                size = self.window.get_hitbox().size
             pygame.Rect.__setattr__(self.hitbox, "size", size)
             pygame.Rect.__setattr__(self.abs_hitbox, "size", size)
             pygame.Rect.__setattr__(self.auto_hitbox, "size", size)
@@ -756,20 +798,18 @@ class HasProtectedSurface(HasProtectedHitbox):
 
 class Widget(HasProtectedSurface, metaclass=MetaPaintLocker):
 
-    def __init__(self, parent, surface=None, layer=None, layer_level=None, name=None, row=None, col=None,
+    def __init__(self, parent, layer=None, layer_level=None, name=None, row=None, col=None,
                  visible=True, **kwargs):
 
         if hasattr(self, "_weakref"):  # Widget.__init__() has already been called
             return
-
-        assert surface is not None
 
         # name is a string who may help to identify the widget
         # It is defined here, so it's in first place in self.__dict__ (should)
         self._name = name if name else "NoName"
 
         # INITIALIZATIONS
-        HasProtectedSurface.__init__(self, parent, surface, **kwargs)
+        HasProtectedSurface.__init__(self, parent, **kwargs)
 
         self._col = None
         self._row = None

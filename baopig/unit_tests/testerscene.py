@@ -89,7 +89,7 @@ app.launch()"""
         def update():
             window = pygame.Rect(self.try_it_yourself.code.rect)
             window.height = 550
-            self.try_it_yourself.code.set_window(window)
+            self.try_it_yourself.code.set_window(window, follow_movements=False)
             self.try_it_yourself.pack()
         update()
         self.signal.RESIZE.connect(update, owner=None)
