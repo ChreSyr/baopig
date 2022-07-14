@@ -51,7 +51,7 @@ class SelectableWidget(Widget):
     is_selected = property(lambda self: self._is_selected)
     selector = property(lambda self: self._selector_ref())
 
-    def check_select(self, selection_rect):
+    def check_select(self, selection_rect: Rectangle):
         """
         Method called by the selector each time the selection_rect rect changes
         The selection_rect has 3 attributes:
@@ -64,7 +64,7 @@ class SelectableWidget(Widget):
         """
 
         assert self.is_alive
-        if self.abs_hitbox.colliderect(selection_rect.abs_hitbox):
+        if self.abs_hitbox.colliderect(selection_rect.abs_rect):
             self._is_selected = True
             self.handle_select()
         else:
@@ -120,9 +120,9 @@ class SelectionRect(Rectangle):
                            (self.end[0] - self.start[0],
                             self.end[1] - self.start[1]))
         rect.normalize()
-        self.move_at(self.parent.abs_hitbox.referencing(rect.topleft))
+        self.move_at(self.parent.abs_rect.referencing(rect.topleft))
         self.resize(rect.w + 1, rect.h + 1)  # the selection_rect rect collide with mouse.pos
-        self.clip(self.parent.auto_hitbox)
+        self.clip(self.parent.auto_rect)
 
     def set_start(self, abs_pos):
         assert self.end is None
