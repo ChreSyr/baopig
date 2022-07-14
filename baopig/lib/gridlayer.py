@@ -316,7 +316,9 @@ class GridLayer(Layer):
     def _update_widget(self, widget):
         """Updates window & position"""
         cell_rect = self.get_cell_rect(widget.row, widget.col)
-        widget.set_window(cell_rect, follow_movements=False)
+        widget.resize(*cell_rect[2:])  # TODO : resize(size) ?
+        # TODO : use size_hint
+        # widget.set_window(cell_rect, follow_movements=False)
         widget.set_lock(origin=False)
         if widget.origin.location is not None:
             widget.origin.config(pos=getattr(pygame.Rect(cell_rect), widget.origin.location),
@@ -375,9 +377,6 @@ class GridLayer(Layer):
                 self.pack()
             else:
                 self._update_widget(widget)
-
-            if widget.window is None:
-                widget.set_window(row.get_cell_rect(widget.col), follow_movements=False)  # TODO : widget.resize()
 
             # don't need owner because, if the grid is killed,
             # it means the container is killed, so the widget is also killed
