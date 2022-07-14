@@ -202,7 +202,6 @@ class ProtectedHitbox(pygame.Rect):
 
     def __init__(self, *args, **kwargs):
         pygame.Rect.__init__(self, *args, **kwargs)
-        object.__setattr__(self, "_mask", None)
 
     def __setattr__(self, *args):
         raise self.ERR
@@ -432,15 +431,6 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
     STYLE.set_type("loc", Location)
     STYLE.set_type("refloc", Location)
 
-    HITBOX_ATTRIBUTES = (
-        "topleft", "midtop", "topright",
-        "midleft", "center", "midright",
-        "bottomleft", "midbottom", "bottomright",
-        "top", "left", "right", "bottom",
-        "centerx", "centery", "x", "y",
-        "pos",  # pos = topleft
-    )
-
     def __init__(self, parent, size, touchable=True, **kwargs):
         """
         rect is the surface hitbox, relative to the parent
@@ -552,30 +542,6 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
     hitbox = property(lambda self: self._hitbox)
     abs_hitbox = property(lambda self: self._abs_hitbox)
     auto_hitbox = property(lambda self: self._auto_hitbox)
-
-    # bottom = property(lambda self: self._rect.bottom)
-    # bottomleft = property(lambda self: self._rect.bottomleft)
-    # bottomright = property(lambda self: self._rect.bottomright)
-    # center = property(lambda self: self._rect.center)
-    # centerx = property(lambda self: self._rect.centerx)
-    # centery = property(lambda self: self._rect.centery)
-    # left = property(lambda self: self._rect.left)
-    # midbottom = property(lambda self: self._rect.midbottom)
-    # midleft = property(lambda self: self._rect.midleft)
-    # midright = property(lambda self: self._rect.midright)
-    # midtop = property(lambda self: self._rect.midtop)
-    # pos = topleft = property(lambda self: self._rect.topleft)
-    # right = property(lambda self: self._rect.right)
-    # top = property(lambda self: self._rect.top)
-    # topright = property(lambda self: self._rect.topright)
-    # x = property(lambda self: self._rect.x)
-    # y = property(lambda self: self._rect.y)
-
-    # h = property(lambda self: self._rect.h)
-    # height = property(lambda self: self._rect.height)
-    # size = property(lambda self: self._rect.size)
-    # w = property(lambda self: self._rect.w)
-    # width = property(lambda self: self._rect.width)
 
     def _move(self, dx, dy):
 

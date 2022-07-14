@@ -14,7 +14,7 @@ class Rectangle(ResizableWidget, Paintable):
 
     If the border_width parameter is filled, the rectangle will not be filled, only its borders
     The border_width is given in pixels
-    The border only goes inside the hitbox, not outside
+    The border only goes inside the rect, not outside
     """
 
     STYLE = ResizableWidget.STYLE.substyle()
@@ -47,15 +47,15 @@ class Rectangle(ResizableWidget, Paintable):
     border_color = property(lambda self: self._border_color)
     border_width = property(lambda self: self._border_width)
 
-    def clip(self, rect):  # TODO : used ?
+    def clip(self, rect):
         """
         Clip the rectangle inside another (wich are both relative to the parent)
         """
-        new_hitbox = self.hitbox.clip(rect)
-        if new_hitbox == self.hitbox:
+        new_rect = self.rect.clip(rect)
+        if new_rect == self.rect:
             return
-        self.move_at(new_hitbox.topleft)
-        self.resize(*new_hitbox.size)
+        self.move_at(new_rect.topleft)
+        self.resize(*new_rect.size)
 
     def handle_resize(self):
         self.send_paint_request()
@@ -93,9 +93,9 @@ class Rectangle(ResizableWidget, Paintable):
 
 class Highlighter(Rectangle):
     """
-    A Highlighter is a border filled with one color surrounding a target's hitbox
+    A Highlighter is a border filled with one color surrounding a target's rect
     If the highlighter can be in the target's layer, it is placed in front of the target
-    The border is one pixel inside the hitbox, so targets like scenes can be visually
+    The border is one pixel inside the rect, so targets like scenes can be visually
     highlighted
     """
     STYLE = Rectangle.STYLE.substyle()

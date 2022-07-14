@@ -302,8 +302,7 @@ class Container(ContainerDoc, ResizableWidget):
             return
 
         with paint_lock:
-            rect = self._rect_to_update
-            self._rect_to_update = None
+            rect, self._rect_to_update = self._rect_to_update, None
             self.surface.fill(self.background_color, rect=rect)
             if self._border_width:
                 pygame.draw.rect(self.surface, self._border_color, (0, 0) + self.rect.size, self._border_width * 2 - 1)

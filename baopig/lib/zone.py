@@ -57,7 +57,7 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
         if self.is_hidden:
             return
 
-        with paint_lock:
+        with paint_lock:  # TODO : usefull ?
 
             self._flip_without_update()
 

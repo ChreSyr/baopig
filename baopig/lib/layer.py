@@ -199,26 +199,17 @@ class Layer(Communicative):
         sorted_children = sorted(self, key=key)
 
         left, top = padding.left + start_pos[0], padding.top + start_pos[1]
-        if axis == "horizontal":
-            for widget in sorted_children:
-                if widget.has_locked("origin"):
-                    raise PermissionError("Cannot pack a layer who contains locked children")
-                if widget.window is not None:
-                    widget.set_pos(topleft=(left - widget.window[0], top - widget.window[1]))
-                else:
-                    widget.set_pos(topleft=(left, top))
+        for widget in sorted_children:
+            if widget.has_locked("origin"):
+                raise PermissionError("Cannot pack a layer who contains locked children")
+            widget.set_pos(topleft=(left - widget.auto_hitbox.left, top - widget.auto_hitbox.top))  # TODO : view.offset
+
+            if axis == "horizontal":
                 left = widget.hitbox.right + children_margins.left
-        elif axis == "vertical":
-            for widget in sorted_children:
-                if widget.has_locked("origin"):
-                    raise PermissionError("Cannot pack a layer who contains locked children")
-                if widget.window is not None:
-                    widget.set_pos(topleft=(left - widget.window[0], top - widget.window[1]))
-                else:
-                    widget.set_pos(topleft=(left, top))
+            elif axis == "vertical":
                 top = widget.hitbox.bottom + children_margins.top
-        else:
-            raise ValueError(f"axis must be either 'horizontal' or 'vertical', not {axis}")
+            else:
+                raise ValueError(f"axis must be either 'horizontal' or 'vertical', not {axis}")
 
     def remove(self, widget):
         """

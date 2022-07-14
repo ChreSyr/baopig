@@ -377,7 +377,7 @@ class GridLayer(Layer):
                 self._update_widget(widget)
 
             if widget.window is None:
-                widget.set_window(row.get_cell_rect(widget.col))
+                widget.set_window(row.get_cell_rect(widget.col))  # TODO : widget.resize()
 
             # don't need owner because, if the grid is killed,
             # it means the container is killed, so the widget is also killed
