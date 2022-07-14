@@ -230,6 +230,7 @@ class _Line(Widget):
                     text=self.text[self.text.index('\n') + 1:],
                     line_index=self.line_index + .00001
                 )
+                self.parent._pack()
                 self._text = self.text[:self.text.index('\n')]
 
             self.update_char_pos()
@@ -255,6 +256,7 @@ class _Line(Widget):
                         text=self.text[index_newline_start:],
                         line_index=self.line_index + .00001,  # the line will correct itself
                     )
+                    self.parent._pack()
                     self._end = sep
                     self._text = self.text[0:index_end]
                     self.update_char_pos()
@@ -265,7 +267,6 @@ class _Line(Widget):
             surface.blit(font_render, (0, 0))
             self.set_surface(surface)
             # self._asked_size = surface.get_size()
-            self.parent._pack()
 
     def update_char_pos(self):
         """
@@ -346,6 +347,7 @@ class _SelectableLine(_Line):
 
         if self.selection is None:
             _LineSelection(self)
+            self.selection.swap_layer("line_selections")
 
         selecting_line_end = False
         if self.abs_rect.top <= selection.start[1] < self.abs_rect.bottom:
@@ -450,7 +452,6 @@ class _LineSelection(Rectangle):
         # self.move_behind(self.line)
         self.line._selection_ref = self.get_weakref()
         self.line.signal.KILL.connect(self.kill, owner=self)
-        self.swap_layer("line_selections")
 
     index_end = property(lambda self: self._index_end)
     index_start = property(lambda self: self._index_start)
@@ -783,6 +784,7 @@ class Text(Zone, SelectableWidget):
                     text=text,
                     line_index=0,
                 )
+                self._pack()
 
             self._pack()
             self._name = self.lines[0].text

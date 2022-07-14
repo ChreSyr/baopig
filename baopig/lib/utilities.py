@@ -9,7 +9,9 @@ import pygame
 class MetaPaintLocker(type):
     def __call__(cls, *args, **kwargs):
         with paint_lock:
-            return super().__call__(*args, **kwargs)
+            widget = super().__call__(*args, **kwargs)
+            widget.parent._add_child(widget)
+            return widget
 
 
 class Color(pygame.Color):

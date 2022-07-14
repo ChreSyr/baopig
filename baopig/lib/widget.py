@@ -841,8 +841,6 @@ class Widget(HasProtectedSurface, metaclass=MetaPaintLocker):
 
         self._is_visible = visible
 
-        parent._add_child(self)
-
     def __repr__(self):
         """
         Called by repr(self)
@@ -879,6 +877,7 @@ class Widget(HasProtectedSurface, metaclass=MetaPaintLocker):
         self.layer.move_widget1_in_front_of_widget2(widget1=self, widget2=widget)
 
     def swap_layer(self, layer):
+        """ NOTE : cannot be called during construction """
 
         if isinstance(layer, str):
             layer = self.parent.layers_manager.get_layer(layer)

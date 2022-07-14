@@ -78,6 +78,7 @@ class TextEdit(Text, Selector):
 
         if self.cursor is None:
             Cursor(self, line_index=line_index, char_index=char_index)
+            self.cursor.swap_layer("cursors_layer")
         else:
             self.cursor.wake()
             self.cursor.config(line_index=line_index, char_index=char_index)
@@ -213,7 +214,6 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         self._text_index = None  # index of cusor in Text.text
 
         self.parent._cursor_ref = self.get_weakref()
-        self.swap_layer("cursors_layer")
         self.set_touchable_by_mouse(False)
         self.start_animation()
 
