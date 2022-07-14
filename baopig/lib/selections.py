@@ -201,7 +201,7 @@ class Selector(SelectorDoc, Container, Focusable):
         selected = tuple(self._iselected)
         if not selected:
             return  # happens when the selection_rect didn't select anything
-        sorted_selected = sorted(selected, key=lambda o: (o.abs.top, o.abs.left))
+        sorted_selected = sorted(selected, key=lambda o: (o.abs_rect.top, o.abs_rect.left))
         return '\n'.join(str(s.get_selected_data()) for s in sorted_selected)
 
     def handle_defocus(self):
@@ -264,8 +264,8 @@ class Selector(SelectorDoc, Container, Focusable):
         if self.selectables:
             if self.is_selecting:
                 self.close_selection()
-            self.start_selection(self.abs.topleft)
-            self.end_selection(self.abs.bottomright, visible=False)
+            self.start_selection(self.abs_rect.topleft)
+            self.end_selection(self.abs_rect.bottomright, visible=False)
 
     def set_selectionrect_visibility(self, visible):
 

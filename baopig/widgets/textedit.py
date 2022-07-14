@@ -59,7 +59,7 @@ class TextEdit(Text, Selector):
 
         super().end_selection(*args, **kwargs)
 
-        pos = (self.selection_rect.end[0] - self.abs.left, self.selection_rect.end[1] - self.abs.top)
+        pos = (self.selection_rect.end[0] - self.abs_rect.left, self.selection_rect.end[1] - self.abs_rect.top)
         line_index, char_index = self._find_indexes(pos=pos)
         if line_index != self.cursor.line_index or char_index != self.cursor.char_index:
             self.cursor.config(line_index=line_index, char_index=char_index, selecting="done")
@@ -254,7 +254,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
 
         if selecting is True and self.parent.selection_rect.start is None:
             pos = self.parent.find_pos(self.text_index)
-            abs_pos = self.parent.abs.left + pos[0], self.parent.abs.top + pos[1]
+            abs_pos = self.parent.abs_rect.left + pos[0], self.parent.abs_rect.top + pos[1]
             self.parent.start_selection(abs_pos)
 
         def fit(v, mini, maxi):
@@ -295,7 +295,7 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
             pass
         elif selecting is True:
             if self.parent.selection_rect.end is None or old_pos != self.rect.pos:
-                self.parent.end_selection(self.abs.topleft)
+                self.parent.end_selection(self.abs_rect.topleft)
         elif selecting is False:
             if self.parent.is_selecting:
                 self.parent.close_selection()

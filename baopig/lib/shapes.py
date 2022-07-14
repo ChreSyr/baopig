@@ -199,7 +199,7 @@ class Line(Widget):
             min(p[1] for p in points),
         )
 
-        Widget.__init__(self, parent, surf, pos=pos, **kwargs)
+        Widget.__init__(self, parent, surface=surf, pos=pos, **kwargs)
 
         self._points = points
 

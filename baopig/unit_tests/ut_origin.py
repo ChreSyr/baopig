@@ -27,29 +27,20 @@ class UT_Origin_Zone(Zone):
         # Prisonner at center of the magical show
         z = DragableZone(self, sticky="midtop", size=(100, 100), background_color=(40, 34, 34), name="bottom")
         z.move_behind(b)
-        DragableRectangle(z, color=(0, 128, 128), size=(30, 30), center=z.auto.center, ref=b)
+        DragableRectangle(z, color=(0, 128, 128), size=(30, 30), center=z.auto_rect.center, ref=b)
 
         # Prisonner inside magical show, at center of its zone
-        z = DragableZone(self, sticky="topright",
-                         size=(100, 100), background_color=(40, 34, 34), name="bottomright")
+        z = DragableZone(self, sticky="topright", size=(100, 100), background_color=(40, 34, 34), name="bottomright")
         z.move_behind(b)
-        r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), center=z.auto.center)
-
-        def handle_motion(z, b, r, dx, dy):
-            rect = pygame.Rect(b.abs)
-            rect.top -= z.abs.top
-            rect.left -= z.abs.left
-            r.set_window(rect, follow_movements=False)
-
-        z.signal.MOTION.connect(PrefilledFunction(handle_motion, z, b, r), owner=None)
-        handle_motion(z, b, r, 0, 0)
+        z_window = Zone(z, size=("100%", "100%"), ref=b)
+        DragableRectangle(z_window, color=(0, 128, 128), size=(30, 30), center=z.auto_rect.center, ref=z)
 
         # PRISONNER
-        z = DragableZone(self, sticky="midright", size=(100, 100), background_color=(0, 64, 64), name="right")
-        r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), center=z.auto.center)
-        wb = Rectangle(z, center=("50%", "50%"), color=(0, 0, 0, 0),
-                       size=[z.rect.w - 20] * 2, border_color=(0, 0, 0), border_width=1, touchable=False)
-        r.set_window(wb.rect, follow_movements=False)
+        # z = DragableZone(self, sticky="midright", size=(100, 100), background_color=(0, 64, 64), name="right")
+        # wb = Rectangle(z, center=("50%", "50%"), color=(0, 0, 0, 0),
+        #                size=[z.rect.w - 20] * 2, border_color=(0, 0, 0), border_width=1, touchable=False)
+        # r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), center=z.auto_rect.center)
+        # r.set_window(wb.rect, follow_movements=False)
 
         # CLOCK
         z2 = DragableZone(self, midtop=("-50%", 186), refloc="topright",
@@ -93,13 +84,10 @@ class UT_Origin_Zone(Zone):
                 "the cross is always at the texting zone center, even after a resize",
                 "the topright and midtop corners can be dragged",
                 "the topright and midtop corners follow the testing zone resizing even after being moved",
-                "a prisonner can only be seen trought its window",
-                "the first prisonner (light blue rect) is not visible outside the window (black border)",
                 "if the topright corner is set inside the topleft border, a prisonner appears at corner's center",
                 "if the midtop corner is set inside the topleft border, a prisonner appears at border'center",
                 "when the midtop corner moves, the prisonner is visually static, even with low fps",
-                "the first prisonner can be dragged",
-                "the first prisonner can only be seen trought the window, once again",
+                "a prisonner can be dragged",
                 "the clock (light gray surface at the center) can be dragged",
                 "after the scene width changed, the clock abcissa is still at the center of the application",
                 "if the clock has moved, after a scene resizing, it keeps the same distance from the scene's right",

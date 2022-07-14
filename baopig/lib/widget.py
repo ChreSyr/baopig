@@ -79,8 +79,8 @@ class _Origin:
         if self.is_locked:
             raise AssertionError(self)
 
-        owner_abspos_at_location = getattr(self.owner.abs, self.location)
-        reference_abspos_at_location = getattr(self.reference.abs, self.reference_location)
+        owner_abspos_at_location = getattr(self.owner.abs_rect, self.location)
+        reference_abspos_at_location = getattr(self.reference.abs_rect, self.reference_location)
 
         self._asked_pos = (
             owner_abspos_at_location[0] - reference_abspos_at_location[0],
@@ -165,8 +165,8 @@ class _Origin:
         if self.reference is not self.owner.parent:
             ref_absrect = getattr(self.reference, "abs_" + rect)
             pos = (
-                pos[0] + ref_absrect.left - self.owner.parent.abs.left,
-                pos[1] + ref_absrect.top - self.owner.parent.abs.top
+                pos[0] + ref_absrect.left - self.owner.parent.abs_rect.left,
+                pos[1] + ref_absrect.top - self.owner.parent.abs_rect.top
             )
 
         return tuple(pos)
@@ -196,7 +196,7 @@ class _Window:
 
     def _update_surface(self):
 
-        subsurface_rect = self._owner.auto.clip(self._offset + self.size)
+        subsurface_rect = self._owner.auto_rect.clip(self._offset + self.size)
         self._surface = self._owner.surface.subsurface(subsurface_rect)
 
     def config(self, offset=None, size=None):
@@ -476,8 +476,8 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
     def __init__(self, parent, size, touchable=True, **kwargs):
         """
         rect is the surface hitbox, relative to the parent
-        abs_rect is the rect relative to the application (also called 'abs')
-        auto_rect is the rect relative to the widget itself -> topleft = (0, 0) (also called 'auto')
+        abs_rect is the rect relative to the application
+        auto_rect is the rect relative to the widget itself -> topleft = (0, 0)
         window is the rect inside wich the surface can be seen, relative to the parent
         hitbox is the result of clipping rect and window.
         If window is set to None, the hitbox will equal to the rect
@@ -547,9 +547,9 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         # SETUP
         pygame.Rect.__setattr__(self.rect, self.origin.location, self.origin.pos)
         pygame.Rect.__setattr__(self.abs_rect, "topleft",
-                                (self.parent.abs.left + self.rect.left, self.parent.abs.top + self.rect.top))
+                                (self.parent.abs_rect.left + self.rect.left, self.parent.abs_rect.top + self.rect.top))
         pygame.Rect.__setattr__(self.hitbox, "topleft", self.rect.topleft)
-        pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs.topleft)
+        pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs_rect.topleft)
 
         # Connections
         self.signal.WAKE.connect(self._update_pos, owner=self)
@@ -578,8 +578,8 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
 
     # HITBOX
     rect = property(lambda self: self._rect)
-    abs = abs_rect = property(lambda self: self._abs_rect)
-    auto = auto_rect = property(lambda self: self._auto_rect)
+    abs_rect = property(lambda self: self._abs_rect)
+    auto_rect = property(lambda self: self._auto_rect)
     window = property(lambda self: self._window)
     hitbox = property(lambda self: self._hitbox)
     abs_hitbox = property(lambda self: self._abs_hitbox)
@@ -595,8 +595,8 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
 
             pygame.Rect.__setattr__(self.rect, "left", self.rect.left + dx)
             pygame.Rect.__setattr__(self.rect, "top", self.rect.top + dy)
-            pygame.Rect.__setattr__(self.abs_rect, "topleft",
-                                    (self.parent.abs.left + self.rect.left, self.parent.abs.top + self.rect.top))
+            pygame.Rect.__setattr__(self.abs_rect, "topleft", (self.parent.abs_rect.left + self.rect.left,
+                                                               self.parent.abs_rect.top + self.rect.top))
 
             if self.window.is_set:
 
@@ -608,7 +608,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
                     self._window.config(offset=(self.window.offset[0] - dx, self.window.offset[1] - dy))
                     self._hitbox = ProtectedHitbox(self.window.get_hitbox())
                     pygame.Rect.__setattr__(self.abs_hitbox, "topleft", (
-                        self.parent.abs.left + self.hitbox.left, self.parent.abs.top + self.hitbox.top))
+                        self.parent.abs_rect.left + self.hitbox.left, self.parent.abs_rect.top + self.hitbox.top))
                     pygame.Rect.__setattr__(self.auto_hitbox, "topleft",
                                             (self.hitbox.left - self.rect.left, self.hitbox.top - self.rect.top))
                     if old_hitbox[2:] != self.hitbox.size:
@@ -616,7 +616,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
                         pygame.Rect.__setattr__(self.auto_hitbox, "size", self.hitbox.size)
             else:
                 pygame.Rect.__setattr__(self.hitbox, "topleft", self.rect.topleft)
-                pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs.topleft)
+                pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs_rect.topleft)
 
             # We reset the asked_pos after the MOTION in order to allow cycles of origin referecing
             self.origin._reset_asked_pos()
@@ -712,8 +712,8 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
             old_pos = self.rect.topleft
             old_size = self.rect.size
             self._hitbox = ProtectedHitbox(self.window.get_hitbox())
-            pygame.Rect.__setattr__(self.abs_hitbox, "topleft",
-                                    (self.parent.abs.left + self.hitbox.left, self.parent.abs.top + self.hitbox.top))
+            pygame.Rect.__setattr__(self.abs_hitbox, "topleft", (self.parent.abs_rect.left + self.hitbox.left,
+                                                                 self.parent.abs_rect.top + self.hitbox.top))
             # NOTE : should auto_hitbox.topleft be (0, 0) or the difference between self.pos and self.window.topleft ?
             pygame.Rect.__setattr__(self.auto_hitbox, "topleft",
                                     (self.hitbox.left - self.rect.left, self.hitbox.top - self.rect.top))

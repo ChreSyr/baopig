@@ -249,7 +249,7 @@ class Container(ContainerDoc, ResizableWidget):
         """Update all the surface, but don't prevent the parent"""
 
         with paint_lock:  # prevents self._rect_to_update changes during self._update_rect()
-            self._rect_to_update = pygame.Rect(self.auto)
+            self._rect_to_update = pygame.Rect(self.auto_rect)
             self._update_rect()
 
     def _remove_child(self, child):
@@ -412,4 +412,4 @@ class Container(ContainerDoc, ResizableWidget):
     def set_window(self, *args, **kwargs):
 
         super().set_window(*args, **kwargs)
-        self._rect_to_update = pygame.Rect(self.auto)
+        self._rect_to_update = pygame.Rect(self.auto_rect)

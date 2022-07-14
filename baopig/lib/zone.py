@@ -35,7 +35,7 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
         try:
             self._surface = self.parent.surface.subsurface(self.rect.topleft + self.rect.size)
         except ValueError:
-            assert not self.parent.auto.contains(self.rect)
+            assert not self.parent.auto_rect.contains(self.rect)
             raise PermissionError("A SubZone must fit inside its parent")
 
         self.parent.signal.NEW_SURFACE.connect(self._update_subsurface, owner=self)
@@ -47,9 +47,9 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
             try:
                 Widget.set_surface(self, self.parent.surface.subsurface(self.rect.topleft + self.rect.size))
             except ValueError:
-                assert not self.parent.auto.contains(self.rect)
+                assert not self.parent.auto_rect.contains(self.rect)
                 Widget.set_surface(self, self.parent.surface.subsurface(
-                    pygame.Rect(self.rect).clip(self.parent.auto)))  # resize the subzone
+                    pygame.Rect(self.rect).clip(self.parent.auto_rect)))  # resize the subzone
 
     def _flip(self):  # TODO : check with new padding & etc
         """Update all the surface"""
@@ -101,6 +101,6 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
             try:
                 Widget.set_surface(self, self.parent.surface.subsurface(self.rect.topleft + asked_size))
             except ValueError:
-                assert not self.parent.auto.contains(self.rect)
+                assert not self.parent.auto_rect.contains(self.rect)
                 raise PermissionError("A SubZone must fit inside its parent")
             self._flip_without_update()

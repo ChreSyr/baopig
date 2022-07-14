@@ -322,7 +322,7 @@ class _SelectableLine(_Line):
         """
 
         assert self.is_alive
-        collide_rect = (self.parent.abs.left, self.abs.top, self.parent.abs.w, self.abs.h)
+        collide_rect = (self.parent.abs_rect.left, self.abs_rect.top, self.parent.abs_rect.w, self.abs_rect.h)
 
         if selection_rect.abs_rect.colliderect(collide_rect):
             self._is_selected = True
@@ -348,18 +348,18 @@ class _SelectableLine(_Line):
             _LineSelection(self)
 
         selecting_line_end = False
-        if self.abs.top <= selection.start[1] < self.abs.bottom:
-            start = self.find_index(selection.start[0] - self.abs.left)
-        elif selection.start[1] < self.abs.top:
+        if self.abs_rect.top <= selection.start[1] < self.abs_rect.bottom:
+            start = self.find_index(selection.start[0] - self.abs_rect.left)
+        elif selection.start[1] < self.abs_rect.top:
             start = 0
         else:
             start = len(self.text)
             if self is not self.parent.lines[-1]:
                 selecting_line_end = True
 
-        if self.abs.top <= selection.end[1] < self.abs.bottom:
-            end = self.find_index(selection.end[0] - self.abs.left)
-        elif selection.end[1] < self.abs.top:
+        if self.abs_rect.top <= selection.end[1] < self.abs_rect.bottom:
+            end = self.find_index(selection.end[0] - self.abs_rect.left)
+        elif selection.end[1] < self.abs_rect.top:
             end = 0
         else:
             end = len(self.text)
@@ -400,13 +400,14 @@ class _SelectableLine(_Line):
             if self.selector.is_selecting:
                 self.selector.close_selection()
             if index_start == 0:
-                self.selector.start_selection((self.abs.left, self.abs.top))
+                self.selector.start_selection((self.abs_rect.left, self.abs_rect.top))
             else:
-                self.selector.start_selection((self.abs.left + self.find_pixel(index_start), self.abs.top))
+                self.selector.start_selection((self.abs_rect.left + self.find_pixel(index_start), self.abs_rect.top))
             if index_end == len(self.text):
-                self.selector.end_selection((self.abs.right, self.abs.top), visible=False)
+                self.selector.end_selection((self.abs_rect.right, self.abs_rect.top), visible=False)
             else:
-                self.selector.end_selection((self.abs.left + self.find_pixel(index_end), self.abs.top), visible=False)
+                self.selector.end_selection((self.abs_rect.left + self.find_pixel(index_end), self.abs_rect.top),
+                                            visible=False)
 
 
 class _LineSelection(Rectangle):
@@ -819,15 +820,15 @@ class Text(Zone, SelectableWidget):
 
         if mouse.has_triple_clicked:
             for line in self.lines:
-                if line.abs.top <= mouse.y < line.abs.bottom:
+                if line.abs_rect.top <= mouse.y < line.abs_rect.bottom:
                     with paint_lock:
                         self.selector.close_selection()
-                        self.selector.start_selection((line.abs.left, line.abs.top))
-                        self.selector.end_selection((line.abs.right, line.abs.top), visible=False)
+                        self.selector.start_selection((line.abs_rect.left, line.abs_rect.top))
+                        self.selector.end_selection((line.abs_rect.right, line.abs_rect.top), visible=False)
                         return
         elif mouse.has_double_clicked:
             for line in self.lines:
-                if line.abs.top <= mouse.y < line.abs.bottom:
+                if line.abs_rect.top <= mouse.y < line.abs_rect.bottom:
                     line.select_word(line.find_mouse_index())
 
     def handle_unselect(self):

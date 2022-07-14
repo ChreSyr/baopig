@@ -112,7 +112,7 @@ class Widget(Communicative):
     :Methods:
     ---------
         set_pos(pos=None, pos_loc=None, refloc=None) -> moves the widget  # TODO
-            # pos = pos + ref.abs.refloc - parent.abs.topleft
+            # pos = pos + ref.abs_rect.refloc - parent.abs_rect.topleft
             # rect.pos_loc = pos
             # signal.MOTION.emit()
 
@@ -145,10 +145,8 @@ class Widget(Communicative):
     surface: pygame.Surface
 
     # HITBOX
-    abs: ProtectedRect
     abs_hitbox: ProtectedRect
     abs_rect: ProtectedRect
-    auto: ProtectedRect
     auto_hitbox: ProtectedRect
     auto_rect: ProtectedRect
     hitbox: ProtectedRect
