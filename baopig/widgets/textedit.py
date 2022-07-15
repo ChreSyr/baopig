@@ -107,81 +107,7 @@ class TextEdit(Text, Selector):
         super().set_text(text)
 
 
-class HaveHistory:
-
-    def __init__(self):
-
-        """
-        A History element is created when :
-            - A new text insert
-            - A part of text pop
-            - Just before a selected data is delete
-
-        A History element store these data :
-            - the entire text of parent
-            - the cusror indexes (line and char)
-            - the selection start and end, if the parent was selecting
-        """
-        max_item_stored = 50
-        self.history = deque(maxlen=max_item_stored)
-        self.back_history = deque(maxlen=max_item_stored)
-
-    def redo(self):
-        """
-        Restaure la derniere modification
-        """
-        if self.back_history:
-
-            backup = self.back_history.pop()  # last element of self.back_history, the current state
-            self.history.append(backup)
-
-            backup = self.history[-1]
-            self.parent.set_text(backup.text)
-            self.config(line_index=backup.cursor_line_index, char_index=backup.cursor_char_index, save=False)
-            if backup.selection_start is not None:
-                if self.parent.is_selecting:
-                    self.parent.close_selection()
-                self.parent.start_selection(backup.selection_start)
-                self.parent.end_selection(backup.selection_end)
-
-        # else:
-        #     LOGGER.info("Cannot redo last operation because the operations history is empty")
-
-    def save(self):
-
-        # if self.parent.is_selecting:
-        current = Object(
-            text=self.parent.text,
-            cursor_line_index=self.line_index,
-            cursor_char_index=self.char_index,
-            selection_start=self.parent.selection_rect.start if self.parent.selection_rect else None,
-            selection_end=self.parent.selection_rect.end if self.parent.selection_rect else None
-        )
-        self.history.append(current)
-        self.back_history.clear()
-
-    def undo(self):
-        """
-        Annule la derniere modification
-        """
-        if len(self.history) > 1:  # need at least 2 elements in history
-
-            backup = self.history.pop()  # last element of self.history, which is the state before undo()
-            self.back_history.append(backup)
-
-            previous = self.history[-1]
-            self.parent.set_text(previous.text)
-            self.config(line_index=previous.cursor_line_index, char_index=previous.cursor_char_index, save=False)
-            if previous.selection_start is not None:
-                if self.parent.is_selecting:
-                    self.parent.close_selection()
-                self.parent.start_selection(previous.selection_start)
-                self.parent.end_selection(previous.selection_end)
-        # else:
-        #     LOGGER.info("Cannot undo last operation because the operations history is empty")
-
-
-class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
+class Cursor(Rectangle, RepetivelyAnimated):
     """
     By default, at creation, a cursor is set at mouse position
     """
@@ -205,7 +131,6 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
             # color=ressources.font.color,
             name=parent.name + " -> cursor"
         )
-        HaveHistory.__init__(self)
         RepetivelyAnimated.__init__(self, parent, interval=.5)
 
         self._char_index = None  # index of cursor position, see _Line._chars_pos for more explanations
@@ -216,6 +141,22 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
         self.parent._cursor_ref = self.get_weakref()
         self.set_touchable_by_mouse(False)
         self.start_animation()
+
+        # History
+        """
+        A History element is created when :
+            - A new text insert
+            - A part of text pop
+            - Just before a selected data is delete
+
+        A History element store these data :
+            - the entire text of parent
+            - the cusror indexes (line and char)
+            - the selection start and end, if the parent was selecting
+        """
+        max_item_stored = 50
+        self.history = deque(maxlen=max_item_stored)
+        self.back_history = deque(maxlen=max_item_stored)
 
         self.config(line_index=line_index, char_index=char_index)
 
@@ -470,3 +411,58 @@ class Cursor(Rectangle, HaveHistory, RepetivelyAnimated):
             self.line.insert(self.char_index, string)
             self.config(text_index=self.text_index + len(string))
             # TODO : solve : when a TextEdit is resized, the cursor does not follow its text
+
+    # History
+    def redo(self):
+        """
+        Restaure la derniere modification
+        """
+        if self.back_history:
+
+            backup = self.back_history.pop()  # last element of self.back_history, the current state
+            self.history.append(backup)
+
+            backup = self.history[-1]
+            self.parent.set_text(backup.text)
+            self.config(line_index=backup.cursor_line_index, char_index=backup.cursor_char_index, save=False)
+            if backup.selection_start is not None:
+                if self.parent.is_selecting:
+                    self.parent.close_selection()
+                self.parent.start_selection(backup.selection_start)
+                self.parent.end_selection(backup.selection_end)
+
+        # else:
+        #     LOGGER.info("Cannot redo last operation because the operations history is empty")
+
+    def save(self):
+
+        # if self.parent.is_selecting:
+        current = Object(
+            text=self.parent.text,
+            cursor_line_index=self.line_index,
+            cursor_char_index=self.char_index,
+            selection_start=self.parent.selection_rect.start if self.parent.selection_rect else None,
+            selection_end=self.parent.selection_rect.end if self.parent.selection_rect else None
+        )
+        self.history.append(current)
+        self.back_history.clear()
+
+    def undo(self):
+        """
+        Annule la derniere modification
+        """
+        if len(self.history) > 1:  # need at least 2 elements in history
+
+            backup = self.history.pop()  # last element of self.history, which is the state before undo()
+            self.back_history.append(backup)
+
+            previous = self.history[-1]
+            self.parent.set_text(previous.text)
+            self.config(line_index=previous.cursor_line_index, char_index=previous.cursor_char_index, save=False)
+            if previous.selection_start is not None:
+                if self.parent.is_selecting:
+                    self.parent.close_selection()
+                self.parent.start_selection(previous.selection_start)
+                self.parent.end_selection(previous.selection_end)
+        # else:
+        #     LOGGER.info("Cannot undo last operation because the operations history is empty")
