@@ -20,6 +20,7 @@ class PresentationScene(Scene):
         Button(self, text="Tutorial")
         self.pack()
         UTMenu_Scene(app)
+        self.open()  # without this line, UTMenu_Scene is the first scene, since this one has not been added yet
 
 
 class UTMenu_Scene(Scene):

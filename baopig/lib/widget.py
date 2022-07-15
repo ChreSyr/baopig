@@ -427,9 +427,9 @@ class Widget_VisibleSleepy(WidgetCore, HasLock):
         if self.is_asleep:
             return
 
-        assert self in self.parent.children
+        if self in self.parent.children:  # False when called during construction
+            self.parent._remove_child(self)
 
-        self.parent._remove_child(self)
         self._sleep_parent_ref = self.parent.get_weakref()
         self._parent = None
         self._is_asleep = True

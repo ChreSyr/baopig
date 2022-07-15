@@ -55,6 +55,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
     # mode = property(lambda self: self._mode)
     painter = property(lambda self: self.application._painter)
     scene = property(lambda self: self)  # End of recursive call
+    size = property(lambda self: self._rect.size)
 
     def _add_child(self, widget):
 

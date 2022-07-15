@@ -7,13 +7,8 @@ class DebugZone(Zone, Handler_SceneClose):
 
     def __init__(self, scene):
 
-        Zone.__init__(
-            self,
-            parent=scene,
-            size=scene.size,
-            background_color=(0, 0, 0, 0),
-            layer=scene.debug_layer
-        )
+        Zone.__init__(self, scene, size=scene.size, background_color=(0, 0, 0, 0), layer=scene.debug_layer,
+                      touchable=False)
 
         self.set_style_for(Text, font_color="black", font_file=None)
 

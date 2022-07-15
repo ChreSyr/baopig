@@ -10,7 +10,8 @@ class MetaPaintLocker(type):
     def __call__(cls, *args, **kwargs):
         with paint_lock:
             widget = super().__call__(*args, **kwargs)
-            widget.parent._add_child(widget)
+            if widget.is_awake:
+                widget.parent._add_child(widget)
             return widget
 
 

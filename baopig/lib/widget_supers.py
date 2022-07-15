@@ -217,7 +217,7 @@ class Focusable(FocusableDoc, LinkableByMouse):
         d = 1 if keyboard.mod.maj == 0 else -1
 
         if len(all_focs) > 1:
-            all_focs.sort(key=lambda c: (c.top, c.left))
+            all_focs.sort(key=lambda c: (c.rect.top, c.rect.left))
             self.scene.focus(all_focs[(all_focs.index(self) + d) % len(all_focs)])
 
 
