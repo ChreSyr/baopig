@@ -1,8 +1,14 @@
-
 from math import inf as math_inf
 from baopig.io import mouse
 from baopig.font.font import Font
 from baopig.lib import *
+
+separators = " ,„.…:;/\'\"`´”’" \
+             "=≈≠+-±–*%‰÷∞√∫" \
+             "()[]{}<>≤≥«»" \
+             "?¿!¡@©®ª#§&°" \
+             "‹◊†¬•¶|^¨~" \
+             ""
 
 
 class _Line(Widget):
@@ -36,9 +42,13 @@ class _Line(Widget):
 
     A Line is an element of a Paragraph, wich ends with a '\n'.
 
+    end :
+        '\n' : end of paragraph
+        '' : line cutted
+
     """
 
-    def __init__(self, parent, text, line_index):
+    def __init__(self, parent, text, line_index, end):
 
         assert isinstance(parent, Text)
 
@@ -46,16 +56,27 @@ class _Line(Widget):
         Widget.__init__(self, parent=parent, layer=parent.lines, name=f"{self.__class__.__name__[1:]}({text})",
                         surface=pygame.Surface((parent.rect.w, parent.font.height), pygame.SRCALPHA))
 
-        self.__text = ""
-        self.__end = ''
-        self._text_with_end = None
-        self._real_text = None
         # char_pos[i] est la distance entre left et la fin du i-eme caractere
         # Exemple : soit self.text = "Hello world"
         #           char_pos[6] = margin + distance entre le debut de "H" et la fin de "w"
         self._chars_pos = []
 
-        self.config(text=text, end='\n', called_by_constructor=True)
+        assert end in ('\n', '')
+        if parent.width_is_adaptable:
+            assert end == '\n'
+        self._end = end
+
+        assert '\n' not in text
+        assert '\v' not in text
+        text = str.replace(text, '\t', '    ')  # We can also replace it at rendering
+        self._text = text
+
+        self.update_char_pos()
+        font_render = self.font.render(self.text)
+        surf_w = font_render.get_width()
+        surface = pygame.Surface((surf_w, self.font.height), pygame.SRCALPHA)
+        surface.blit(font_render, (0, 0))
+        self.set_surface(surface)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(index={self.line_index}, text={self.text})"
@@ -63,27 +84,13 @@ class _Line(Widget):
     def __str__(self):
         return self.text
 
-    def _set_end(self, end):
-        self.__end = end
-        self._text_with_end = self.text + end
-        self._real_text = self.text + ('' if end == '\v' else end)
-
-    _end = property(lambda self: self.__end, _set_end)
-    end = property(lambda self: self.__end)
+    end = property(lambda self: self._end)
     font = property(lambda self: self._parent._font)
     line_index = property(lambda self: self._line_index)
-    real_text = property(lambda self: self._real_text)
+    text = property(lambda self: self._text)
+    text_with_end = property(lambda self: self._text + self._end)
 
-    def _set_text(self, text):
-        self.__text = text
-        self._text_with_end = text + self.end
-        self._real_text = text + ('' if self.end == '\v' else self.end)
-
-    _text = property(lambda self: self.__text, _set_text)
-    text = property(lambda self: self.__text)
-    text_with_end = property(lambda self: self._text_with_end)
-
-    def find_index(self, x, only_left=False, end_of_word=False):
+    def find_index(self, x, only_left=False):
         """
         Renvoie l'index correspondant a la separation de deux lettres la plus proche de x
 
@@ -93,10 +100,6 @@ class _Line(Widget):
 
         Si only_left est demande, renvoie un index qui correspond a une separation a droite
         de x
-        Si end_of_word est a True, l'index renvoye correspondra a une fin de mot
-        Un mot est precede et suivi d'espaces ou d'un tiret
-        Example:
-            'Comment allez-vous ?' est forme des mots 'Comment', 'allez-', 'vous' et '?'
         """
 
         def ecart(x1, x2):
@@ -111,18 +114,6 @@ class _Line(Widget):
                 break
             if ecart(x, char_pos) > dist_from_closest_char:
                 break
-
-            if end_of_word:
-                if index != 0 and index != len(self.text):
-                    def is_end_of_word(i):
-                        if self.text[i] == ' ':
-                            return True
-                        if self.text[i - 1] == '-':
-                            return True
-                        return False
-
-                    if not is_end_of_word(index):
-                        continue
 
             dist_from_closest_char = ecart(x, char_pos)
             index_of_closest_char = index
@@ -142,32 +133,21 @@ class _Line(Widget):
         """
         return self._chars_pos[index]
 
-    def get_first_line_of_paragraph(self):
+    def get_iparagraph(self):
+
         if self.line_index == 0:
-            return self
-        i = self.line_index
-        while self.parent.lines[i - 1].end != '\n':
-            i -= 1
-        return self.parent.lines[i]
+            first_line_of_paragraph = self
+        else:
+            i = self.line_index
+            while self.parent.lines[i - 1].end != '\n':
+                i -= 1
+            first_line_of_paragraph = self.parent.lines[i]
 
-    def get_last_line_of_paragraph(self):
-        i = self.line_index
-        while self.parent.lines[i].end != '\n':
-            i += 1
-        return self.parent.lines[i]
-
-    def get_paragraph(self):
-        line = self.get_first_line_of_paragraph()
+        line = first_line_of_paragraph
         while line.end != '\n':
             yield line
             line = self.parent.lines[line.line_index + 1]
         yield line
-
-    def get_paragraph_text(self):
-        return ''.join(line.real_text for line in self.get_paragraph())[:-1]  # discard '\n'
-
-    def get_paragraph_text_with_end(self):
-        return ''.join(line.text_with_end for line in self.get_paragraph())
 
     def insert(self, char_index, string):
         """
@@ -179,94 +159,67 @@ class _Line(Widget):
 
     def pop(self, index):
         """
-        Remove one character from line.real_text
+        Remove one character from line.text_with_end
         """
 
         if index < 0:
-            index = len(self.real_text) + index
-        if self.end != '\v' and index == len(self.real_text) - 1:
+            index = len(self.text_with_end) + index
+        if self.end != '' and index == len(self.text_with_end) - 1:
             if self.line_index == len(self.parent.lines) - 1:
                 return  # pop of end of text
-            self.config(end='\v')
+            self.config(self.text, end='')
         else:
             self.config(text=self.text[:index] + self.text[index + 1:])
 
-    def config(self, text=None, end=None, called_by_constructor=False):
-
-        # if not called_by_constructor:
+    def config(self, text, end=None):
 
         with paint_lock:
 
-            if end is not None:
-                assert end in ('\n', ' ', '\v')
-                if self.parent.width_is_adaptable:
-                    assert end == '\n'
-                self._end = end
-            if text is not None:
-                if '\t' in text:
-                    text = str.replace(text, '\t', '    ')  # We can also replace it at rendering
-                if '\v' in text:
-                    text = str.replace(text, '\v', '')
-                assert isinstance(text, str)
-                self._text = text
+            assert '\v' not in text
+            text = str.replace(text, '\t', '    ')  # We can also replace it at rendering
+            self._text = text
 
-            if self.end != '\n' and self.line_index == len(self.parent.lines) - 1:
-                raise PermissionError
+            if len(tuple(self.get_iparagraph())) > 0:
 
-            if called_by_constructor is False and len(tuple(self.get_paragraph())) > 0:
+                if end is not None:
+                    assert end in ('\n', '')
+                    if self.parent.width_is_adaptable:
+                        assert end == '\n'
+                    if end != '\n' and self.line_index == len(self.parent.lines) - 1:
+                        raise AssertionError
+                    self._end = end
 
-                self._text = self.get_paragraph_text()
+                text = ''.join(line.text_with_end for line in self.get_iparagraph())[:-1]  # discard '\n'
 
-                for line in tuple(self.get_paragraph()):
+                for line in tuple(self.get_iparagraph()):
                     if line != self:
                         line.kill()
-                self.parent._pack()
 
-                self._end = '\n'
+            line_index = self.line_index
+            parent = self.parent
+            self.kill()
 
-            if '\n' in self.text:
-                self.__class__(
-                    parent=self.parent,
-                    text=self.text[self.text.index('\n') + 1:],
-                    line_index=self.line_index + .00001
-                )
-                self.parent._pack()
-                self._text = self.text[:self.text.index('\n')]
+            for paragraph_text in text.split("\n"):
 
-            self.update_char_pos()
-            if not self.parent.width_is_adaptable and self.font.get_width(self.text) > self.parent.content_rect.width:
+                create_line = True
+                while create_line:
 
-                max_width = self.parent.content_rect.width
-                assert self.find_pixel(1) <= max_width, "The availible width is too little : " + str(max_width)
+                    line_text, other_lines_text = parent._cut_text(paragraph_text)
 
-                if True:
-                    index_end = index_newline_start = self.find_index(
-                        max_width, only_left=True, end_of_word=True)
-                    if index_end == 0:
-                        sep = '\v'
-                        index_newline_start = index_end = self.find_index(
-                            max_width, only_left=True, end_of_word=False)
+                    if other_lines_text == '':
+                        end = '\n'
+                        create_line = False
                     else:
-                        end = self.text[index_end]
-                        sep = ' ' if end == ' ' else '\v'  # else, the word is of type 'smth-'
-                        if end == ' ':
-                            index_newline_start += 1
-                    self.__class__(
-                        parent=self.parent,
-                        text=self.text[index_newline_start:],
-                        line_index=self.line_index + .00001,  # the line will correct itself
-                    )
-                    self.parent._pack()
-                    self._end = sep
-                    self._text = self.text[0:index_end]
-                    self.update_char_pos()
+                        end = ''
+                        paragraph_text = other_lines_text
 
-            font_render = self.font.render(self.text)
-            surf_w = font_render.get_width()
-            surface = pygame.Surface((surf_w, self.font.height), pygame.SRCALPHA)
-            surface.blit(font_render, (0, 0))
-            self.set_surface(surface)
-            # self._asked_size = surface.get_size()
+                    new_line = self.__class__(
+                        parent=parent,
+                        text=line_text,
+                        line_index=line_index,
+                        end=end,
+                    )
+                    line_index = new_line.line_index + .5
 
     def update_char_pos(self):
         """
@@ -293,18 +246,14 @@ class _SelectableLine(_Line):
         - A cursor moves while Maj key is pressed
     """
 
-    # TODO : improve Text creation, with less recursion
-    # NOTE : this is a temporary way to minimize the recursion
+    # NOTE : this is not beautiful
     _selection_ref = lambda self: None  # needed during construction
     _is_selected = False
 
-    def __init__TBR(self, *args, **kwargs):
-
-        self._selection_ref = lambda: None  # needed during construction
-
-        _Line.__init__(self, *args, **kwargs)
-
-        self._is_selected = False
+    # def __init__TBR(self, *args, **kwargs):
+    #     self._selection_ref = lambda: None  # needed during construction
+    #     _Line.__init__(self, *args, **kwargs)
+    #     self._is_selected = False
 
     is_selected = property(lambda self: self._is_selected)
     selection = property(lambda self: self._selection_ref())
@@ -379,13 +328,6 @@ class _SelectableLine(_Line):
         """
         Selectionne le mot le plus proche de index
         """
-
-        separators = " ,„.…:;/\'\"`´”’" \
-                     "=≈≠+-±–*%‰÷∞√∫" \
-                     "()[]{}<>≤≥«»" \
-                     "?¿!¡@©®ª#§&°" \
-                     "‹◊†¬•¶|^¨~" \
-                     ""
 
         index_start = index_end = index
         while index_start > 0 and self.text[index_start - 1] not in separators:
@@ -467,7 +409,7 @@ class _LineSelection(Rectangle):
 
     def get_data(self):
         end = self.line.end if self._is_selecting_line_end else ''
-        if end == '\v':
+        if end == '':
             end = ''
         return self.line.text[self.index_start:self.index_end] + end
 
@@ -479,7 +421,7 @@ class _LineSelection(Rectangle):
             assert self.line is not self.parent.lines[-1]
 
         if self._is_selecting_line_end:
-            self.resize_width(self.line.parent.rect.width -  # parent because all the way long, further than line.w
+            self.resize_width(self.line.parent.content_rect.width -  # all the way long, further than line.w
                               self.line.find_pixel(self.index_start))
         else:
             self.resize_width(abs(self.line.find_pixel(self.index_end) -
@@ -532,7 +474,7 @@ class Text(Zone, SelectableWidget):
     STYLE.set_constraint("font_height", lambda val: val > 0, "a text must have a positive font height")
     STYLE.set_constraint("font_file", lambda val: (val is None) or isinstance(val, str), "must be None or a string")
 
-    def __init__(self, parent, text=None, **kwargs):
+    def __init__(self, parent, text="", **kwargs):
 
         Zone.__init__(self, parent, **kwargs)
         SelectableWidget.__init__(self, parent)
@@ -580,6 +522,56 @@ class Text(Zone, SelectableWidget):
 
         self._height_is_adaptable = height
         self._width_is_adaptable = width
+
+    def _add_child(self, child):
+
+        super()._add_child(child)
+        self._pack()
+
+    def _cut_text(self, text):
+
+        max_width = self.content_rect.width
+
+        def is_too_long(text):
+            return self.font.get_width(text) > max_width
+
+        def get_cut_index(text):
+            len_full_text = len(text)
+            reversed_full_text = reversed(text)
+            last_char_was_a_separator = False
+            for char_index, char in enumerate(reversed_full_text):
+                if char in separators:
+                    yield len_full_text - char_index
+                    last_char_was_a_separator = True
+                elif last_char_was_a_separator:
+                    yield len_full_text - char_index
+                    last_char_was_a_separator = False
+
+        if self.width_is_adaptable:
+            return text, ''
+
+        if not is_too_long(text):
+            return text, ''
+
+        if is_too_long(text[0]):
+            # return text[0], text[1:]
+            raise ValueError(f"The availible width is too little : {max_width}")
+
+        cut_index = len(text)
+        first_part = text
+        for cut_index in get_cut_index(text):
+
+            first_part = text[:cut_index]
+            if not is_too_long(first_part):
+                return first_part, text[cut_index:]
+
+        # Here, there is no separator in first_part, but it is too long
+
+        while is_too_long(first_part):
+            cut_index -= 1
+            first_part = text[:cut_index]
+
+        return first_part, text[cut_index:]
 
     def _pack(self):
 
@@ -641,7 +633,7 @@ class Text(Zone, SelectableWidget):
             for line_index, line in enumerate(self.lines):
                 if pos[1] < line.rect.bottom:
                     return self.find_index(line_index, line.find_index(pos[0]))
-        assert self.lines[-1].rect.bottom == self.rect.h, str(self.lines[-1].rect.bottom) + ' ' + str(self.rect.h)
+        assert self.lines[-1].rect.bottom == self.rect.h, f"{self.lines[-1].rect.bottom} {self.rect.h}"
         raise Exception
 
     def find_index(self, line_index, char_index):
@@ -663,7 +655,7 @@ class Text(Zone, SelectableWidget):
         for i, line in enumerate(self.lines):
             if i == line_index:
                 break
-            text_index += len(line.real_text)
+            text_index += len(line.text_with_end)
         return text_index + char_index
 
     def _find_indexes(self, pos):
@@ -702,7 +694,7 @@ class Text(Zone, SelectableWidget):
         for line_index, line in enumerate(self.lines):
             if text_index <= len(line.text):
                 return line_index, text_index
-            text_index -= len(line.real_text)
+            text_index -= len(line.text_with_end)
 
         # The given text_index is too high
         return len(self.lines), len(self.lines[-1].text)
@@ -714,7 +706,7 @@ class Text(Zone, SelectableWidget):
         return self._find_index(pos=mouse.get_pos_relative_to(self))
 
     def get_text(self):
-        return ''.join(line.real_text for line in self.lines)[:-1]  # Discard last \n
+        return ''.join(line.text_with_end for line in self.lines)[:-1]  # Discard last \n
 
     text = property(get_text)
 
@@ -764,38 +756,46 @@ class Text(Zone, SelectableWidget):
 
         with paint_lock:
 
-            first_line = self.lines[0] if self.lines else None
             for child in tuple(self.lines):
                 assert child in self.children
                 assert self == child.parent
-                if child != first_line:
-                    child.kill()
-            try:
-                assert len(self.lines) in (0, 1), self.lines
-            except Exception as e:
-                raise e
 
-            if first_line is not None:
-                first_line.config(text=text, end='\n')
-            else:
-                line_class = _SelectableLine if self.is_selectable else _Line
-                line_class(
-                    parent=self,
-                    text=text,
-                    line_index=0,
-                )
-                self._pack()
+                child.kill()
 
-            self._pack()
+            line_class = _SelectableLine if self.is_selectable else _Line
+            line_index = 0
+            for paragraph_text in text.split("\n"):
+
+                create_line = True
+                while create_line:
+
+                    line_text, other_lines_text = self._cut_text(paragraph_text)
+
+                    if other_lines_text == '':
+                        create_line = False
+                        end = '\n'
+                    else:
+                        end = ''
+                        paragraph_text = other_lines_text
+
+                    line_class(
+                        parent=self,
+                        text=line_text,
+                        line_index=line_index,  # TODO : usefull ?
+                        end=end,
+                    )
+                    line_index += 1
+
             self._name = self.lines[0].text
 
             if not self.height_is_adaptable and self.lines[-1].rect.bottom > self.content_rect.bottom:
-                while self.lines[-1].rect.bottom > self.content_rect.bottom:
-                    if self.font.height == 2:
-                        raise ValueError(
-                            f"This text is too long for the text area : {text} (area={self.content_rect}), "
-                            f"{self.align_mode}, {self.rect.width}")
-                    self.font.config(height=self.font.height - 1)  # changing the font automatically updates the text
+                # NOTE : loops because self.font.config() calls self.set_text()
+                # while self.lines[-1].rect.bottom > self.content_rect.bottom:
+                if self.font.height == 2:
+                    raise ValueError(
+                        f"This text is too long for the text area : {text} (area={self.content_rect}), "
+                        f"{self.align_mode}, {self.rect.width}")
+                self.font.config(height=self.font.height - 1)  # changing the font automatically updates the text
 
     # Selectable methods
     def check_select(self, selection_rect):
