@@ -89,18 +89,18 @@ class Widget(Communicative):
 
         :Style attributes:
         -----------------------
-            pos: Iterable[int]         -> the origin's position
-            loc: Location              -> the origin's location on the widget's rect
-            ref: Container | None      -> the origin's position reference, if None, set to parent
-            refloc: Location           -> the origin's position reference location, from the reference's rect
-            referenced_by_hitbox: bool -> if True, origin is referenced by the ref's hitbox  # TODO : tests
+            pos: Iterable[int]         -> the position
+            loc: Location              -> the position's location on the widget's rect
+            ref: Container | None      -> the position's position reference, if None, set to parent
+            refloc: Location           -> the position's position reference location, from the reference's rect
+            referenced_by_hitbox: bool -> if True, position is referenced by the ref's hitbox  # TODO : tests
 
         parent: Container -> the manager
 
         surface: pygame.Surface -> the widget's image
         rect: pygame.Rect       -> the widget's size
         hitbox: pygame.Rect     -> the widget's size on the screen
-        origin: object          -> the widget's position manager. See documentation at TODO
+        pos_manager: object     -> the widget's position manager. See documentation at TODO
 
         is_alive: bool   -> True if the widget has not been killed
         is_asleep: bool  -> True if the widget is asleep
@@ -139,8 +139,8 @@ class Widget(Communicative):
     is_hidden: bool
     is_touchable_by_mouse: bool
     is_visible: bool
-    origin: ...
     parent: ...
+    pos_manager: ...
     scene: ...
     surface: pygame.Surface
 

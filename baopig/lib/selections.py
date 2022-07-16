@@ -120,7 +120,7 @@ class SelectionRect(Rectangle):
                            (self.end[0] - self.start[0],
                             self.end[1] - self.start[1]))
         rect.normalize()
-        self.move_at(self.parent.abs_rect.referencing(rect.topleft))
+        self.set_pos(topleft=self.parent.abs_rect.referencing(rect.topleft))
         self.resize(rect.w + 1, rect.h + 1)  # the selection_rect rect collide with mouse.pos
         self.clip(self.parent.auto_rect)
 

@@ -24,12 +24,12 @@ class _Line(Widget):
         - the end character
 
     When the hitbox size change, there is only one point who is used to locate the LineText : it is
-    the origin. Exemple : if the origin is TOPLEFT, and the hitbox width grows, it will expend on the
-    right side, because the origin is on the left. Ther is 9 possible positions for the origin :
+    the location. Exemple : if the location is 'topleft', and the hitbox's width grows, it will expend on the
+    right side, because the location is on the left. There is 9 possible values for the location :
         - topleft       - midtop        - topright
         - midleft       - center        - midright
         - bottomleft    - midbottom     - bottomright
-    The default origin position is TOPLEFT
+    The default location is 'topleft'
 
 
     Here is an example of font size :

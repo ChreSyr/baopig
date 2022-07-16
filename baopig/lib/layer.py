@@ -200,7 +200,7 @@ class Layer(Communicative):
 
         left, top = padding.left + start_pos[0], padding.top + start_pos[1]
         for widget in sorted_children:
-            if widget.has_locked("origin"):
+            if widget.has_locked("pos"):
                 raise PermissionError("Cannot pack a layer who contains locked children")
             widget.set_pos(topleft=(left, top))
 

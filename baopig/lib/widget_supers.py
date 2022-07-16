@@ -255,7 +255,7 @@ class ResizableWidget(ResizableWidgetDoc, Widget):
 
         self.signal.WAKE.connect(self._update_size, owner=self)
         self.signal.RESIZE.connect(self.handle_resize, owner=None)
-        self.origin.reference.signal.RESIZE.connect(self._update_size, owner=self)
+        self.pos_manager.reference.signal.RESIZE.connect(self._update_size, owner=self)
 
     def _get_asked_size(self):
 

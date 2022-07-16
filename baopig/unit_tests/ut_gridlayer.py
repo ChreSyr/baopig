@@ -95,9 +95,9 @@ class UT_GridLayer_Zone(Zone):
         buttons_layer = GridLayer(z4, nbrows=3, nbcols=3)
         def click():
             for w in grid4:
-                w.set_lock(origin=False)  # TODO : remove ?
-                w.origin.config(loc=mouse.hovered_widget.text_widget.text)
-                w.set_lock(origin=True)
+                w.set_lock(pos=False)  # TODO : remove ?
+                w.pos_manager.config(loc=mouse.hovered_widget.text_widget.text)
+                w.set_lock(pos=True)
             grid4.pack()
         Button(z4, row=0, col=0, command=click, text="topleft")
         Button(z4, row=1, col=0, command=click, text="midleft")

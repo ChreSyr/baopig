@@ -319,13 +319,13 @@ class GridLayer(Layer):
         widget.resize(*cell_rect[2:])  # TODO : resize(size) ?
         # TODO : use size_hint
         # widget.set_window_(cell_rect, follow_movements=False)
-        widget.set_lock(origin=False)
-        if widget.origin.location is not None:
-            widget.origin.config(pos=getattr(pygame.Rect(cell_rect), widget.origin.location),
-                                 loc=widget.origin.location)
+        widget.set_lock(pos=False)
+        if widget.pos_manager.location is not None:
+            widget.pos_manager.config(pos=getattr(pygame.Rect(cell_rect), widget.pos_manager.location),
+                                      loc=widget.pos_manager.location)  # TODO : remove loc=
         else:
-            widget.origin.config(pos=cell_rect[:2])
-        widget.set_lock(origin=True)
+            widget.pos_manager.config(pos=cell_rect[:2])
+        widget.set_lock(pos=True)
 
     def _update_size(self):
 
@@ -343,9 +343,9 @@ class GridLayer(Layer):
 
     def add(self, widget):
 
-        if widget.origin.reference is not self.container:
+        if widget.pos_manager.reference is not self.container:
             raise PermissionError("Cannot use other ref than parent in a GridLayer")
-        if widget.origin.reference_location != "topleft":
+        if widget.pos_manager.reference_location != "topleft":
             raise PermissionError("Cannot use other refloc than 'topleft' in a GridLayer")
         if (widget.col is None) or (widget.row is None):
             raise PermissionError(
@@ -527,8 +527,8 @@ class GridLayer(Layer):
         assert widget1 in self
         assert widget2 in self
 
-        widget1.set_lock(origin=False)
-        widget2.set_lock(origin=False)
+        widget1.set_lock(pos=False)
+        widget2.set_lock(pos=False)
 
         self._data[widget1.row][widget1.col] = widget2
         self._data[widget2.row][widget2.col] = widget1

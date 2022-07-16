@@ -58,8 +58,6 @@ class UT_Origin_Zone(Zone):
                           ref=ref, name="rect({})".format(i))
 
         # Family
-        # These 5 rectangles are referenced to each other, forming a chain
-        # The loop is broken by the fact that widget.move_at(widget.pos) does nothing
         r1 = DragableRectangle(self, pos=(0, "50%"), color=(100, 50, 25), size=(30, 30), name="r1")
         r2 = DragableRectangle(self, pos=(40, 0), ref=r1, color=(50, 100, 25), size=(30, 30), name="r2")
         r3 = DragableRectangle(self, pos=(0, 40), ref=r2, color=(100, 50, 25), size=(30, 30), name="r3")

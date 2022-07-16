@@ -17,7 +17,7 @@ class WeakRef:
         return self._ref
 
 
-class _Origin:
+class _PosManager:
     """
     An Origin is referenced by its parent
     When the parent moves, the widget follows
@@ -26,8 +26,8 @@ class _Origin:
         - x = 4         sets x to 4 pixels
         - x = '10%'     sets x to self.parent.width * 10 / 100 (automatically updated)
 
-    WARNING : A widget with a dynamic origin (pourcentage position) cannot be manually
-              moved by any other way than redefining the origin
+    WARNING : A widget with a dynamic position (pourcentage position) cannot be manually
+              moved by any other way than redefining the WTF ?? TODO
     """
 
     def __init__(self, owner):
@@ -51,7 +51,7 @@ class _Origin:
 
     asked_pos = property(lambda self: self._asked_pos)
     referenced_by_hitbox = property(lambda self: self._referenced_by_hitbox)
-    is_locked = property(lambda self: self.owner.has_locked("origin"))
+    is_locked = property(lambda self: self.owner.has_locked("pos"))
     location = property(lambda self: self._location)
     owner = property(lambda self: self._owner_ref())
     reference = property(lambda self: self._reference_ref())
@@ -102,7 +102,7 @@ class _Origin:
         elif hasattr(coord, "__iter__"):
             if len(coord) != 2:
                 return False
-            return False not in (_Origin.accept(c) for c in coord)
+            return False not in (_PosManager.accept(c) for c in coord)
 
         try:
             coord = int(coord)
@@ -113,10 +113,10 @@ class _Origin:
     def config(self, pos=None, loc=None, refloc=None, referenced_by_hitbox=None, sticky=None, locked=None):
 
         if locked is False:
-            self.owner.set_lock(origin=False)
+            self.owner.set_lock(pos=False)
 
         if self.is_locked:
-            raise PermissionError("This origin is locked")
+            raise PermissionError("This widget's position is locked")
 
         if sticky is not None:
             assert loc is None
@@ -133,13 +133,13 @@ class _Origin:
             self._referenced_by_hitbox = bool(referenced_by_hitbox)
 
         if pos is not None:
-            assert _Origin.accept(pos), f"Wrong position value : {pos} (see documentation above)"
+            assert _PosManager.accept(pos), f"Wrong position value : {pos} (see documentation above)"
             self._asked_pos = pos
 
-        self.owner.move_at(self.pos, self.location)
+        self.owner._update_pos()
 
         if locked is True:
-            self.owner.set_lock(origin=True)
+            self.owner.set_lock(pos=True)
 
     def get_pos_relative_to_owner_parent(self):
 
@@ -333,12 +333,12 @@ class WidgetCore(WidgetDoc, Communicative):
         del self
 
 
-class HasLock:
+class HasLock:  # TODO : remove
 
     def __init__(self):
 
         class Locks:
-            origin = False
+            pos = False
             width = False
             height = False
             size = False
@@ -356,11 +356,11 @@ class HasLock:
     def set_lock(self, **kwargs):
         """
         In kwargs, keys can be:
-            height
+            pos
             width
+            height
             size
             visibility
-            origin
         In kwargs, values are interpreted as booleans
         """
         for key, locked in kwargs.items():
@@ -509,7 +509,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         It sends two parameters : dx and dy
         WARNING : the dx and dy are the motion of the widget.rect ! This means, when the
                   widget's parent moves, a MOTION.emit(dx=0, dy=0) is probalby raised.
-                  In facts, if the widget.origin.reference is not the parent, the motion
+                  In facts, if the widget.pos_manager.reference is not the parent, the motion
                   won't be dx=0, dy=0
         NOTE : an hitbox cannot move and be resized in the same time
         """
@@ -520,21 +520,21 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         Changing size will emit self.signal.RESIZE if the widget is visible
         A widget with locked size cannot be resized, but the surface can change
         
-        When a widget is resized, we need a point of reference (called origin) whose pixel
+        When a widget is resized, we need a point of reference (called location) whose pixel
         will not move
         
-        origin.location can be one of : topleft,      midtop,     topright,
-                                        midleft,      center,     midright,
-                                        bottomleft,   midbottom,  bottomright
+        pos_manager.location can be one of : topleft,      midtop,     topright,
+                                             midleft,      center,     midright,
+                                             bottomleft,   midbottom,  bottomright
         
-        Example : origin.location = midright
-                  if the new size is 10 more pixel on the width, then the origin is on the right,
+        Example : pos_manager.location = midright
+                  if the new size is 10 more pixel on the width, then the position is on the right,  TODO
                   so we add the 10 new pixels to the left 
         """
         self.create_signal("RESIZE")
 
         # This will initialize the rects and hiboxes
-        self._origin = _Origin(owner=self)
+        self._pos_manager = _PosManager(owner=self)
 
         self._rect = ProtectedHitbox((0, 0), size)
         self._abs_rect = ProtectedHitbox((0, 0), size)
@@ -545,7 +545,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         self._auto_hitbox = ProtectedHitbox((0, 0), size)
 
         # SETUP
-        pygame.Rect.__setattr__(self.rect, self._origin.location, self._origin.pos)
+        pygame.Rect.__setattr__(self.rect, self._pos_manager.location, self._pos_manager.pos)
         pygame.Rect.__setattr__(self.abs_rect, "topleft",
                                 (self.parent.abs_rect.left + self.rect.left, self.parent.abs_rect.top + self.rect.top))
         pygame.Rect.__setattr__(self.hitbox, "topleft", self.rect.topleft)
@@ -553,7 +553,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
 
         # Connections
         self.signal.WAKE.connect(self._update_pos, owner=self)
-        pos_ref = self._origin.reference
+        pos_ref = self._pos_manager.reference
         pos_ref.signal.RESIZE.connect(self._update_pos, owner=self)
         if pos_ref != self.parent:
             pos_ref.signal.MOTION.connect(self._update_pos, owner=self)
@@ -566,15 +566,15 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
             # This way, widgets referenced by this widget can update their positions
             if self.is_asleep:  # the widget has no parent
                 return
-            new_pos = self._origin.get_pos_relative_to_owner_parent()
-            rect = self.hitbox if self._origin.referenced_by_hitbox else self.rect
-            old_pos = getattr(rect, self._origin.location)
+            new_pos = self._pos_manager.get_pos_relative_to_owner_parent()
+            rect = self.hitbox if self._pos_manager.referenced_by_hitbox else self.rect
+            old_pos = getattr(rect, self._pos_manager.location)
             self._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
 
         self.parent.signal.MOTION.connect(update_pos_from_parent_movement, owner=self)
 
     # ORIGIN
-    origin = property(lambda self: self._origin)
+    pos_manager = property(lambda self: self._pos_manager)
 
     # HITBOX
     rect = property(lambda self: self._rect)
@@ -618,48 +618,22 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
                 pygame.Rect.__setattr__(self.hitbox, "topleft", self.rect.topleft)
                 pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs_rect.topleft)
 
-            # We reset the asked_pos after the MOTION in order to allow cycles of origin referecing
-            self._origin._reset_asked_pos()
+            # We reset the asked_pos after the MOTION in order to allow cycles of pos referecing  TODO
+            self._pos_manager._reset_asked_pos()
 
             if self.is_visible:
                 self.send_display_request(rect=self.hitbox.union(old_hitbox))
 
             self.signal.MOTION.emit(dx, dy)
 
-    def _update_pos(self):
-        """ Updates the postion if this widget is not referenced from its parent """
-
-        if self.is_asleep:  # the widget has no parent
-            return
-
-        new_pos = self._origin.get_pos_relative_to_owner_parent()
-        rect = self.hitbox if self._origin.referenced_by_hitbox else self.rect
-        old_pos = getattr(rect, self._origin.location)
-        if new_pos == old_pos:
-            return
-        self._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
-
-    def collidemouse(self):
-
-        return self.is_visible and self.abs_hitbox.collidepoint(mouse.pos)
-
-    def move(self, dx=0, dy=0):
-
-        if dx == 0 and dy == 0:
-            return
-        if self._has_locked.origin:
-            return
-        self._move(dx, dy)
-
-    def move_at(self, value, key="topleft"):
+    def _move_at(self, key, value):
 
         accepted = (
             "x", "y", "centerx", "centery", "top", "bottom", "left", "right", "topleft", "midtop", "topright",
-            "midleft",
-            "center", "midright", "bottomleft", "midbottom", "bottomright")
+            "midleft", "center", "midright", "bottomleft", "midbottom", "bottomright")
         assert key in accepted, f"key '{key}' is not a valid rect position (one of {accepted})"
 
-        if self._has_locked.origin:
+        if self._has_locked.pos:
             return
 
         old = getattr(self.rect, key)
@@ -677,6 +651,26 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         else:
             self._move(value[0] - old[0], value[1] - old[1])
 
+    def _update_pos(self):
+        """ Updates the postion from pos_manager's values """
+
+        if self.is_asleep:  # the widget has no parent
+            return
+
+        self._move_at(key=self.pos_manager.location, value=self.pos_manager.get_pos_relative_to_owner_parent())
+
+    def collidemouse(self):
+
+        return self.is_visible and self.abs_hitbox.collidepoint(mouse.pos)
+
+    def move(self, dx=0, dy=0):
+
+        if dx == 0 and dy == 0:
+            return
+        if self._has_locked.pos:
+            return
+        self._move(dx, dy)
+
     def send_display_request(self, rect=None):
 
         if self._parent is not None:  # False when asleep
@@ -684,12 +678,11 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
                 rect = self.hitbox
             self._parent._warn_change(rect)
 
-    def set_pos(self, **kwargs):
+    def set_pos(self, **kwarg):
+        """ Example : my_widget.set_pos(midtop=(50, 10) """
 
-        assert len(kwargs) == 1
-
-        for key, value in kwargs.items():
-            self.move_at(value, key=key)
+        assert len(kwarg) == 1
+        self._move_at(*kwarg.popitem())
 
     def set_window(self, window, follow_movements):  # TODO : refed from self
         """window is a rect relative to the parent
