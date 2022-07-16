@@ -35,13 +35,6 @@ class UT_Origin_Zone(Zone):
         z_window = Zone(z, size=("100%", "100%"), ref=b)
         DragableRectangle(z_window, color=(0, 128, 128), size=(30, 30), center=z.auto_rect.center, ref=z)
 
-        # PRISONNER
-        # z = DragableZone(self, sticky="midright", size=(100, 100), background_color=(0, 64, 64), name="right")
-        # wb = Rectangle(z, center=("50%", "50%"), color=(0, 0, 0, 0),
-        #                size=[z.rect.w - 20] * 2, border_color=(0, 0, 0), border_width=1, touchable=False)
-        # r = DragableRectangle(z, color=(0, 128, 128), size=(30, 30), center=z.auto_rect.center)
-        # r.set_window(wb.rect, follow_movements=False)
-
         # CLOCK
         z2 = DragableZone(self, midtop=("-50%", 186), refloc="topright",
                           size=(350, 350), background_color=(140, 140, 140), name="z3")

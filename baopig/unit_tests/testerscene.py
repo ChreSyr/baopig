@@ -81,18 +81,13 @@ app.launch()"""
 
         self.try_it_yourself = Zone(self, size=("50%", self.rect.h - 20), children_margins=10,
                                     pos=(0, self.menu_zone.rect.bottom + 10), name="try_it_yourself")
-        self.try_it_yourself.code = TextEdit(self.try_it_yourself, text=code, width="100%",
+        code_window = Zone(self.try_it_yourself, size=("100%", 550))
+        self.try_it_yourself.code = TextEdit(code_window, text=code, width="100%",
                                              font_file="monospace")
         self.try_it_yourself.console = Text(self.try_it_yourself, width="100%",
                                             font_file="monospace", background_color=(211, 189, 189))
 
-        def update():
-            window = pygame.Rect(self.try_it_yourself.code.rect)
-            window.height = 550
-            self.try_it_yourself.code.set_window(window, follow_movements=False)
-            self.try_it_yourself.pack()
-        update()
-        self.signal.RESIZE.connect(update, owner=None)
+        self.try_it_yourself.pack()
         self.try_it_yourself.hide()
 
     def add_section(self, title, tests):

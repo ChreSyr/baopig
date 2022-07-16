@@ -247,8 +247,8 @@ class Selector(SelectorDoc, Container, Focusable):
     def handle_link_motion(self, rel):
         with paint_lock:
             if self.selection_rect is None:
-                origin = mouse.x - rel[0], mouse.y - rel[1]
-                self.start_selection(origin)
+                link_origin = mouse.x - rel[0], mouse.y - rel[1]
+                self.start_selection(link_origin)
             self.end_selection(mouse.pos)
 
     def handle_unlink(self):

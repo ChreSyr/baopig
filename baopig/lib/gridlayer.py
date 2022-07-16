@@ -318,7 +318,7 @@ class GridLayer(Layer):
         cell_rect = self.get_cell_rect(widget.row, widget.col)
         widget.resize(*cell_rect[2:])  # TODO : resize(size) ?
         # TODO : use size_hint
-        # widget.set_window(cell_rect, follow_movements=False)
+        # widget.set_window_(cell_rect, follow_movements=False)
         widget.set_lock(origin=False)
         if widget.origin.location is not None:
             widget.origin.config(pos=getattr(pygame.Rect(cell_rect), widget.origin.location),

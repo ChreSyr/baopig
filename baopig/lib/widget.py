@@ -545,7 +545,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         self._auto_hitbox = ProtectedHitbox((0, 0), size)
 
         # SETUP
-        pygame.Rect.__setattr__(self.rect, self.origin.location, self.origin.pos)
+        pygame.Rect.__setattr__(self.rect, self._origin.location, self._origin.pos)
         pygame.Rect.__setattr__(self.abs_rect, "topleft",
                                 (self.parent.abs_rect.left + self.rect.left, self.parent.abs_rect.top + self.rect.top))
         pygame.Rect.__setattr__(self.hitbox, "topleft", self.rect.topleft)
@@ -553,7 +553,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
 
         # Connections
         self.signal.WAKE.connect(self._update_pos, owner=self)
-        pos_ref = self.origin.reference
+        pos_ref = self._origin.reference
         pos_ref.signal.RESIZE.connect(self._update_pos, owner=self)
         if pos_ref != self.parent:
             pos_ref.signal.MOTION.connect(self._update_pos, owner=self)
@@ -566,9 +566,9 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
             # This way, widgets referenced by this widget can update their positions
             if self.is_asleep:  # the widget has no parent
                 return
-            new_pos = self.origin.get_pos_relative_to_owner_parent()
-            rect = self.hitbox if self.origin.referenced_by_hitbox else self.rect
-            old_pos = getattr(rect, self.origin.location)
+            new_pos = self._origin.get_pos_relative_to_owner_parent()
+            rect = self.hitbox if self._origin.referenced_by_hitbox else self.rect
+            old_pos = getattr(rect, self._origin.location)
             self._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
 
         self.parent.signal.MOTION.connect(update_pos_from_parent_movement, owner=self)
@@ -619,7 +619,7 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
                 pygame.Rect.__setattr__(self.abs_hitbox, "topleft", self.abs_rect.topleft)
 
             # We reset the asked_pos after the MOTION in order to allow cycles of origin referecing
-            self.origin._reset_asked_pos()
+            self._origin._reset_asked_pos()
 
             if self.is_visible:
                 self.send_display_request(rect=self.hitbox.union(old_hitbox))
@@ -632,9 +632,9 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         if self.is_asleep:  # the widget has no parent
             return
 
-        new_pos = self.origin.get_pos_relative_to_owner_parent()
-        rect = self.hitbox if self.origin.referenced_by_hitbox else self.rect
-        old_pos = getattr(rect, self.origin.location)
+        new_pos = self._origin.get_pos_relative_to_owner_parent()
+        rect = self.hitbox if self._origin.referenced_by_hitbox else self.rect
+        old_pos = getattr(rect, self._origin.location)
         if new_pos == old_pos:
             return
         self._move(dx=new_pos[0] - old_pos[0], dy=new_pos[1] - old_pos[1])
@@ -728,7 +728,6 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         self.send_display_request(rect=self.rect)  # rect covers all possibilities
 
 
-# HasVisibility
 class HasProtectedSurface(HasProtectedHitbox):
 
     def __init__(self, parent, surface, **kwargs):

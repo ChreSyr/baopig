@@ -18,10 +18,8 @@ class UT_TextEdit_Zone(Zone):
 
         text = TextEdit(self.zone2, width=self.zone2.rect.w - 20, pos=(10, 10))
 
-        self.b = Button(self.zone2, text="RUN", topright=text.rect.topright, command=lambda: exec(text.text),
-                        catching_errors=True)
-        text.signal.RESIZE.connect(lambda: self.b.origin.config(pos=text.rect.topright), owner=self.b)
-        text.signal.MOTION.connect(lambda: self.b.origin.config(pos=text.rect.topright), owner=self.b)
+        self.b = Button(self.zone2, text="RUN", sticky="topright", ref=text,
+                        command=lambda: exec(text.text), catching_errors=True)
 
 
 # For the PresentationScene import
