@@ -112,6 +112,16 @@ class SelectionRect(Rectangle):
         self.set_start(start)
         self.set_end(end)
 
+    def clip(self, rect):
+        """
+        Clip the rectangle inside another (wich are both relative to the parent)
+        """
+        new_rect = self.rect.clip(rect)
+        if new_rect == self.rect:
+            return
+        self.set_pos(topleft=new_rect.topleft)
+        self.resize(*new_rect.size)
+
     def set_end(self, abs_pos):
         assert self.start is not None
         assert is_point(abs_pos)

@@ -47,16 +47,6 @@ class Rectangle(ResizableWidget, Paintable):
     border_color = property(lambda self: self._border_color)
     border_width = property(lambda self: self._border_width)
 
-    def clip(self, rect):  # TODO : move to the superclass that uses it
-        """
-        Clip the rectangle inside another (wich are both relative to the parent)
-        """
-        new_rect = self.rect.clip(rect)
-        if new_rect == self.rect:
-            return
-        self.set_pos(topleft=new_rect.topleft)
-        self.resize(*new_rect.size)
-
     def handle_resize(self):
         self.send_paint_request()
 
