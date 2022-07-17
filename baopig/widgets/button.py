@@ -21,17 +21,19 @@ class ButtonText(Text):
 
         Text.__init__(self, button, text=text, selectable=False, **kwargs)
 
-        assert self.width_is_adaptable and self.height_is_adaptable
+        self.set_adaptable_size(True, True)
+        # assert self.width_is_adaptable and self.height_is_adaptable
 
         content_rect = button.content_rect
         if content_rect.height < self.font.height:
             self.font.config(height=content_rect.height)  # changing the font will automatically update the text
-        while self.rect.width > content_rect.width:
+        while self.rect.width > content_rect.width or self.rect.height > content_rect.height:
             if self.font.height == 2:
+                break
                 raise ValueError(f"This text is too long for the text area : {text} (area={content_rect})")
             self.font.config(height=self.font.height - 1)  # changing the font will automatically update the text
-        if self.rect.height > content_rect.height:
-            self.resize_height(content_rect.height)
+        # if self.rect.height > content_rect.height:
+        #     self.resize_height(content_rect.height)
 
 
 class AbstractButton(Container, Focusable, Validable):

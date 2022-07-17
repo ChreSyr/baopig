@@ -599,12 +599,10 @@ class Text(Zone, SelectableWidget):
         # Adaptable resize
         if self._height_is_adaptable and self._width_is_adaptable:
             right = max(line.rect.right for line in self.lines)
-            bottom = max(line.rect.bottom for line in self.lines)
-            assert bottom == self.lines[-1].rect.bottom
+            bottom = self.lines[-1].rect.bottom
             self.resize(width=right + self.padding.right, height=bottom + self.padding.bottom)
         elif self._height_is_adaptable:
-            bottom = max(line.rect.bottom for line in self.lines)
-            assert bottom == self.lines[-1].rect.bottom
+            bottom = self.lines[-1].rect.bottom
             if bottom + self.padding.bottom != self.rect.h:  # TODO : without this line, the printing bug, find why
                 self.resize_height(bottom + self.padding.bottom)
         elif self._width_is_adaptable:

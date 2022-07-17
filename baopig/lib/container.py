@@ -5,7 +5,7 @@ from baopig.documentation import Container as ContainerDoc
 from .imagewidget import Image
 from .layer import Layer
 from .layersmanager import LayersManager
-from .widget_supers import Paintable, ResizableWidget, Runable
+from .widget_supers import Paintable, Runable, Widget
 from .utilities import *
 
 
@@ -95,7 +95,7 @@ class ChildrenManager:
             self._owner._warn_change(child.hitbox)
 
 
-class Container(ContainerDoc, ResizableWidget):
+class Container(ContainerDoc, Widget):
     """
     Abstract class for widgets who need to contain other widgets
 
@@ -105,7 +105,7 @@ class Container(ContainerDoc, ResizableWidget):
     WARNING : Try to do not override 'container_something' methods
     """
 
-    STYLE = ResizableWidget.STYLE.substyle()
+    STYLE = Widget.STYLE.substyle()
     STYLE.create(
         background_color=(0, 0, 0, 0),  # transparent by default
         background_image=None,
@@ -128,10 +128,10 @@ class Container(ContainerDoc, ResizableWidget):
         if hasattr(self, "_weakref"):  # Container.__init__() has already been called
             return
 
-        self._children_manager = ChildrenManager(self)  # needed in ResizableWidget.__init__
+        self._children_manager = ChildrenManager(self)  # needed in Widget.__init__  TODO : still ?
         self._rect_to_update = None
 
-        ResizableWidget.__init__(self, parent, **kwargs)
+        Widget.__init__(self, parent, **kwargs)
 
         self._children_to_paint = WeakSet()  # a set cannot have two same occurences
 

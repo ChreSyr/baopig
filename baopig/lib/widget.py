@@ -725,7 +725,33 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
 
 class HasProtectedSurface(HasProtectedHitbox):
 
-    def __init__(self, parent, surface, **kwargs):
+    def __init__(self, parent, surface=None, size=None, **kwargs):
+        """NOTE : can be size=(50, 45) or width=50, height=45"""
+
+        HasStyle.__init__(self, parent, options=kwargs)
+
+        if size is None:
+            style_width = self.style["width"]
+            if style_width is None:
+                assert surface is not None
+                style_width = surface.get_width()
+            style_height = self.style["height"]
+            if style_height is None:
+                assert surface is not None
+                style_height = surface.get_height()
+            self._asked_size = style_width, style_height
+        else:
+            self._asked_size = size
+
+        if surface is None:
+            surface = pygame.Surface(self._get_asked_size(), pygame.SRCALPHA)
+
+        for coord in self._asked_size:
+            if isinstance(coord, str):
+                assert coord[-1] == '%', self._asked_size
+            else:
+                assert isinstance(coord, (int, float)), f"Wrong value in size : {coord} (must be a number)"
+                assert coord >= 0, f"Wrong value in size : {coord} (must be positive)"
 
         assert isinstance(surface, pygame.Surface)
 
@@ -742,8 +768,18 @@ class HasProtectedSurface(HasProtectedHitbox):
         self._surface = surface
         self.create_signal("NEW_SURFACE")
 
+        def update_size_from_askedsize():
+
+            asked_size = self._asked_size
+            self.resize(*self._get_asked_size())
+            self._asked_size = asked_size
+
+        self.signal.WAKE.connect(update_size_from_askedsize, owner=self)
+        self.pos_manager.reference.signal.RESIZE.connect(update_size_from_askedsize, owner=self)
+
     surface = property(lambda self: self._surface)
 
+    # HAS_SURFACE
     def _update_size_from_newsurface(self, size):
 
         with paint_lock:
@@ -788,6 +824,60 @@ class HasProtectedSurface(HasProtectedHitbox):
                     self.send_display_request()
 
             self.signal.NEW_SURFACE.emit()
+
+    # RESIZABLE
+    def _get_asked_size(self):
+
+        size = self._asked_size
+        with_percentage = False
+        for coord in size:
+            if isinstance(coord, str):
+                # hard stuff
+                assert coord[-1] == '%', size
+                with_percentage = True
+            else:
+                assert isinstance(coord, (int, float)), f"Wrong value in size : {coord} (must be a number)"
+                assert coord >= 0, f"Wrong value in size : {coord} (must be positive)"
+
+        if with_percentage:
+            size = list(size)
+            for i, coord in enumerate(size):
+                if isinstance(coord, str):
+                    size[i] = self.parent.rect.size[i] * float(coord[:-1]) / 100
+
+        return size
+
+    def _update_surface_from_resize(self, asked_size):  # TODO : envisager une fusion avec paint()
+        """ Update the surface from the asked size - Only called by resize()"""
+
+        self.set_surface(pygame.Surface(asked_size, pygame.SRCALPHA))
+
+    def resize(self, width, height):
+        """Sets up the new widget's surface"""
+
+        if self.has_locked("width"):
+            raise PermissionError("Cannot resize : the width is locked")
+        if self.has_locked("height"):
+            raise PermissionError("Cannot resize : the height is locked")
+
+        self._asked_size = width, height
+
+        if self.is_asleep:
+            return
+
+        asked_size = self._get_asked_size()
+        if asked_size == self.rect.size:
+            return
+
+        self._update_surface_from_resize(asked_size)
+
+    def resize_height(self, height):
+
+        self.resize(self._asked_size[0], height)
+
+    def resize_width(self, width):
+
+        self.resize(width, self._asked_size[1])
 
 
 class Widget(HasProtectedSurface, metaclass=MetaPaintLocker):

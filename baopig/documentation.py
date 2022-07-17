@@ -427,11 +427,7 @@ class Focusable(LinkableByMouse):
         """ Called when a key is released """
 
 
-class ResizableWidget(Widget):
-    """Class for widgets who can be resized"""
-
-
-class Container(ResizableWidget):
+class Container(Widget):
     """
     Widgets parent
 

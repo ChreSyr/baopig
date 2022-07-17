@@ -3,12 +3,12 @@
 import pygame
 
 from baopig.pybao.issomething import *
-from .widget_supers import ResizableWidget, Paintable
+from .widget_supers import Paintable
 from .utilities import Color
 from .widget import Widget
 
 
-class Rectangle(ResizableWidget, Paintable):
+class Rectangle(Paintable):
     """
     A Widget who is just a rectangle filled with one color
 
@@ -17,7 +17,7 @@ class Rectangle(ResizableWidget, Paintable):
     The border only goes inside the rect, not outside
     """
 
-    STYLE = ResizableWidget.STYLE.substyle()
+    STYLE = Paintable.STYLE.substyle()
     STYLE.modify(
         width=30,
         height=30,
@@ -34,8 +34,7 @@ class Rectangle(ResizableWidget, Paintable):
 
     def __init__(self, parent, **kwargs):
 
-        ResizableWidget.__init__(self, parent, **kwargs)
-        Paintable.__init__(self, parent)
+        Paintable.__init__(self, parent, **kwargs)
 
         self._color = self.style["color"]
         self._border_color = self.style["border_color"]

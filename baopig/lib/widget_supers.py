@@ -5,7 +5,6 @@ from baopig.documentation import Focusable as FocusableDoc
 from baopig.documentation import HoverableByMouse as HoverableByMouseDoc
 from baopig.documentation import LinkableByMouse as LinkableByMouseDoc
 from baopig.documentation import Paintable as PaintableDoc
-from baopig.documentation import ResizableWidget as ResizableWidgetDoc
 from baopig.documentation import Runable as RunableDoc
 from baopig.documentation import Validable as ValidableDoc
 from baopig.time.timer import RepeatingTimer
@@ -228,87 +227,6 @@ class DraggableByMouse(LinkableByMouse):
 
     def handle_link_motion(self, rel):
         self.move(*rel)
-
-
-class ResizableWidget(ResizableWidgetDoc, Widget):  # TODO : merge with Widget
-
-    def __init__(self, parent, size=None, **kwargs):
-        """NOTE : can be size=(50, 45) or width=50, height=45"""
-
-        HasStyle.__init__(self, parent, options=kwargs)
-
-        if size is None:
-            self._asked_size = self.style["width"], self.style["height"]
-        else:
-            self._asked_size = size
-
-        if "surface" not in kwargs:
-            kwargs["surface"] = pygame.Surface(self._get_asked_size(), pygame.SRCALPHA)
-
-        # assert not hasattr(self, "_weakref")
-        Widget.__init__(self, parent, **kwargs)
-
-        def update_size_from_askedsize():
-
-            asked_size = self._asked_size
-            self.resize(*self._get_asked_size())
-            self._asked_size = asked_size
-
-        self.signal.WAKE.connect(update_size_from_askedsize, owner=self)
-        self.pos_manager.reference.signal.RESIZE.connect(update_size_from_askedsize, owner=self)
-
-    def _get_asked_size(self):
-
-        size = self._asked_size
-        with_percentage = False
-        for coord in size:
-            if isinstance(coord, str):
-                # hard stuff
-                assert coord[-1] == '%', size
-                with_percentage = True
-            else:
-                assert isinstance(coord, (int, float)), f"Wrong value in size : {coord} (must be a number)"
-                assert coord >= 0, f"Wrong value in size : {coord} (must be positive)"
-
-        if with_percentage:
-            size = list(size)
-            for i, coord in enumerate(size):
-                if isinstance(coord, str):
-                    size[i] = self.parent.rect.size[i] * float(coord[:-1]) / 100
-
-        return size
-
-    def _update_surface_from_resize(self, asked_size):  # TODO : envisager une fusion avec paint()
-        """ Update the surface from the asked size - Only called by resize()"""
-
-        self.set_surface(pygame.Surface(asked_size, pygame.SRCALPHA))
-
-    def resize(self, width, height):
-        """Sets up the new widget's surface"""
-
-        if self.has_locked("width"):
-            raise PermissionError("Cannot resize : the width is locked")
-        if self.has_locked("height"):
-            raise PermissionError("Cannot resize : the height is locked")
-
-        self._asked_size = width, height
-
-        if self.is_asleep:
-            return
-
-        asked_size = self._get_asked_size()
-        if asked_size == self.rect.size:
-            return
-
-        self._update_surface_from_resize(asked_size)
-
-    def resize_height(self, height):
-
-        self.resize(self._asked_size[0], height)
-
-    def resize_width(self, width):
-
-        self.resize(width, self._asked_size[1])
 
 
 class RepetivelyAnimated(Widget):  # TODO : rework default anitmations

@@ -2,10 +2,10 @@
 # NOTE : filename is imagewidget.py because image.py would overlap pygame.image
 
 import pygame
-from .widget_supers import ResizableWidget
+from .widget import Widget
 
 
-class Image(ResizableWidget):
+class Image(Widget):
 
     # TODO : self.tiled instead of parameter in resize()
 
@@ -29,7 +29,7 @@ class Image(ResizableWidget):
         else:
             surface = image.copy()
 
-        ResizableWidget.__init__(self, parent=parent, surface=surface, **kwargs)
+        Widget.__init__(self, parent=parent, surface=surface, **kwargs)
         if self._asked_size[0] is None:
             self._asked_size = (self.rect.w, self._asked_size[1])
         if self._asked_size[1] is None:
