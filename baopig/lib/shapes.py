@@ -47,7 +47,9 @@ class Rectangle(ResizableWidget, Paintable):
     border_color = property(lambda self: self._border_color)
     border_width = property(lambda self: self._border_width)
 
-    def handle_resize(self):
+    def _update_surface_from_resize(self, asked_size):
+
+        super()._update_surface_from_resize(asked_size)
         self.send_paint_request()
 
     def paint(self):

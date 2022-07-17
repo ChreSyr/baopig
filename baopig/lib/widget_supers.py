@@ -248,9 +248,14 @@ class ResizableWidget(ResizableWidgetDoc, Widget):  # TODO : merge with Widget
         # assert not hasattr(self, "_weakref")
         Widget.__init__(self, parent, **kwargs)
 
-        self.signal.WAKE.connect(self._update_size, owner=self)
-        self.signal.RESIZE.connect(self.handle_resize, owner=None)
-        self.pos_manager.reference.signal.RESIZE.connect(self._update_size, owner=self)
+        def update_size_from_askedsize():
+
+            asked_size = self._asked_size
+            self.resize(*self._get_asked_size())
+            self._asked_size = asked_size
+
+        self.signal.WAKE.connect(update_size_from_askedsize, owner=self)
+        self.pos_manager.reference.signal.RESIZE.connect(update_size_from_askedsize, owner=self)
 
     def _get_asked_size(self):
 
@@ -273,19 +278,10 @@ class ResizableWidget(ResizableWidgetDoc, Widget):  # TODO : merge with Widget
 
         return size
 
-    def _update_size(self):
-
-        asked_size = self._asked_size
-        self.resize(*self._get_asked_size())
-        self._asked_size = asked_size
-
     def _update_surface_from_resize(self, asked_size):  # TODO : envisager une fusion avec paint()
         """ Update the surface from the asked size - Only called by resize()"""
 
         self.set_surface(pygame.Surface(asked_size, pygame.SRCALPHA))
-
-    def handle_resize(self):
-        """Stuff to do when the widget is resized"""
 
     def resize(self, width, height):
         """Sets up the new widget's surface"""

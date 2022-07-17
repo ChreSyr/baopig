@@ -157,6 +157,7 @@ class Container(ContainerDoc, ResizableWidget):
         background_image = self.style["background_image"]
         if background_image is not None:
             self.set_background_image(background_image)
+        self.signal.RESIZE.connect(self.handle_resize, owner=None)
 
         # self._flip()  # TODO : remove flip_all at application launch, because a Zone created
         #                   during the app lifetime is not correctly printed
@@ -360,6 +361,7 @@ class Container(ContainerDoc, ResizableWidget):
         )
 
     def handle_resize(self):
+        """Stuff to do when the container is resized"""
 
         if self.background_image is not None:
             self.background_image.resize(*self.rect.size)
