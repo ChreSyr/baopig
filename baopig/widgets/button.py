@@ -21,8 +21,7 @@ class ButtonText(Text):
 
         Text.__init__(self, button, text=text, selectable=False, **kwargs)
 
-        self.set_adaptable_size(True, True)
-        # assert self.width_is_adaptable and self.height_is_adaptable
+        assert self.width_is_adaptable and self.height_is_adaptable
 
         content_rect = button.content_rect
         if content_rect.height < self.font.height:

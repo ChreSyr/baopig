@@ -52,14 +52,14 @@ class _Line(Widget):
 
         assert isinstance(parent, Text)
 
+        font_render = parent.font.render(text)
+        surf_w = font_render.get_width()
+        surface = pygame.Surface((surf_w, parent.font.height), pygame.SRCALPHA)
+        surface.blit(font_render, (0, 0))
+
         self._line_index = line_index
         Widget.__init__(self, parent=parent, layer=parent.lines, name=f"{self.__class__.__name__[1:]}({text})",
-                        surface=pygame.Surface((parent.rect.w, parent.font.height), pygame.SRCALPHA))
-
-        # char_pos[i] est la distance entre left et la fin du i-eme caractere
-        # Exemple : soit self.text = "Hello world"
-        #           char_pos[6] = margin + distance entre le debut de "H" et la fin de "w"
-        self._chars_pos = []
+                        surface=surface)
 
         assert end in ('\n', '')
         if parent.width_is_adaptable:
@@ -71,12 +71,11 @@ class _Line(Widget):
         text = str.replace(text, '\t', '    ')  # We can also replace it at rendering
         self._text = text
 
+        # char_pos[i] est la distance entre left et la fin du i-eme caractere
+        # Exemple : soit self.text = "Hello world"
+        #           char_pos[6] = margin + distance entre le debut de "H" et la fin de "w"
+        self._chars_pos = []
         self.update_char_pos()
-        font_render = self.font.render(self.text)
-        surf_w = font_render.get_width()
-        surface = pygame.Surface((surf_w, self.font.height), pygame.SRCALPHA)
-        surface.blit(font_render, (0, 0))
-        self.set_surface(surface)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(index={self.line_index}, text={self.text})"
