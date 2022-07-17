@@ -230,12 +230,7 @@ class DraggableByMouse(LinkableByMouse):
         self.move(*rel)
 
 
-class ResizableWidget(ResizableWidgetDoc, Widget):
-    STYLE = Widget.STYLE.substyle()
-    STYLE.create(
-        width=None,  # must be filled
-        height=None,  # must be filled
-    )
+class ResizableWidget(ResizableWidgetDoc, Widget):  # TODO : merge with Widget
 
     def __init__(self, parent, size=None, **kwargs):
         """NOTE : can be size=(50, 45) or width=50, height=45"""
@@ -284,10 +279,15 @@ class ResizableWidget(ResizableWidgetDoc, Widget):
         self.resize(*self._get_asked_size())
         self._asked_size = asked_size
 
+    def _update_surface_from_resize(self, asked_size):  # TODO : envisager une fusion avec paint()
+        """ Update the surface from the asked size - Only called by resize()"""
+
+        self.set_surface(pygame.Surface(asked_size, pygame.SRCALPHA))
+
     def handle_resize(self):
         """Stuff to do when the widget is resized"""
 
-    def resize(self, w, h):
+    def resize(self, width, height):
         """Sets up the new widget's surface"""
 
         if self.has_locked("width"):
@@ -295,7 +295,7 @@ class ResizableWidget(ResizableWidgetDoc, Widget):
         if self.has_locked("height"):
             raise PermissionError("Cannot resize : the height is locked")
 
-        self._asked_size = w, h
+        self._asked_size = width, height
 
         if self.is_asleep:
             return
@@ -304,15 +304,15 @@ class ResizableWidget(ResizableWidgetDoc, Widget):
         if asked_size == self.rect.size:
             return
 
-        self.set_surface(pygame.Surface(asked_size, pygame.SRCALPHA))
+        self._update_surface_from_resize(asked_size)
 
-    def resize_height(self, h):
+    def resize_height(self, height):
 
-        self.resize(self._asked_size[0], h)
+        self.resize(self._asked_size[0], height)
 
-    def resize_width(self, w):
+    def resize_width(self, width):
 
-        self.resize(w, self._asked_size[1])
+        self.resize(width, self._asked_size[1])
 
 
 class RepetivelyAnimated(Widget):  # TODO : rework default anitmations

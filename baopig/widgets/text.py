@@ -601,7 +601,7 @@ class Text(Zone, SelectableWidget):
             right = max(line.rect.right for line in self.lines)
             bottom = max(line.rect.bottom for line in self.lines)
             assert bottom == self.lines[-1].rect.bottom
-            self.resize(w=right + self.padding.right, h=bottom + self.padding.bottom)
+            self.resize(width=right + self.padding.right, height=bottom + self.padding.bottom)
         elif self._height_is_adaptable:
             bottom = max(line.rect.bottom for line in self.lines)
             assert bottom == self.lines[-1].rect.bottom
@@ -615,6 +615,31 @@ class Text(Zone, SelectableWidget):
         self._lines_pos = []
         for line in self.lines:
             self._lines_pos.append(line.rect.top)
+
+    def _update_surface_from_resize(self, asked_size):
+
+        old_size = self.content_rect.size
+        super()._update_surface_from_resize(asked_size)
+
+        if self._width_is_adaptable:
+            lines_width = max(line.rect.w for line in self.lines)
+            if self.content_rect.w != lines_width:
+                self._width_is_adaptable = False
+                self.set_text(self.get_text())
+        else:
+            lines_width = old_size[0]
+            if self.content_rect.w != lines_width:
+                self.set_text(self.get_text())
+
+        if self._height_is_adaptable:
+            lines_height = self.lines[-1].rect.bottom - self.content_rect.top
+            if self.content_rect.h != lines_height:
+                self._height_is_adaptable = False
+                self.set_text(self.get_text())
+        else:
+            lines_height = old_size[1]
+            if self.content_rect.h != lines_height:
+                self.set_text(self.get_text())
 
     def _find_index(self, pos):
         """
@@ -713,41 +738,6 @@ class Text(Zone, SelectableWidget):
     def pack(self, *args, **kwargs):
 
         raise PermissionError("Should not use this method on a Text")
-
-    def resize(self, w, h):
-        # NOTE : resizing a Text with adaptable size will set the size fixed, non-adaptable
-
-        old_size = self.content_rect.size
-        super().resize(w, h)
-
-        if self._width_is_adaptable:
-            lines_width = max(line.rect.w for line in self.lines)
-
-            """
-            
-            right = max(line.right for line in self.lines)
-            bottom = max(line.bottom for line in self.lines)
-            assert bottom == self.lines[-1].bottom
-            self.resize(w=right + self.padding.right, h=bottom + self.padding.bottom)
-            """
-
-            if self.content_rect.w != lines_width:
-                self._width_is_adaptable = False
-                self.set_text(self.get_text())
-        else:
-            lines_width = old_size[0]
-            if self.content_rect.w != lines_width:
-                self.set_text(self.get_text())
-
-        if self._height_is_adaptable:
-            lines_height = self.lines[-1].rect.bottom - self.content_rect.top
-            if self.content_rect.h != lines_height:
-                self._height_is_adaptable = False
-                self.set_text(self.get_text())
-        else:
-            lines_height = old_size[1]
-            if self.content_rect.h != lines_height:
-                self.set_text(self.get_text())
 
     def set_text(self, text):
 

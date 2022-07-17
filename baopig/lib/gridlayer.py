@@ -316,7 +316,7 @@ class GridLayer(Layer):
     def _update_widget(self, widget):
         """Updates window & position"""
         cell_rect = self.get_cell_rect(widget.row, widget.col)
-        widget.resize(*cell_rect[2:])  # TODO : resize(size) ?
+        widget.resize(*cell_rect[2:])
         # TODO : use size_hint
         # widget.set_window_(cell_rect, follow_movements=False)
         widget.set_lock(pos=False)

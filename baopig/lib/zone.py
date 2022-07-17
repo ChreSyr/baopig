@@ -69,6 +69,16 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
                     rect=(self.parent.left + self.hitbox.left, self.parent.top + self.hitbox.top) + self.hitbox.size
                 )
 
+    def _update_surface_from_resize(self, asked_size):
+
+        with paint_lock:
+            try:
+                Widget.set_surface(self, self.parent.surface.subsurface(self.rect.topleft + asked_size))
+            except ValueError:
+                assert not self.parent.auto_rect.contains(self.rect)
+                raise PermissionError("A SubZone must fit inside its parent")
+            self._flip_without_update()
+
     def _warn_parent(self, rect):
         """Request updates at rects referenced by self"""
 
@@ -79,28 +89,3 @@ class SubZone(Zone):  # TODO : SubScene ? with rects_to_update ?
             pygame.display.update(rect)
         else:
             self.parent._warn_parent(rect)
-
-    def resize(self, w, h):
-
-        if self.has_locked("width"):
-            raise PermissionError("Cannot resize : the width is locked")
-        if self.has_locked("height"):
-            raise PermissionError("Cannot resize : the height is locked")
-        # if (w, h) == self._asked_size:
-        #     return
-
-        self._asked_size = w, h
-
-        asked_size = self._get_asked_size()
-        if asked_size == self.rect.size:
-            return
-
-        # self.set_surface(pygame.Surface(asked_size, pygame.SRCALPHA))
-
-        with paint_lock:
-            try:
-                Widget.set_surface(self, self.parent.surface.subsurface(self.rect.topleft + asked_size))
-            except ValueError:
-                assert not self.parent.auto_rect.contains(self.rect)
-                raise PermissionError("A SubZone must fit inside its parent")
-            self._flip_without_update()

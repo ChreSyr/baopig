@@ -186,7 +186,7 @@ class _Window:
         self._size = owner.rect.size
         self._surface = None
 
-        # self._update_surface()
+        # self._update_surface_TBR()
 
     is_following_movements = property(lambda self: self._is_following_movements)
     is_set = property(lambda self: self._is_set)
@@ -194,7 +194,7 @@ class _Window:
     size = property(lambda self: self._size)
     surface = property(lambda self: self._surface)
 
-    def _update_surface(self):
+    def _update_surface_TBR(self):
 
         subsurface_rect = self._owner.auto_rect.clip(self._offset + self.size)
         self._surface = self._owner.surface.subsurface(subsurface_rect)
@@ -207,7 +207,7 @@ class _Window:
         if size is not None:
             self._size = tuple(size)
 
-        # self._update_surface()
+        # self._update_surface_TBR()
 
     def get_hitbox(self):
 
@@ -469,6 +469,8 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
         ref=None,  # default is parent
         refloc="topleft",
         referenced_by_hitbox=False,
+        width=None,  # must be filled
+        height=None,  # must be filled
     )
     STYLE.set_type("loc", Location)
     STYLE.set_type("refloc", Location)

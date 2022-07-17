@@ -158,12 +158,9 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
     def pre_open(self):
         """Stuff to do right before this scene is open"""
 
-    def resize(self, w, h):
+    def _update_surface_from_resize(self, asked_size):
 
-        if (w, h) == self.asked_size: return
-        self._asked_size = w, h
-        if self is self.application.focused_scene:
-            self.application._update_display()
+        self.application._update_display()
 
     def run(self):
         """Stuff to repeat endlessly while this scene is focused"""

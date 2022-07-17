@@ -9,7 +9,7 @@ class Image(ResizableWidget):
 
     # TODO : self.tiled instead of parameter in resize()
 
-    def __init__(self, parent, image, w=None, h=None, **kwargs):  # TODO : rework w & h params
+    def __init__(self, parent, image, w=None, h=None, tiled=False, **kwargs):  # TODO : rework w & h params
         """
         Cree une image
 
@@ -36,30 +36,30 @@ class Image(ResizableWidget):
             self._asked_size = (self._asked_size[0], self.rect.h)
 
         self._original = image
+        self._tiled = tiled
 
-    def collidemouse_alpha(self):  # TODO
-        raise NotImplemented
+    def _update_surface_from_resize(self, asked_size):
 
-    def resize(self, w, h, tiled=False):
+        if self._tiled:
 
-        super().resize(w, h)
-
-        if tiled:
-
-            surface = self.surface
+            asked_width, asked_height = asked_size
+            surface = pygame.Surface(asked_size, pygame.SRCALPHA)
             surface.blit(self._original, (0, 0))
             original_w, original_h = self._original.get_size()
 
-            if self.rect.w > original_w:
-                for i in range(int(self.rect.w / original_w)):
-                    surface.blit(self.surface, (original_w * (i + 1), 0))
+            if asked_width > original_w:
+                for i in range(int(asked_width / original_w)):
+                    surface.blit(surface, (original_w * (i + 1), 0))
 
-            if self.rect.h > original_h:
-                row = surface.subsurface((0, 0, self.rect.w, original_h)).copy()
-                for i in range(int(self.rect.h / original_h)):
+            if asked_height > original_h:
+                row = surface.subsurface((0, 0, asked_width, original_h)).copy()
+                for i in range(int(asked_height / original_h)):
                     surface.blit(row, (0, original_h * (i + 1)))
 
             self.set_surface(surface)
 
         else:
-            self.set_surface(pygame.transform.scale(self._original, self.rect.size))
+            self.set_surface(pygame.transform.scale(self._original, asked_size))
+
+    def collidemouse_alpha(self):  # TODO
+        raise NotImplemented

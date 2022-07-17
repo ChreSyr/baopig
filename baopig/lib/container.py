@@ -353,10 +353,10 @@ class Container(ContainerDoc, ResizableWidget):
             children_list = self.children
         children = tuple(children_list)
         self.resize(
-            (max(widget.hitbox.right for widget in children) + self.padding.right
-             if children else self.padding.left + self.padding.right) if horizontally else self.rect.w,
-            (max(widget.hitbox.bottom for widget in children) + self.padding.bottom
-             if children else self.padding.top + self.padding.bottom) if vertically else self.rect.h
+            width=(max(widget.hitbox.right for widget in children) + self.padding.right
+                   if children else self.padding.left + self.padding.right) if horizontally else self.rect.w,
+            height=(max(widget.hitbox.bottom for widget in children) + self.padding.bottom
+                    if children else self.padding.top + self.padding.bottom) if vertically else self.rect.h
         )
 
     def handle_resize(self):

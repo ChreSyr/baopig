@@ -29,7 +29,7 @@ class SliderBloc(Rectangle):
         # self.style.modify(width=self.style["length"], height=self.style["wideness"])
 
         Rectangle.__init__(self, slider)
-        self.resize(w=self.style["length"], h=self.style["wideness"])
+        self.resize(width=self.style["length"], height=self.style["wideness"])
 
         self._max_index = None  # TODO : remove
 
@@ -65,7 +65,7 @@ class SliderBar(Rectangle):
         # TODO : if the slider goes vertically, switch length and wideness in the following line
 
         Rectangle.__init__(self, slider)
-        self.resize(w=self.style["length"], h=self.style["wideness"])
+        self.resize(width=self.style["length"], height=self.style["wideness"])
 
 
 class Slider(Container, LinkableByMouse):
@@ -117,8 +117,8 @@ class Slider(Container, LinkableByMouse):
         self.bloc = self.style["bloc_class"](self)
 
         self.resize(
-            self.bar.rect.width + max(0, self.bloc.border_width - self.bar.border_width) * 2,
-            max(self.bar.rect.height, self.bloc.rect.height),
+            width=self.bar.rect.width + max(0, self.bloc.border_width - self.bar.border_width) * 2,
+            height=max(self.bar.rect.height, self.bloc.rect.height),
         )
         self._max_bloc_index = self.bloc._max_index = self.rect.width - self.bloc.rect.width
         self.bloc.update()
@@ -210,10 +210,8 @@ class Slider(Container, LinkableByMouse):
         bar_margin = max(0, self.bloc.border_width - self.bar.border_width) * 2
         self.bar.resize_width(self.rect.width - bar_margin)
 
-    def resize(self, w, h):
-
-        super().resize(w, h)
-
+    def resize_TBR(self, w, h):
+        pass
         # TODO : bloc.length, bloc.wideness
 
     def reset(self):
