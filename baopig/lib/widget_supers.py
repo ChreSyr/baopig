@@ -34,44 +34,6 @@ class Validable(ValidableDoc):
             self.handle_validate()
 
 
-class Paintable(PaintableDoc, Widget):
-
-    def __init__(self, parent, **kwargs):
-
-        Widget.__init__(self, parent, **kwargs)
-
-        self._dirty = 0
-        self._waiting_line = self.parent._children_to_paint
-
-        def check_dirty():
-            if self.dirty:
-                self._waiting_line.add(self)
-
-        self.signal.WAKE.connect(check_dirty, owner=self)
-
-    dirty = property(lambda self: self._dirty)
-
-    def send_paint_request(self):
-
-        if self._dirty == 0:
-            self._dirty = 1
-
-            if self.is_awake:
-                self._waiting_line.add(self)
-
-    def set_dirty(self, val):
-
-        assert val in (0, 1, 2)
-
-        self._dirty = val
-
-        if self.is_awake:
-            if val:
-                self._waiting_line.add(self)
-            elif self in self._waiting_line:
-                self._waiting_line.remove(self)
-
-
 class Runable(RunableDoc, Widget):
 
     def __init__(self, parent, **kwargs):

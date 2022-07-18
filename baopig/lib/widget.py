@@ -763,6 +763,9 @@ class HasProtectedSurface(HasProtectedHitbox):
         self._surface = surface
         self.create_signal("NEW_SURFACE")
 
+        self._dirty = 0
+        self._waiting_line = self.parent._children_to_paint
+
         def update_size_from_askedsize():
 
             asked_size = self._asked_size
@@ -771,6 +774,12 @@ class HasProtectedSurface(HasProtectedHitbox):
 
         self.signal.WAKE.connect(update_size_from_askedsize, owner=self)
         self.pos_manager.reference.signal.RESIZE.connect(update_size_from_askedsize, owner=self)
+
+        def check_dirty():
+            if self.dirty:
+                self._waiting_line.add(self)
+
+        self.signal.WAKE.connect(check_dirty, owner=self)
 
     surface = property(lambda self: self._surface)
 
@@ -863,10 +872,11 @@ class HasProtectedSurface(HasProtectedHitbox):
     #   size_manager.set_asked_size(size)
     #   size_manager.reference
 
-    def _update_surface_from_resize(self, asked_size):  # TODO : envisager une fusion avec paint()
+    def _update_surface_from_resize(self, asked_size):
         """ Update the surface from the asked size - Only called by resize()"""
 
         self.set_surface(pygame.Surface(asked_size, pygame.SRCALPHA))
+        self.send_paint_request()
 
     def resize(self, width, height):
         """Sets up the new widget's surface"""
@@ -894,6 +904,29 @@ class HasProtectedSurface(HasProtectedHitbox):
     def resize_width(self, width):
 
         self.resize(width, self._asked_size[1])
+
+    # PAINTABLE
+    dirty = property(lambda self: self._dirty)
+
+    def send_paint_request(self):
+
+        if self._dirty == 0:
+            self._dirty = 1
+
+            if self.is_awake:
+                self._waiting_line.add(self)
+
+    def set_dirty(self, val):
+
+        assert val in (0, 1, 2)
+
+        self._dirty = val
+
+        if self.is_awake:
+            if val:
+                self._waiting_line.add(self)
+            elif self in self._waiting_line:
+                self._waiting_line.remove(self)
 
 
 class Widget(HasProtectedSurface, metaclass=MetaPaintLocker):

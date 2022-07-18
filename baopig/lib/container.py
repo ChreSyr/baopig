@@ -5,7 +5,7 @@ from baopig.documentation import Container as ContainerDoc
 from .imagewidget import Image
 from .layer import Layer
 from .layersmanager import LayersManager
-from .widget_supers import Paintable, Runable, Widget
+from .widget_supers import Runable, Widget
 from .utilities import *
 
 
@@ -129,11 +129,10 @@ class Container(ContainerDoc, Widget):
             return
 
         self._children_manager = ChildrenManager(self)  # needed in Widget.__init__  TODO : still ?
+        self._children_to_paint = WeakSet()  # a set cannot have two same occurences
         self._rect_to_update = None
 
         Widget.__init__(self, parent, **kwargs)
-
-        self._children_to_paint = WeakSet()  # a set cannot have two same occurences
 
         # LAYERS - Only layers can guarantie the overlay
         layersmanager_class = LayersManager
@@ -207,6 +206,8 @@ class Container(ContainerDoc, Widget):
             for child in tuple(self._children_to_paint):
                 if child.is_visible:
                     child.paint()
+                    child.signal.NEW_SURFACE.emit()
+                    child.send_display_request()
                     if child._dirty == 1:
                         child._dirty = 0
                         self._children_to_paint.remove(child)
@@ -223,8 +224,9 @@ class Container(ContainerDoc, Widget):
                 if isinstance(child, Container):
                     child._container_refresh(recursive, only_containers, with_update=False)
                 elif not only_containers:
-                    if isinstance(child, Paintable):
-                        child.paint()
+                    child.paint()
+                    child.signal.NEW_SURFACE.emit()
+                    child.send_display_request()
         if with_update:
             self._flip()
         else:

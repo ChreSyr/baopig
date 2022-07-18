@@ -27,16 +27,11 @@ class ProgressBar(Rectangle, Runable):
     progression = property(lambda self: self._progression)
 
     def paint(self):
-        """
-        If size is set, this method resizes the ProgressBar
-        """
-        # size = size if size is not None else self.size
-        # surface = pygame.Surface(size, pygame.SRCALPHA)
         self.surface.fill((0, 0, 0, 0))
         pygame.draw.rect(self.surface, self.color, (0, 0, self.progression * self.rect.w, self.rect.h))
         pygame.draw.rect(self.surface, self.border_color, self.auto_hitbox, self.border_width * 2 - 1)
-        self.signal.NEW_SURFACE.emit()
-        self.send_display_request()
+        # self.signal.NEW_SURFACE.emit()
+        # self.send_display_request()
 
     def run(self):
         self._progression = (float(self.get_progress()) - self.min) / (self.max - self.min)

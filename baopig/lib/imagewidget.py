@@ -41,25 +41,27 @@ class Image(Widget):
     def _update_surface_from_resize(self, asked_size):
 
         if self._tiled:
-
-            asked_width, asked_height = asked_size
-            surface = pygame.Surface(asked_size, pygame.SRCALPHA)
-            surface.blit(self._original, (0, 0))
-            original_w, original_h = self._original.get_size()
-
-            if asked_width > original_w:
-                for i in range(int(asked_width / original_w)):
-                    surface.blit(surface, (original_w * (i + 1), 0))
-
-            if asked_height > original_h:
-                row = surface.subsurface((0, 0, asked_width, original_h)).copy()
-                for i in range(int(asked_height / original_h)):
-                    surface.blit(row, (0, original_h * (i + 1)))
-
-            self.set_surface(surface)
+            super()._update_surface_from_resize(asked_size)
 
         else:
             self.set_surface(pygame.transform.scale(self._original, asked_size))
 
     def collidemouse_alpha(self):  # TODO
         raise NotImplemented
+
+    def paint(self):  # TODO : tests
+
+        if self._tiled:
+
+            width, height = self.rect.size
+            self.surface.blit(self._original, (0, 0))
+            original_w, original_h = self._original.get_size()
+
+            if width > original_w:
+                for i in range(int(width / original_w)):
+                    self.surface.blit(self.surface, (original_w * (i + 1), 0))
+
+            if height > original_h:
+                row = self.surface.subsurface((0, 0, width, original_h)).copy()
+                for i in range(int(height / original_h)):
+                    self.surface.blit(row, (0, original_h * (i + 1)))

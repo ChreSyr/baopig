@@ -3,12 +3,11 @@
 import pygame
 
 from baopig.pybao.issomething import *
-from .widget_supers import Paintable
 from .utilities import Color
 from .widget import Widget
 
 
-class Rectangle(Paintable):
+class Rectangle(Widget):
     """
     A Widget who is just a rectangle filled with one color
 
@@ -17,7 +16,7 @@ class Rectangle(Paintable):
     The border only goes inside the rect, not outside
     """
 
-    STYLE = Paintable.STYLE.substyle()
+    STYLE = Widget.STYLE.substyle()
     STYLE.modify(
         width=30,
         height=30,
@@ -34,29 +33,24 @@ class Rectangle(Paintable):
 
     def __init__(self, parent, **kwargs):
 
-        Paintable.__init__(self, parent, **kwargs)
+        Widget.__init__(self, parent, **kwargs)
 
         self._color = self.style["color"]
         self._border_color = self.style["border_color"]
         self._border_width = self.style["border_width"]
 
-        self.paint()
+        self.send_paint_request()
 
     color = property(lambda self: self._color)
     border_color = property(lambda self: self._border_color)
     border_width = property(lambda self: self._border_width)
 
-    def _update_surface_from_resize(self, asked_size):
-
-        super()._update_surface_from_resize(asked_size)
-        self.send_paint_request()
-
     def paint(self):
         self.surface.fill(self.color)
         if self.border_color is not None:
             pygame.draw.rect(self.surface, self.border_color, (0, 0) + self.rect.size, self.border_width * 2 - 1)
-        self.signal.NEW_SURFACE.emit()
-        self.send_display_request()
+        # self.signal.NEW_SURFACE.emit()
+        # self.send_display_request()
 
     def set_color(self, color=None):
 

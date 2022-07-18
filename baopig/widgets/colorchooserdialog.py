@@ -16,8 +16,6 @@ class ColorSliderBloc(SliderBloc):
             (self.border_width, self.border_width,
              self.rect.w - self.border_width * 2, self.rect.h - self.border_width * 2)
         )
-        self.signal.NEW_SURFACE.emit()
-        self.send_display_request()
 
 
 class ColorSliderBar(SliderBar):
@@ -41,8 +39,8 @@ class ColorSliderBar(SliderBar):
                 (i + self.border_width, self.border_width),
                 (i + self.border_width, self.rect.h - self.border_width * 2)
             )
-        self.signal.NEW_SURFACE.emit()
-        self.send_display_request()
+        # self.signal.NEW_SURFACE.emit()
+        # self.send_display_request()
 
 
 class ColorSlider(Slider):
@@ -82,7 +80,7 @@ class ColorSlider(Slider):
     def update(self):
 
         if self.is_linked:
-            return self.bloc.paint()
+            return self.bloc.send_paint_request()
         self.color = self.parent.color.copy()
         self._update_val(getattr(self.parent.color, self.attr))
         with paint_lock:

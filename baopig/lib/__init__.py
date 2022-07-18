@@ -2,7 +2,7 @@ from .style import Theme, DarkTheme  # TODO : pre-defined themes
 from .utilities import *
 from .widget import Widget, Communicative
 from .widget_supers import DraggableByMouse, Focusable, HoverableByMouse, LinkableByMouse, \
-    Paintable, RepetivelyAnimated, Runable, Validable
+    RepetivelyAnimated, Runable, Validable
 from .imagewidget import Image
 from .shapes import Rectangle, Highlighter, Polygon, Line, Circle
 from .layer import Layer

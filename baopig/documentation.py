@@ -222,6 +222,66 @@ class Widget(Communicative):
             Emits the WAKE signal
         """
 
+    # TODO : merge
+    """
+    Class for widgets who may need to update their surface.
+
+    Attribute dirty means the widget's surface has to be updated.
+    The widget's surface is updated through the paint() method.
+    The paint() method is executed by a thread dedicated to the screen's display.
+    If an asleep widget is dirty, the paint() method is called when the widget awakes.
+    WARNING : It is deprecated to call paint() yourself, use send_paint_request() instead.
+
+    :Attributes:
+    ------------
+        dirty: int
+            -> if 0, paint() is not requested
+            -> if 1, paint() is called at next frame rendering, then dirty will be set to 0 again
+            -> if 2, paint() is called at each frame rendering
+
+    :Methods:
+    ---------
+        paint()              -> abstract - updates the widget's surface
+        send_paint_request() -> sends a request who will execute once the widget's paint() method
+        set_dirty(val)       -> sets the widget's dirty attribute
+    """
+    def paint(self):
+        """
+        Abstract - called at a frame rendering, if the widget is dirty.
+
+        WARNING : NEVER CALL paint() YOURSELF !! Use send_paint_request() instead.
+
+        When called by a paint_request, paint() is followed by these 2 events:
+            - widget's signal NEW_SURFACE is emitted
+            - a display_request is sent
+
+        :Examples:
+
+            def paint(self):
+                surf = get_the_new_surface()
+                self.set_surface(surf)
+
+            def paint(self):
+                self.surface.blit(another_surface, (0, 0))
+        """
+
+    def send_paint_request(self):
+        """
+        Sends a request who will execute once the widget's paint() method
+        The request is executed by a thread dedicated to the screen's display
+        Acts almost like set_dirty(1)
+        """
+
+    def set_dirty(self, val: int):
+        """
+        Sets the widget's dirty attribute
+
+        Paintable.dirty:
+            if 0, paint() is not requested
+            if 1, paint() is called at next frame rendering, then dirty will be set to 0 again
+            if 2, paint() is called at each frame rendering
+        """
+
 
 class HoverableByMouse(Widget):
     """
@@ -258,64 +318,8 @@ class HoverableByMouse(Widget):
         """ Abstract - called when the widget gets unhovered from the mouse """
 
 
-class Paintable(Widget):
-    """
-    Class for widgets who may need to update their surface.
-
-    Attribute dirty means the widget's surface has to be updated.
-    The widget's surface is updated through the paint() method.
-    The paint() method is executed by a thread dedicated to the screen's display.
-    If an asleep widget is dirty, the paint() method is called when the widget awakes.
-    WARNING : It is deprecated to call paint() yourself, use send_paint_request() instead.
-
-    :Attributes:
-    ------------
-        dirty: int
-            -> if 0, paint() is not requested
-            -> if 1, paint() is called at next frame rendering, then dirty will be set to 0 again
-            -> if 2, paint() is called at each frame rendering
-
-    :Methods:
-    ---------
-        paint()              -> abstract - updates the widget's surface
-        send_paint_request() -> sends a request who will execute once the widget's paint() method
-        set_dirty(val)       -> sets the widget's dirty attribute
-    """
-
-    def paint(self):
-        """
-        Abstract - called at a frme rendering, if the widget is dirty.
-
-        WARNING : It is deprecated to call paint() yourself, use send_paint_request() instead.
-
-        :Examples:
-
-            def paint(self):
-                surf = get_the_new_surface()
-                self.set_surface(surf)
-
-            def paint(self):
-                self.surface.blit(another_surface, (0, 0))
-                self.signal.NEW_SURFACE.emit()
-                self.send_display_request()
-        """
-
-    def send_paint_request(self):
-        """
-        Sends a request who will execute once the widget's paint() method
-        The request is executed by a thread dedicated to the screen's display
-        Acts almost like set_dirty(1)
-        """
-
-    def set_dirty(self, val: int):
-        """
-        Sets the widget's dirty attribute
-
-        Paintable.dirty:
-            if 0, paint() is not requested
-            if 1, paint() is called at next frame rendering, then dirty will be set to 0 again
-            if 2, paint() is called at each frame rendering
-        """
+class Paintable(Widget):  # TODO : remove
+    pass
 
 
 class Runable(Widget):

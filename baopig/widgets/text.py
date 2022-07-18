@@ -613,7 +613,7 @@ class Text(Zone, SelectableWidget):
         for line in self.lines:
             self._lines_pos.append(line.rect.top)
 
-    def _update_surface_from_resize(self, asked_size):
+    def _update_surface_from_resize(self, asked_size):  # TODO : divide AdaptableText and Text & use paint() somewhere
 
         old_size = self.content_rect.size
         super()._update_surface_from_resize(asked_size)
