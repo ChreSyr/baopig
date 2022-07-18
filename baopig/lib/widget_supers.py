@@ -4,11 +4,10 @@ from baopig.documentation import ApplicationExit, Selector
 from baopig.documentation import Focusable as FocusableDoc
 from baopig.documentation import HoverableByMouse as HoverableByMouseDoc
 from baopig.documentation import LinkableByMouse as LinkableByMouseDoc
-from baopig.documentation import Paintable as PaintableDoc
 from baopig.documentation import Runable as RunableDoc
 from baopig.documentation import Validable as ValidableDoc
 from baopig.time.timer import RepeatingTimer
-from .widget import Widget, HasStyle
+from .widget import Widget
 
 
 class Validable(ValidableDoc):

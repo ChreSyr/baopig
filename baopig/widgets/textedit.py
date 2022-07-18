@@ -11,42 +11,61 @@ from .text import Text
 # TODO : presentation text when nothing is in the text ?
 
 
-class TextEdit(Text, Selector):
-
-    STYLE = Text.STYLE.substyle()
+class TextEdit(Selector):
+    STYLE = Selector.STYLE.substyle()
     STYLE.modify(
         width=100,
+        height=15,
         background_color="theme-color-font_opposite",
     )
 
     def __init__(self, parent, text="", **kwargs):
 
-        # TODO : width = 40 -> if the text is longer, scroll
+        text_kwargs = {}
+        for key in (
+                "font_file",
+                "font_height",
+                "font_color",
+                "font_bold",
+                "font_italic",
+                "font_underline",
+                "max_width",
+        ):
+            if key in kwargs:
+                text_kwargs[key] = kwargs.pop(key)
 
-        Text.__init__(self, parent=parent, text=text, selectable=True, **kwargs)
-        Selector.__init__(self, parent)
+        # TODO : width = 40 -> if the text is longer, scroll
+        Selector.__init__(self, parent, **kwargs)
+
+        self._text_widget_ref = Text(self, text=text, selectable=True, **text_kwargs).get_weakref()
 
         self.set_selectionrect_visibility(False)
-        self.selector.selectables.remove(self)  # remove this Text from the Selector parent
-        self._selector_ref = self.get_weakref()  # make this Text its own Selector
-        self.selector.selectables.add(self)
+        # self.selector.selectables.remove(self)  # remove this Text from the Selector parent
+        # self._selector_ref = self.get_weakref()  # make this Text its own Selector
+        # self.selector.selectables.add(self)
 
         self._cursor_ref = lambda: None
         self.cursors_layer = Layer(self, Cursor, name="cursors_layer")
 
+        self.resize(*self.text_widget.rect.size)
+
     cursor = property(lambda self: self._cursor_ref())
+    text = property(lambda self: self._text_widget_ref().get_text())
+    text_widget = property(lambda self: self._text_widget_ref())
 
     def accept(self, text):
-        if text == '': return False
-        return True
+        return text != ''
 
     def del_selection_data(self):
 
-        if not self.is_selected: return
-        cursor_index = self.find_index(char_index=self.line_selections[0].index_start,
-                                       line_index=self.line_selections[0].line.line_index)
+        if not self.text_widget.is_selected:
+            return
+        cursor_index = self.text_widget.find_index(
+            char_index=self.text_widget.line_selections[0].index_start,
+            line_index=self.text_widget.line_selections[0].line.line_index
+        )
         assert self.is_selecting
-        selected_lines = tuple(line for line in self.lines if line.is_selected)
+        selected_lines = tuple(line for line in self.text_widget.lines if line.is_selected)
         if selected_lines:
             if self.cursor is not None:
                 self.cursor.save()
@@ -61,8 +80,9 @@ class TextEdit(Text, Selector):
 
         super().end_selection(*args, **kwargs)
 
-        pos = (self.selection_rect.end[0] - self.abs_rect.left, self.selection_rect.end[1] - self.abs_rect.top)
-        line_index, char_index = self._find_indexes(pos=pos)
+        pos = (self.selection_rect.end[0] - self.text_widget.abs_rect.left,
+               self.selection_rect.end[1] - self.text_widget.abs_rect.top)
+        line_index, char_index = self.text_widget._find_indexes(pos=pos)
         if line_index != self.cursor.line_index or char_index != self.cursor.char_index:
             self.cursor.config(line_index=line_index, char_index=char_index, selecting="done")
 
@@ -75,12 +95,11 @@ class TextEdit(Text, Selector):
 
         super().handle_focus()
 
-        line_index = len(self.lines) - 1
-        char_index = len(self.lines[-1].text)
+        line_index = len(self.text_widget.lines) - 1
+        char_index = len(self.text_widget.lines[-1].text)
 
         if self.cursor is None:
-            Cursor(self, line_index=line_index, char_index=char_index)
-            self.cursor.swap_layer("cursors_layer")
+            self._cursor_ref = Cursor(self, line_index=line_index, char_index=char_index).get_weakref()
         else:
             self.cursor.wake()
             self.cursor.config(line_index=line_index, char_index=char_index)
@@ -97,7 +116,7 @@ class TextEdit(Text, Selector):
         super().handle_link()
 
         if not mouse.has_double_clicked and not mouse.has_triple_clicked:  # else, the cursor follow the selection
-            self.cursor.config(text_index=self._find_mouse_index())
+            self.cursor.config(text_index=self.text_widget._find_mouse_index())
 
     def paste(self, data):
 
@@ -105,8 +124,8 @@ class TextEdit(Text, Selector):
 
     def set_text(self, text):
 
-        self._selection_start = None
-        super().set_text(text)
+        self._selection_start = None  # TODO
+        self.text_widget.set_text(text)
 
 
 class Cursor(Rectangle, RepetivelyAnimated):
@@ -123,15 +142,16 @@ class Cursor(Rectangle, RepetivelyAnimated):
         assert isinstance(parent, TextEdit)
         assert parent.cursor is None
 
-        h = parent.font.height
+        h = parent.text_widget.font.height
 
         Rectangle.__init__(
             self,
             parent=parent,
-            pos=(parent.lines[line_index].find_pixel(char_index), parent.lines[line_index].rect.top),
+            pos=(parent.text_widget.lines[line_index].find_pixel(char_index),
+                 parent.text_widget.lines[line_index].rect.top),
             size=(int(h / 10), h),
-            # color=ressources.font.color,
-            name=parent.name + " -> cursor"
+            name=parent.name + " -> cursor",
+            layer="cursors_layer"
         )
         RepetivelyAnimated.__init__(self, parent, interval=.5)
 
@@ -140,7 +160,6 @@ class Cursor(Rectangle, RepetivelyAnimated):
         self._line = None
         self._text_index = None  # index of cusor in Text.text
 
-        self.parent._cursor_ref = self.get_weakref()
         self.set_touchable_by_mouse(False)
         self.start_animation()
 
@@ -165,10 +184,11 @@ class Cursor(Rectangle, RepetivelyAnimated):
     char_index = property(lambda self: self._char_index)
     def _set_line_index(self, li):
         self.__line_index = li
-        self._line = self._parent.lines[li]
+        self._line = self.text_widget.lines[li]
     _line_index = property(lambda self: self.__line_index, _set_line_index)
     line_index = property(lambda self: self.__line_index)
     line = property(lambda self: self._line)
+    text_widget = property(lambda self: self._parent.text_widget)
     text_index = property(lambda self: self._text_index)
 
     def config(self, text_index=None, line_index=None, char_index=None, selecting=False, save=True):
@@ -187,13 +207,13 @@ class Cursor(Rectangle, RepetivelyAnimated):
         if text_index is not None:
             assert line_index is None
             assert char_index is None
-            line_index, char_index = self.parent.find_indexes(text_index=text_index)
+            line_index, char_index = self.text_widget.find_indexes(text_index=text_index)
         else:
             assert char_index is not None
             assert line_index is not None
-            text_index = self.parent.find_index(line_index, char_index)
+            text_index = self.text_widget.find_index(line_index, char_index)
 
-        assert text_index == self.parent.find_index(line_index, char_index)
+        assert text_index == self.text_widget.find_index(line_index, char_index)
 
         if selecting:
             if self.parent.selection_rect is None or self.parent.selection_rect.start is None:
@@ -207,8 +227,8 @@ class Cursor(Rectangle, RepetivelyAnimated):
                 v = maxi
             return v
 
-        self._text_index = fit(text_index, 0, len(self.parent.text))
-        self._line_index = fit(line_index, 0, len(self.parent.lines))
+        self._text_index = fit(text_index, 0, len(self.text_widget.text))
+        self._line_index = fit(line_index, 0, len(self.text_widget.lines))
         self._char_index = fit(char_index, 0, len(self.line.text))
 
         if self.char_index == len(self.line.text_with_end):
@@ -245,7 +265,7 @@ class Cursor(Rectangle, RepetivelyAnimated):
         else:
             raise PermissionError
 
-        if save and (not self.history or self.parent.text != self.history[-1].text):
+        if save and (not self.history or self.text_widget.text != self.history[-1].text):
             self.save()
 
     def handle_keydown(self, key):
@@ -274,30 +294,32 @@ class Cursor(Rectangle, RepetivelyAnimated):
                     self.parent.close_selection()
                     self.line.insert(self.char_index, selected_data)
                 self.config(text_index=self.text_index + len(selected_data))
-            elif key == pygame.K_r:  # TODO
+            elif False and key == pygame.K_r:  # TODO
                 # Execute
                 try:
-                    exec(self.parent.text)
+                    exec(self.text_widget.text)
                 except Exception as e:
                     LOGGER.warning("CommandError: " + str(e))
             elif key == pygame.K_z:
                 self.undo()
             elif key in (pygame.K_LEFT, pygame.K_HOME):
-                self.config(self.parent.find_index(line_index=self.line_index, char_index=0),
+                self.config(self.text_widget.find_index(line_index=self.line_index, char_index=0),
                             selecting=keyboard.mod.maj)
             elif key in (pygame.K_RIGHT, pygame.K_END):
-                self.config(self.parent.find_index(line_index=self.line_index, char_index=len(self.line.text)),
+                self.config(self.text_widget.find_index(line_index=self.line_index, char_index=len(self.line.text)),
                             selecting=keyboard.mod.maj)
             elif key == pygame.K_UP:
                 if self.line_index > 0:
                     self.config(line_index=0,
-                                char_index=self.parent.lines[0].find_index(self.rect.left),
+                                char_index=self.text_widget.lines[0].find_index(self.rect.left),
                                 selecting=keyboard.mod.maj)
             elif key == pygame.K_DOWN:
-                if self.line_index < len(self.parent.lines)-1:
-                    self.config(line_index=len(self.parent.lines)-1,
-                                char_index=self.parent.lines[len(self.parent.lines)-1].find_index(self.rect.left),
-                                selecting=keyboard.mod.maj)
+                if self.line_index < len(self.text_widget.lines) - 1:
+                    self.config(
+                        line_index=len(self.text_widget.lines) - 1,
+                        char_index=self.text_widget.lines[len(self.text_widget.lines) - 1].find_index(self.rect.left),
+                        selecting=keyboard.mod.maj
+                    )
 
         # Cursor movement
         elif 1073741898 <= key <= 1073741906 and key != 1073741900:
@@ -335,53 +357,57 @@ class Cursor(Rectangle, RepetivelyAnimated):
 
             elif key in (pygame.K_HOME, pygame.K_END):
                 if key == pygame.K_HOME:  # Fn + K_LEFT
-                    self.config(self.parent.find_index(line_index=self.line_index, char_index=0), selecting=keyboard.mod.maj)
+                    self.config(text_index=self.text_widget.find_index(line_index=self.line_index, char_index=0),
+                                selecting=keyboard.mod.maj)
                 elif key == pygame.K_END:  # Fn + K_RIGHT
-                    self.config(self.parent.find_index(line_index=self.line_index, char_index=len(self.line.text)), selecting=keyboard.mod.maj)
+                    self.config(self.text_widget.find_index(line_index=self.line_index, char_index=len(self.line.text)),
+                                selecting=keyboard.mod.maj)
 
             elif key in (pygame.K_UP, pygame.K_DOWN):
                 if key == pygame.K_UP:
                     if self.line_index > 0:
-                        self.config(line_index=self.line_index-1,
-                                    char_index=self.parent.lines[self.line_index-1].find_index(self.rect.left),
+                        self.config(line_index=self.line_index - 1,
+                                    char_index=self.text_widget.lines[self.line_index - 1].find_index(self.rect.left),
                                     selecting=keyboard.mod.maj)
                 if key == pygame.K_DOWN:
-                    if self.line_index < len(self.parent.lines)-1:
-                        self.config(line_index=self.line_index+1,
-                                    char_index=self.parent.lines[self.line_index+1].find_index(self.rect.left),
+                    if self.line_index < len(self.text_widget.lines) - 1:
+                        self.config(line_index=self.line_index + 1,
+                                    char_index=self.text_widget.lines[self.line_index + 1].find_index(self.rect.left),
                                     selecting=keyboard.mod.maj)
 
             elif key in (pygame.K_PAGEUP, pygame.K_PAGEDOWN):
                 if key == pygame.K_PAGEUP:
                     if self.line_index > 0:
                         self.config(line_index=0,
-                                    char_index=self.parent.lines[0].find_index(self.rect.left),
+                                    char_index=self.text_widget.lines[0].find_index(self.rect.left),
                                     selecting=keyboard.mod.maj)
                 if key == pygame.K_PAGEDOWN:
-                    if self.line_index < len(self.parent.lines)-1:
-                        self.config(line_index=len(self.parent.lines)-1,
-                                    char_index=self.parent.lines[len(self.parent.lines)-1].find_index(self.rect.left),
-                                    selecting=keyboard.mod.maj)
+                    if self.line_index < len(self.text_widget.lines) - 1:
+                        self.config(
+                            line_index=len(self.text_widget.lines) - 1,
+                            char_index=self.text_widget.lines[len(self.text_widget.lines) - 1].find_index(
+                                self.rect.left),
+                            selecting=keyboard.mod.maj)
 
         # Suppression
         elif key == pygame.K_BACKSPACE:
-            if self.parent.is_selected:
+            if self.text_widget.is_selected:
                 self.parent.del_selection_data()
             elif self.line_index > 0 or self.char_index > 0:
                 if self.char_index > 0:
                     self.line.pop(self.char_index-1)
                 else:
-                    self.parent.lines[self.line_index - 1].pop(-1)
+                    self.text_widget.lines[self.line_index - 1].pop(-1)
                 old = self.text_index
                 self.config(text_index=self.text_index - 1)
                 assert self.text_index == old - 1
 
         elif key == pygame.K_DELETE:
             if self.parent.is_selected:
-                self.parent.del_selection_data()
+                self.text_widget.del_selection_data()
             if self.line.end == '' and self.char_index == len(self.line.text):
-                if self.line_index < len(self.parent.lines) - 1:
-                    self.parent.lines[self.line_index + 1].pop(0)
+                if self.line_index < len(self.text_widget.lines) - 1:
+                    self.text_widget.lines[self.line_index + 1].pop(0)
             else:
                 self.line.pop(self.char_index)
             self.config(line_index=self.line_index,  # We don't use text_index because, if self.char_index is 0,
@@ -404,10 +430,10 @@ class Cursor(Rectangle, RepetivelyAnimated):
     def write(self, string):
 
         # Letters (lowercase and uppercase)
-        text = self.parent.text[:self.char_index] + string + self.parent.text[self.char_index:]
+        text = self.text_widget.text[:self.char_index] + string + self.text_widget.text[self.char_index:]
         if self.parent.accept(text):
 
-            if self.parent.is_selected:
+            if self.text_widget.is_selected:
                 self.parent.del_selection_data()
 
             self.line.insert(self.char_index, string)
@@ -440,7 +466,7 @@ class Cursor(Rectangle, RepetivelyAnimated):
 
         # if self.parent.is_selecting:
         current = Object(
-            text=self.parent.text,
+            text=self.text_widget.text,
             cursor_line_index=self.line_index,
             cursor_char_index=self.char_index,
             selection_start=self.parent.selection_rect.start if self.parent.selection_rect else None,
