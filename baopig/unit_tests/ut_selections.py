@@ -51,42 +51,43 @@ class UT_Selections_Zone(SelectorZone):
     def __init__(self, *args, **kwargs):
         SelectorZone.__init__(self, *args, **kwargs)
 
-        z = SelectorZone(self, size=(self.rect.w / 3, self.rect.h - 20), background_color="gray", midtop=("50%", 10))
+        z = SelectorZone(self, size=(int(self.rect.w / 3), self.rect.h - 20), background_color="gray",
+                         midtop=("50%", 10))
         z.set_style_for(SelectionRect, border_color="red", color=(255, 0, 0, 40))
         SelectableRectangle(z, (10, 10))
         SelectableRectangle(z, (50, 10))
         SelectableRectangle(z, (90, 10))
         Text(z, "I am selectable", pos=(10, 50))
-        TextEdit(z, width=z.rect.w - 20, pos=(10, 75))  # TODO : Scrollable
+        TextEdit(z, max_width=z.rect.w - 20, pos=(10, 75))  # TODO : Scrollable
 
-        z2 = SelectorZone(z, size=(z.rect.w - 20, (z.rect.h - 40) / 3), background_color=(128, 128, 128),
+        z2 = SelectorZone(z, size=(z.rect.w - 20, int((z.rect.h - 40) / 3)), background_color=(128, 128, 128),
                           midleft=(10, "50%"), can_select=False)
         SelectableRectangle(z2, (10, 10))
         SelectableRectangle(z2, (50, 10))
         SelectableRectangle(z2, (90, 10))
         Text(z2, "I am not selectable", pos=(10, 50))
-        TextEdit(z2, width=z2.rect.w - 20, pos=(10, 75))
+        TextEdit(z2, max_width=z2.rect.w - 20, pos=(10, 75))
 
-        z3 = SelectorZone(z, size=(z.rect.w - 20, (z.rect.h - 40) / 3), background_color=(128, 128, 128, 200),
+        z3 = SelectorZone(z, size=(z.rect.w - 20, int((z.rect.h - 40) / 3)), background_color=(128, 128, 128, 200),
                           pos=(0, -10), sticky="midbottom")
         z3.set_selectionrect_visibility(False)
         SelectableRectangle(z3, (10, 10))
         SelectableRectangle(z3, (50, 10))
         SelectableRectangle(z3, (90, 10))
         Text(z3, "Selection rectangle ?", pos=(10, 50))
-        TextEdit(z3, width=z3.rect.w - 20, pos=(10, 75))
+        TextEdit(z3, max_width=z3.rect.w - 20, pos=(10, 75))
 
         SelectableRectangle(self, (10, 10))
         SelectableRectangle(self, (50, 10))
         SelectableRectangle(self, (90, 10))
         Text(self, "I am selectable", pos=(10, 50))
-        TextEdit(self, width=z.rect.w - 20, pos=(10, 75))
+        TextEdit(self, max_width=z.rect.w - 20, pos=(10, 75))
 
         SelectableRectangle(self, (z.rect.right + 10, 10))
         SelectableRectangle(self, (z.rect.right + 50, 10))
         SelectableRectangle(self, (z.rect.right + 90, 10))
         Text(self, "I am selectable", pos=(z.rect.right + 10, 50))
-        TextEdit(self, width=z.rect.w - 20, pos=(z.rect.right + 10, 75))
+        TextEdit(self, max_width=z.rect.w - 20, pos=(z.rect.right + 10, 75))
 
     def load_sections(self):
         self.parent.add_section(

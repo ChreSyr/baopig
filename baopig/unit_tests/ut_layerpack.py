@@ -28,7 +28,7 @@ class UT_LayerPack_Zone(Zone):
         b = Button(classiclayer_tester, "PACK", command=self.package.pack)
         b.set_window((b.rect.left, b.rect.top, b.rect.w, 20),
                      follow_movements=True)  # TODO : remove, here for some tests
-        Indicator(b, "NOTE : By default, pack() sorts widgets by position", loc="bottom", width=200)
+        Indicator(b, "NOTE : By default, pack() sorts widgets by position", loc="bottom", max_width=200)
         Button(classiclayer_tester, "CLEAR", command=self.package.default_layer.clear)
         safe_layer.pack(axis="horizontal")
         Text(classiclayer_tester, pos=(330, 10), text="Testing Layer.pack()", font_height=30)
@@ -57,7 +57,7 @@ class UT_LayerPack_Zone(Zone):
 
         s.signal.NEW_VAL.connect(new_childrenmargins_bottom, owner=None)
         Text(classiclayer_tester, "NOTE : Only children_margins.top and children_margins.left are being used",
-             width=self.rect.w - s.rect.right - 10, ref=s, refloc="midright", midleft=(10, 0))
+             max_width=self.rect.w - s.rect.right - 10, ref=s, refloc="midright", midleft=(10, 0))
 
         # GRID TESTING
         gridlayer_tester = Zone(self, size=("100%", "50%"))

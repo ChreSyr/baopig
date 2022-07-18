@@ -81,7 +81,7 @@ class DialogFrame(Zone):
         if dialog.description is not None:
             self.description_label = Text(
                 self, dialog.description,
-                font_height=27, width=self.rect.w - 60,
+                font_height=27, max_width=self.rect.w - 60,
                 pos=(30, self.title_label.rect.bottom + 15),
             )
             bottom = self.description_label.rect.bottom

@@ -45,7 +45,7 @@ class UT_Runable_Zone(Zone):
         Button(buttons_zone, text="stop running", command=PrefilledFunction(rainbow.set_running, False))
         buttons_zone.pack(axis="horizontal", adapt=True)
         rainbow.resize(*buttons_zone.rect.size)
-        rainbow.console = Text(z1, text="Console:", width=rainbow.rect.w)
+        rainbow.console = Text(z1, text="Console:", max_width=rainbow.rect.w)
         z1.pack(adapt=True)
 
     def load_sections(self):
