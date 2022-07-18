@@ -59,4 +59,5 @@ class Entry(LineEdit, Validable):
         if self.command is not None:
             self.command(self.text)
         self.defocus()
-        return self._entry_type(self.text)
+        if self.text:
+            return self._entry_type(self.text)

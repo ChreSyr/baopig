@@ -47,8 +47,6 @@ class TextEdit(Selector):
         self._cursor_ref = lambda: None
         self.cursors_layer = Layer(self, Cursor, name="cursors_layer")
 
-        self.resize(*self.text_widget.rect.size)
-
     cursor = property(lambda self: self._cursor_ref())
     text = property(lambda self: self._text_widget_ref().get_text())
     text_widget = property(lambda self: self._text_widget_ref())

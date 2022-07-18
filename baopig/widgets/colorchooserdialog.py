@@ -77,6 +77,10 @@ class ColorSlider(Slider):
         setattr(self.color, self.attr, val)
         self.parent.update(self.color)
 
+    def handle_unlink(self):
+
+        self.update()
+
     def update(self):
 
         if self.is_linked:
@@ -92,7 +96,6 @@ class ColorEntry(NumEntry):
     STYLE = NumEntry.STYLE.substyle()
     STYLE.modify(
         loc="midleft",
-        width=40,
     )
 
     def __init__(self, parent, attr, max, y):
@@ -105,10 +108,9 @@ class ColorEntry(NumEntry):
         self.parent.entries.append(self)
 
     def handle_validate(self):
+        super().handle_validate()
         setattr(self.parent.color, self.attr, int(self.text))
-        self.set_lock(text=True)
         self.parent.update()
-        self.set_lock(text=False)
 
     def update(self):
         val = str(int(getattr(self.parent.color, self.attr)))
