@@ -36,7 +36,7 @@ class DialogButtonsZone(Zone):
         choices = dialog_frame.parent.choices
         Zone.__init__(
             self, dialog_frame,
-            size=(dialog_frame.rect.w - 60, 46 * ((len(choices) - 1) / 3 + 1)),
+            size=(dialog_frame.rect.w - 60, int(46 * ((len(choices) - 1) / 3 + 1))),
         )
         GridLayer(self, nbrows=int((len(choices) - 1) / 3) + 1, nbcols=min(len(choices), 3),
                   row_height=46, col_width=int(self.rect.w / min(len(choices), 3)))

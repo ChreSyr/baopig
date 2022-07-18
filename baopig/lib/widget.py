@@ -730,6 +730,8 @@ class HasProtectedSurface(HasProtectedHitbox):
 
         HasStyle.__init__(self, parent, options=kwargs)
 
+        self.__asked_size = None
+        self._size_hints = [1, 1]
         if size is None:
             style_width = self.style["width"]
             if style_width is None:
@@ -745,13 +747,6 @@ class HasProtectedSurface(HasProtectedHitbox):
 
         if surface is None:
             surface = pygame.Surface(self._get_asked_size(), pygame.SRCALPHA)
-
-        for coord in self._asked_size:
-            if isinstance(coord, str):
-                assert coord[-1] == '%', self._asked_size
-            else:
-                assert isinstance(coord, (int, float)), f"Wrong value in size : {coord} (must be a number)"
-                assert coord >= 0, f"Wrong value in size : {coord} (must be positive)"
 
         assert isinstance(surface, pygame.Surface)
 
@@ -836,16 +831,37 @@ class HasProtectedSurface(HasProtectedHitbox):
                 assert coord[-1] == '%', size
                 with_percentage = True
             else:
-                assert isinstance(coord, (int, float)), f"Wrong value in size : {coord} (must be a number)"
+                assert isinstance(coord, int), f"Wrong value in size : {coord} (must be a number)"
                 assert coord >= 0, f"Wrong value in size : {coord} (must be positive)"
 
         if with_percentage:
             size = list(size)
             for i, coord in enumerate(size):
                 if isinstance(coord, str):
-                    size[i] = self.parent.rect.size[i] * float(coord[:-1]) / 100
+                    size[i] = int(self.parent.rect.size[i] * float(coord[:-1]) / 100)
 
         return size
+
+    def _set__asked_size(self, new_asked_size):
+
+        self._size_hints: list
+        for i, coord in enumerate(new_asked_size):
+            if isinstance(coord, str):
+                assert coord[-1] == '%', f"Wrong value in size : {coord} (must look like \"75%\")"
+                self._size_hints[i] = float(coord[:-1]) / 100
+            else:
+                assert isinstance(coord, int), f"Wrong value in size : {coord} (must be a number)"
+                assert coord >= 0, f"Wrong value in size : {coord} (must be positive)"
+
+        self.__asked_size = new_asked_size
+
+    _asked_size = property(fget=lambda self: self.__asked_size, fset=_set__asked_size)
+
+    # TODO : size_manager ?
+    #   size_manager.asked_size
+    #   size_manager.size_hints
+    #   size_manager.set_asked_size(size)
+    #   size_manager.reference
 
     def _update_surface_from_resize(self, asked_size):  # TODO : envisager une fusion avec paint()
         """ Update the surface from the asked size - Only called by resize()"""

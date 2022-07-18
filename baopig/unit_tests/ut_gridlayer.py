@@ -90,7 +90,7 @@ class UT_GridLayer_Zone(Zone):
         grid4 = GridLayer(z4, Rectangle, nbrows=4, nbcols=10, row_height=30, col_width=30)
         for row in range(grid4.nbrows):
             for col in range(grid4.nbcols):
-                Rectangle(z4, color=(130, 49, 128), row=row, col=col, size=(16, 16), loc="topright")
+                Rectangle(z4, color=(130, 49, 128), row=row, col=col, size=("33%", "33%"), loc="topright")
 
         buttons_layer = GridLayer(z4, nbrows=3, nbcols=3)
         def click():
