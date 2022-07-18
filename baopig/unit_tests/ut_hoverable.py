@@ -112,7 +112,7 @@ class UT_Hoverable_Zone(Zone):
         TestingZone(z2, size=("50%", "100%"), background_color=(150, 150, 150))
         text_zone = Zone(z2, size=("50%", "100%"))
         z2.default_layer.pack(axis="horizontal")
-        Text(text_zone, width=text_zone.rect.w,
+        Text(text_zone, max_width=text_zone.rect.w,
              text="Focus the zone at left in order to use it with your keyboard.\n"
                   "Use the arrows to control the light blue rect\n"
                   "Press the following keys to execute actions over the light blue rect:\n"

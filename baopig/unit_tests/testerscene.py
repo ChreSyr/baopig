@@ -82,10 +82,9 @@ app.launch()"""
         self.try_it_yourself = Zone(self, size=("50%", self.rect.h - 20), children_margins=10,
                                     pos=(0, self.menu_zone.rect.bottom + 10), name="try_it_yourself")
         code_window = Zone(self.try_it_yourself, size=("100%", 550))
-        self.try_it_yourself.code = TextEdit(code_window, text=code, width="100%",
-                                             font_file="monospace")
-        self.try_it_yourself.console = Text(self.try_it_yourself, width="100%",
-                                            font_file="monospace", background_color=(211, 189, 189))
+        self.try_it_yourself.code = TextEdit(code_window, text=code, font_file="monospace")
+        self.try_it_yourself.console = Text(self.try_it_yourself, font_file="monospace",
+                                            background_color=(211, 189, 189))
 
         self.try_it_yourself.pack()
         self.try_it_yourself.hide()
@@ -100,7 +99,7 @@ app.launch()"""
         self.sections.append([title, tests])
         Text(self.sections_zone, f"--- SECTION {len(self.sections)} : {title} ---",
              font_height=self.theme.get_style_for(Text)["font_height"] + 2, font_bold=True,
-             row=len(self.sections_zone.children), width=self.sections_zone.rect.w)
+             row=len(self.sections_zone.children), max_width=self.sections_zone.rect.w)
         for i, v in enumerate(tests):
             cb = CheckBox(self.sections_zone, text=f"TEST {i + 1} : {v}",  # {:0>2} for 01, 02...
                           row=len(self.sections_zone.children), width=self.sections_zone.rect.w)

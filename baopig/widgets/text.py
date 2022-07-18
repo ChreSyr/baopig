@@ -294,8 +294,7 @@ class _SelectableLine(_Line):
             return
 
         if self.selection is None:
-            _LineSelection(self)
-            self.selection.swap_layer("line_selections")
+            self._selection_ref = _LineSelection(self).get_weakref()  # TODO : solve bug : multiple lines selection
 
         selecting_line_end = False
         if self.abs_rect.top <= selection.start[1] < self.abs_rect.bottom:
@@ -381,7 +380,8 @@ class _LineSelection(Rectangle):
                            parent=line.parent,
                            pos=line.rect.topleft,
                            size=(0, line.rect.h),
-                           name=line.name + " -> selection"
+                           name=line.name + " -> selection",
+                           layer="line_selections"
                            )
 
         # self.is_selecting = False  # True if the user is pressing the mouse button for a selection
@@ -391,7 +391,6 @@ class _LineSelection(Rectangle):
 
         # Initializations
         # self.move_behind(self.line)
-        self.line._selection_ref = self.get_weakref()
         self.line.signal.KILL.connect(self.kill, owner=self)
 
     index_end = property(lambda self: self._index_end)
@@ -443,10 +442,6 @@ class _LineSelection(Rectangle):
 
 class Text(Zone, SelectableWidget):
     STYLE = Zone.STYLE.substyle()
-    STYLE.modify(
-        width=0,
-        height=0,
-    )
     STYLE.create(
         align_mode="left",
         font_file=None,
@@ -455,11 +450,8 @@ class Text(Zone, SelectableWidget):
         font_bold=False,
         font_italic=False,
         font_underline=False,
+        max_width=None,
         selectable=True,
-
-        # WARNING : the two following style attributes are very consuming when set to False
-        height_is_adaptable=None,  # by default, True if height is > 0, False otherwise
-        width_is_adaptable=None,
     )
     STYLE.set_type("align_mode", str)
     STYLE.set_type("font_height", int)
@@ -472,55 +464,53 @@ class Text(Zone, SelectableWidget):
                          "must be 'left', 'center' or 'right'")
     STYLE.set_constraint("font_height", lambda val: val > 0, "a text must have a positive font height")
     STYLE.set_constraint("font_file", lambda val: (val is None) or isinstance(val, str), "must be None or a string")
+    STYLE.set_constraint("max_width", lambda val: (val is None) or isinstance(val, int), "must be None or an integer")
 
     def __init__(self, parent, text="", **kwargs):
+
+        if "width" in kwargs:
+            raise PermissionError
+        if "height" in kwargs:
+            raise PermissionError
 
         Zone.__init__(self, parent, **kwargs)
         SelectableWidget.__init__(self, parent)
 
-        self._height_is_adaptable = self.style["height_is_adaptable"]
-        if self._height_is_adaptable is None:
-            self._height_is_adaptable = self.rect.h == 0
-            self.style.modify(height_is_adaptable=self._height_is_adaptable)
-        elif self._height_is_adaptable is False and self.rect.h == 0:
-            raise PermissionError("When 'height_is_adaptable' is set to False, 'height' must also be set")
-        self._width_is_adaptable = self.style["width_is_adaptable"]
-        if self._width_is_adaptable is None:
-            self._width_is_adaptable = self.rect.w == 0
-            self.style.modify(width_is_adaptable=self._width_is_adaptable)
-        elif self._width_is_adaptable is False and self.rect.w == 0:
-            raise PermissionError("When 'width_is_adaptable' is set to False, 'width' must also be set")
-
         self._font = Font(self)
-        self._min_width = self.font.get_width("m")
-        self._is_selectable = self.style["selectable"]
         self._lines_pos = []
         self._align_mode = self.style["align_mode"]
+        self._is_selectable = self.style["selectable"]
+        self._max_width = self.style["max_width"]
         self._padding = self.style["padding"]
-        self._has_locked.text = False
+        self._has_locked.text = False  # TODO : remove ?
 
         self.line_selections = Layer(self, _LineSelection, name="line_selections", touchable=False, sort_by_pos=True)
         self.lines = Layer(self, _Line, name="lines", default_sortkey=lambda line: line.line_index)
         self.set_text(text)
 
+        if self._max_width is not None:
+            assert self.content_rect.width == self.max_width
+
     align_mode = property(lambda self: self._align_mode)
     font = property(lambda self: self._font)
-    height_is_adaptable = property(lambda self: self._height_is_adaptable)
     is_selectable = property(lambda self: self._is_selectable)
+    max_width = property(lambda self: self._max_width)
     padding = property(lambda self: self._padding)
-    width_is_adaptable = property(lambda self: self._width_is_adaptable)
+    width_is_adaptable = property(lambda self: self._max_width is None)
 
-    def set_adaptable_size(self, width, height):
+    def set_max_width_TBR(self, max_width):
         """
         Example:
             widget = Text(parent, "Hello world", font_file=None)
             print(widget.size)  # -> prints (82, 15)
-            widget.set_adaptable_size(width=False, height=False)
+            widget.set_max_width(80)
             widget.set_text("Hello world and everyone else")  # -> here, the font_height will be reduced
         """
 
-        self._height_is_adaptable = height
-        self._width_is_adaptable = width
+        if max_width == self._max_width:
+            return
+        self._max_width = max_width
+        self.set_text(self.get_text())
 
     def _add_child(self, child):
 
@@ -529,7 +519,10 @@ class Text(Zone, SelectableWidget):
 
     def _cut_text(self, text):
 
-        max_width = self.content_rect.width
+        if self.width_is_adaptable:
+            return text, ''
+
+        max_width = self._max_width
 
         def is_too_long(text):
             return self.font.get_width(text) > max_width
@@ -545,9 +538,6 @@ class Text(Zone, SelectableWidget):
                 elif last_char_was_a_separator:
                     yield len_full_text - char_index
                     last_char_was_a_separator = False
-
-        if self.width_is_adaptable:
-            return text, ''
 
         if not is_too_long(text):
             return text, ''
@@ -576,7 +566,7 @@ class Text(Zone, SelectableWidget):
 
         centerx = None  # warning shut down
         if self.align_mode == "center":  # only usefull for the widget creation
-            if self._width_is_adaptable:
+            if self.width_is_adaptable:
                 centerx = max(line.rect.w for line in self.lines) / 2 + self.content_rect.left
             else:
                 centerx = self.content_rect.centerx
@@ -596,47 +586,43 @@ class Text(Zone, SelectableWidget):
                 line.set_pos(right=self.content_rect.right)
 
         # Adaptable resize
-        if self._height_is_adaptable and self._width_is_adaptable:
+        if self.width_is_adaptable:
             right = max(line.rect.right for line in self.lines)
             bottom = self.lines[-1].rect.bottom
             self.resize(width=right + self.padding.right, height=bottom + self.padding.bottom)
-        elif self._height_is_adaptable:
+        else:
             bottom = self.lines[-1].rect.bottom
             if bottom + self.padding.bottom != self.rect.h:  # TODO : without this line, the printing bug, find why
-                self.resize_height(bottom + self.padding.bottom)
-        elif self._width_is_adaptable:
-            right = max(line.rect.right for line in self.lines)
-            self.resize_width(right + self.padding.right)
+                self.resize(width=self._max_width + self.padding.left + self.padding.right,
+                            height=bottom + self.padding.bottom)
 
         # New positions in _lines_pos
         self._lines_pos = []
         for line in self.lines:
             self._lines_pos.append(line.rect.top)
 
-    def _update_surface_from_resize(self, asked_size):  # TODO : divide AdaptableText and Text & use paint() somewhere
+    def _update_surface_from_resize_TBR(self,
+                                        asked_size):  # TODO : divide AdaptableText and Text & use paint() somewhere
 
-        old_size = self.content_rect.size
+        old_size = self.content_rect.size  # TODO : compacter
         super()._update_surface_from_resize(asked_size)
 
-        if self._width_is_adaptable:
-            lines_width = max(line.rect.w for line in self.lines)
-            if self.content_rect.w != lines_width:
-                self._width_is_adaptable = False
-                self.set_text(self.get_text())
+        if self.width_is_adaptable:
+            return
+            # lines_width = max(line.rect.w for line in self.lines)
+            # if self.content_rect.w != lines_width:
+            #     self._width_is_adaptable = False
+            #     self.set_text(self.get_text())
         else:
             lines_width = old_size[0]
             if self.content_rect.w != lines_width:
                 self.set_text(self.get_text())
+                raise PermissionError("The resize should be called by a set_text()")
 
-        if self._height_is_adaptable:
-            lines_height = self.lines[-1].rect.bottom - self.content_rect.top
-            if self.content_rect.h != lines_height:
-                self._height_is_adaptable = False
-                self.set_text(self.get_text())
-        else:
-            lines_height = old_size[1]
-            if self.content_rect.h != lines_height:
-                self.set_text(self.get_text())
+        lines_height = self.lines[-1].rect.bottom - self.content_rect.top
+        if self.content_rect.h != lines_height:
+            self.set_text(self.get_text())
+            raise PermissionError("The resize should be called by a set_text()")
 
     def _find_index(self, pos):
         """
@@ -775,14 +761,14 @@ class Text(Zone, SelectableWidget):
 
             self._name = self.lines[0].text
 
-            if not self.height_is_adaptable and self.lines[-1].rect.bottom > self.content_rect.bottom:
-                # NOTE : loops because self.font.config() calls self.set_text()
-                # while self.lines[-1].rect.bottom > self.content_rect.bottom:
-                if self.font.height == 2:
-                    raise ValueError(
-                        f"This text is too long for the text area : {text} (area={self.content_rect}), "
-                        f"{self.align_mode}, {self.rect.width}")
-                self.font.config(height=self.font.height - 1)  # changing the font automatically updates the text
+            # if not self.height_is_adaptable and self.lines[-1].rect.bottom > self.content_rect.bottom:
+            #     # NOTE : loops because self.font.config() calls self.set_text()
+            #     # while self.lines[-1].rect.bottom > self.content_rect.bottom:
+            #     if self.font.height == 2:
+            #         raise ValueError(
+            #             f"This text is too long for the text area : {text} (area={self.content_rect}), "
+            #             f"{self.align_mode}, {self.rect.width}")
+            #     self.font.config(height=self.font.height - 1)  # changing the font automatically updates the text
 
     # Selectable methods
     def check_select(self, selection_rect):

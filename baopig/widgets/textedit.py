@@ -21,6 +21,8 @@ class TextEdit(Text, Selector):
 
     def __init__(self, parent, text="", **kwargs):
 
+        # TODO : width = 40 -> if the text is longer, scroll
+
         Text.__init__(self, parent=parent, text=text, selectable=True, **kwargs)
         Selector.__init__(self, parent)
 

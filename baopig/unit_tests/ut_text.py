@@ -16,27 +16,28 @@ class UT_Text_Zone(Zone):
 
         # Z1
         hello = Text(parent=z1, text="Hello world\nIamaverylongword,canyoureadmecorrectly?"
-                                     "\nWhat do you want to do ?", width=250, padding=5)
+                                     "\nWhat do you want to do ?", max_width=250, padding=5)
         self.set_style_for(Text, font_file="Arial Narrow Bold Italic.ttf")
         Text(parent=z1, text="Hello world\nIamaverylongword,canyoureadmecorrectly?"
-                             "\nWhat do you want to do ?", width=hello.rect.width)
+                             "\nWhat do you want to do ?", max_width=hello.rect.width)
         z1.pack(axis="horizontal")
 
         # Z2
         self.set_style_for(Text, font_file="monospace")
         self.set_style_for(Text, font_height=60)
-        self.set_style_for(Text, font_color=(0, 100, 0))
-        text = Text(z2, width=370, font_height=10, font_file="Arial Narrow Bold Italic.ttf",
-                    text="- Bonjour à tous\n"
+        self.set_style_for(Text, font_color=(0, 150, 0))
+        text = Text(z2, max_width=370, font_height=10, font_file="Arial Narrow Bold Italic.ttf",
+                    text="- Bonjour à tous.\n"
                          "- Bonjour monsieur. Comment allez-vous ?\n"
-                         "- Très bien merci. Nous allons commencer.\n"
+                         "- Très bien, merci. Nous allons commencer. \"L'hypoténuse et l'hippocampe "
+                         "se préparaient à pique-niquer, lorsque...\"\n"
                          "- Monsieur, j'avais oublié, j'ai un rendez-vous !\n"
-                         "- Eh bien filez, ça ira pour cette fois.\n"
+                         "- Eh bien, filez, ça ira pour cette fois.\n"
                          "- Merci monsieur !\n"
                          "Et il partit. (vert fonce)")
         text.set_background_color((255, 255, 255, 128))
         text.font.config(color=(10, 50, 30))
-        TextEdit(z2, text="Green", width=text.rect.width)
+        TextEdit(z2, text="Green", max_width=text.rect.width)
         z2.pack(axis="horizontal")
 
         # Z3
@@ -71,20 +72,19 @@ class UT_Text_Zone(Zone):
         z3.default_layer.pack()
 
         # Z4
-        t = Text(z4, "width:75", width=75)
-        Text(z4, "width:75", width=75, height_is_adaptable=False, height=t.lines[0].rect.h)
+        t = Text(z4, "max_width:150", max_width=150)
+        Text(z4, "max_width:75", max_width=75, height=10)  # height is ignored
         Text(z4, "padding:5", padding=5)
-        Text(z4, "1\n2\n3", width=85, padding=10, children_margins=10)
+        Text(z4, "1\n2\n3", max_width=85, padding=10, children_margins=10)
         z4.pack()
 
         # Z5
         self.set_style_for(Text, font_height=15)
         widget = Text(z5, "Hello world", background_color="green4")
-        widget.set_adaptable_size(width=False, height=False)
         widget.set_text("Hello world and everyone else")  # -> here, the font_height will be reduced
         Text(z5, "Hello world", background_color="green4")
-        Text(z5, "Hello world", background_color="green4", width=100)
-        Text(z5, "Hello world and everyone else", background_color="green4", size=(100, 100))
+        Text(z5, "Hello world", background_color="green4", max_width=100)
+        Text(z5, "Hello world and everyone else", background_color="green4", max_width=100)
         z5.pack()
 
 
