@@ -6,6 +6,8 @@ from .utilities import paint_lock
 from .widget import Widget
 from .widget_supers import Focusable
 from .shapes import Rectangle
+from .layer import Layer
+from .layersmanager import LayersManager
 from .container import Container
 
 
@@ -35,7 +37,7 @@ class SelectableWidget(Widget):
 
         self._is_selected = False
 
-        selector = self.parent  # TODO self & remove 3 lines in TextEdit.__init__
+        selector = self.parent
         while not isinstance(selector, Selector):
             selector = selector.parent
         self._selector_ref = selector.get_weakref()
@@ -90,9 +92,6 @@ class SelectableWidget(Widget):
 
 
 class SelectionRect(Rectangle):
-    """
-    A SelectionRect is a rect relative to the application
-    """
 
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
@@ -101,16 +100,16 @@ class SelectionRect(Rectangle):
         border_width=1,
     )
 
-    def __init__(self, parent, start, end, **kwargs):
+    def __init__(self, parent, abs_start, **kwargs):
         Rectangle.__init__(self, parent=parent, layer=parent.selectionrect_layer,
                            name=parent.name + ".selection_rect", **kwargs)
 
-        self.start = None
-        self.end = None
-        self.parent._selection_rect_ref = self.get_weakref()
+        self.abs_start = pygame.Vector2(abs_start)
+        self.abs_end = None
+        self.set_end(self.abs_start)
 
-        self.set_start(start)
-        self.set_end(end)
+        self._can_handle_motion = True
+        self.signal.MOTION.connect(self.handle_motion, owner=None)
 
     def clip(self, rect):
         """
@@ -122,22 +121,27 @@ class SelectionRect(Rectangle):
         self.set_pos(topleft=new_rect.topleft)
         self.resize(*new_rect.size)
 
+    def handle_motion(self, dx, dy):
+
+        # This is used, for example, when a TextEdit is scrolled while some of its text is selected
+        if self._can_handle_motion:
+            self.abs_start += (dx, dy)
+            self.abs_end += (dx, dy)
+
     def set_end(self, abs_pos):
-        assert self.start is not None
-        assert is_point(abs_pos)
-        self.end = abs_pos
-        rect = pygame.Rect(self.start,
-                           (self.end[0] - self.start[0],
-                            self.end[1] - self.start[1]))
+
+        self.abs_end = pygame.Vector2(abs_pos)
+
+        start = self.abs_start - self.parent.abs_rect.topleft
+        end = self.abs_end - self.parent.abs_rect.topleft
+        rect = pygame.Rect(start, end - start)
         rect.normalize()
-        self.set_pos(topleft=self.parent.abs_rect.referencing(rect.topleft))
+
+        self._can_handle_motion = False
+        self.set_pos(topleft=rect.topleft)
         self.resize(width=rect.w + 1, height=rect.h + 1)  # the selection_rect rect collide with mouse.pos
         self.clip(self.parent.auto_rect)
-
-    def set_start(self, abs_pos):
-        assert self.end is None
-        assert is_point(abs_pos)
-        self.start = abs_pos
+        self._can_handle_motion = True
 
     def set_visibility(self, visible):
 
@@ -149,16 +153,17 @@ class SelectionRect(Rectangle):
 
 class Selector(SelectorDoc, Container, Focusable):
 
-    def __init__(self, parent, can_select=True, **kwargs):
+    def __init__(self, parent, can_select=True, selectionrect_class=SelectionRect, **kwargs):
 
         Container.__init__(self, parent, **kwargs)
         Focusable.__init__(self, parent)
 
         self.selectables = set()
         self._can_select = can_select
+        self._selectionrect_class = selectionrect_class
         self._selection_rect_ref = lambda: None
         self._selectionrect_visibility = True
-        self.selectionrect_layer = None
+        self.selectionrect_layer = Layer(self, self._selectionrect_class, level=LayersManager.FOREGROUND)
 
     def _get_iselected(self):
         for widget in self.selectables:
@@ -194,13 +199,13 @@ class Selector(SelectorDoc, Container, Focusable):
         if not self._can_select:
             return
         assert self.selection_rect is not None
-        if abs_pos == self.selection_rect.end:
+        if abs_pos == self.selection_rect.abs_end:
             return
         if visible is not None:
             self.selection_rect.set_visibility(visible)
         else:
             self.selection_rect.set_visibility(self._selectionrect_visibility)
-        self.selection_rect.set_end((abs_pos[0], abs_pos[1]))
+        self.selection_rect.set_end(abs_pos)
         for selectable in self.selectables:
             selectable.check_select(self.selection_rect)
 
@@ -294,4 +299,6 @@ class Selector(SelectorDoc, Container, Focusable):
         if self.selection_rect is not None:
             raise PermissionError("A selection must be closed before creating a new one")
 
-        SelectionRect(self, abs_pos, abs_pos, visible=self._selectionrect_visibility)
+        self._selection_rect_ref = self._selectionrect_class(
+            self, abs_start=abs_pos, visible=self._selectionrect_visibility
+        ).get_weakref()

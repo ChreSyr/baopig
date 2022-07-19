@@ -39,7 +39,7 @@ class LayersManager:
         assert layer.name not in self._layers
         assert layer.level in self.levels
 
-        if layer.touchable:
+        if layer.touchable and layer.level == self.MAINGROUND:
             if self._default_layer is None:
                 self._default_layer = layer
 
@@ -78,8 +78,6 @@ class LayersManager:
         You can override this function in order to define special behaviors
         """
 
-        if self.default_layer is None:  # means there is no layer yet
-            raise AssertionError
         if child.layer is None:
             raise AssertionError
 

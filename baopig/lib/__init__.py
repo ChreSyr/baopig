@@ -9,7 +9,6 @@ from .layer import Layer
 from .gridlayer import GridLayer
 from .layersmanager import LayersManager
 from .container import Container
-from .scrollable import Scrollable, ScrollableByMouse
 from .zone import Zone, SubZone
 from .selections import SelectableWidget, Selector, SelectionRect
 from .scene import Scene

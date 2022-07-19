@@ -72,8 +72,8 @@ class UT_Text_Zone(Zone):
         z3.default_layer.pack()
 
         # Z4
-        t = Text(z4, "max_width:150", max_width=150)
-        Text(z4, "max_width:75", max_width=75, height=10)  # height is ignored
+        Text(z4, "max_width:150", max_width=150)
+        Text(z4, "max_width:75", max_width=75)
         Text(z4, "padding:5", padding=5)
         Text(z4, "1\n2\n3", max_width=85, padding=10, children_margins=10)
         z4.pack()

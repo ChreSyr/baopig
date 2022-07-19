@@ -19,8 +19,6 @@ class ColorSliderBloc(SliderBloc):
 
 
 class ColorSliderBar(SliderBar):
-    STYLE = SliderBar.STYLE.substyle()
-    STYLE.modify(width=260)
 
     slider = property(lambda self: self._parent)
 
@@ -39,13 +37,12 @@ class ColorSliderBar(SliderBar):
                 (i + self.border_width, self.border_width),
                 (i + self.border_width, self.rect.h - self.border_width * 2)
             )
-        # self.signal.NEW_SURFACE.emit()
-        # self.send_display_request()
 
 
 class ColorSlider(Slider):
     STYLE = Slider.STYLE.substyle()
     STYLE.modify(
+        length=260,
         loc="midleft",
         bloc_class=ColorSliderBloc,
         bar_class=ColorSliderBar,
@@ -136,10 +133,7 @@ class ColorDialogFrame(DialogFrame):
 
         self.is_updating = False
 
-        self.set_style_for(
-            SliderBar,
-            width=256 + 2,
-        )
+        self.set_style_for(ColorSlider, length=256 + 2, wideness=13)
 
         self.label_x = 10
         self.entry_x = self.label_x + 5 + 90

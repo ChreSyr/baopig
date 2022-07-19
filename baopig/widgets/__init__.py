@@ -1,4 +1,4 @@
-from .scrollablezone import ScrollableZone, ScrollSlider
+from .scrollview import ScrollView
 from .text import DynamicText, Text
 from .textedit import TextEdit
 from .lineedit import LineEdit

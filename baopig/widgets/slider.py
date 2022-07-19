@@ -8,36 +8,51 @@ from .text import Text
 class SliderBloc(Rectangle):
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
-        width=1,  # use length and wideness instead
-        height=1,  # use length and wideness instead
+        width=0,  # use length and wideness instead
+        height=0,  # use length and wideness instead
         border_width=3,
-        loc="midleft",
-        refloc="midleft",
     )
     STYLE.create(
         length=16,
-        wideness=14,
+        wideness="100%",
     )
+    STYLE.set_constraint("height", lambda val: val == 0, "Use length and wideness instead of width and height")
+    STYLE.set_constraint("width", lambda val: val == 0, "Use length and wideness instead of width and height")
 
     def __init__(self, slider):
         assert isinstance(slider, Slider)
 
-        # self._border_width = 0
-        # self.inherit_style_(slider)  # anticipated inheritance
-        # self._border_width = self.style["border_width"]
-        # # TODO : if the slider goes vertically, switch length and wideness in the following line
-        # self.style.modify(width=self.style["length"], height=self.style["wideness"])
+        sticky = "midleft" if slider.axis == 'x' else "midtop"
+        Rectangle.__init__(self, slider, sticky=sticky)
 
-        Rectangle.__init__(self, slider)
-        self.resize(width=self.style["length"], height=self.style["wideness"])
+        assert self.rect.size == (0, 0), "Use length and wideness instead of size, width and height"
 
-        self._max_index = None  # TODO : remove
+        self._length = self.style["length"]
+        self._wideness = self.style["wideness"]
+        self._max_x = None
+
+        self.signal.RESIZE.connect(self.handle_resize, owner=None)
+
+        if slider.axis == "x":
+            self.resize(width=self._length, height=self._wideness)
+        else:
+            self.resize(width=self._wideness, height=self._length)
 
     slider = property(lambda self: self._parent)
-    x_max = property(lambda self: self._max_index)
+    max_x = property(lambda self: self._max_x)
 
     def update(self):
-        self.set_pos(left=self.slider.get_pourcent() * self.x_max)
+        if self.slider.axis == "x":
+            self.set_pos(left=self.slider.get_pourcent() * self.max_x)
+        else:
+            self.set_pos(top=self.slider.get_pourcent() * self.max_x)
+
+    def handle_resize(self):
+
+        if self.slider.axis == "x":
+            self._max_x = self.slider.rect.width - self.rect.width
+        else:
+            self._max_x = self.slider.rect.height - self.rect.height
 
 
 class SliderBar(Rectangle):
@@ -45,15 +60,16 @@ class SliderBar(Rectangle):
     STYLE.modify(
         loc="center",
         refloc="center",
-        width=1,  # TODO : delete, but is it possible ? maybe not
-        height=1,  # TODO : delete
+        width=0,  # use length and wideness instead
+        height=0,  # use length and wideness instead
         color=(0, 0, 0, 64),
         border_width=1,
     )
     STYLE.create(
-        length=150,
-        wideness=10,
+        wideness="90%",  # length is defined by the slider
     )
+    STYLE.set_constraint("height", lambda val: val == 0, "Use length and wideness instead of width and height")
+    STYLE.set_constraint("width", lambda val: val == 0, "Use length and wideness instead of width and height")
 
     # NOTE : we replaced width/height with length/wideness, so it is easier to code vertical sliders
 
@@ -65,7 +81,15 @@ class SliderBar(Rectangle):
         # TODO : if the slider goes vertically, switch length and wideness in the following line
 
         Rectangle.__init__(self, slider)
-        self.resize(width=self.style["length"], height=self.style["wideness"])
+
+        assert self.rect.size == (0, 0), "Use length and wideness instead of size, width and height"
+
+        self._length = 0  # self.style["length"]  TODO : remove length, defined by slider
+        self._wideness = self.style["wideness"]
+        if slider.axis == "x":
+            self.resize(width=self._length, height=self._wideness)
+        else:
+            self.resize(width=self._wideness, height=self._length)
 
 
 class Slider(Container, LinkableByMouse):
@@ -73,30 +97,32 @@ class Slider(Container, LinkableByMouse):
 
     STYLE = Container.STYLE.substyle()
     STYLE.modify(
-        width=1,  # don't use them
-        height=1,  # don't use them
+        width=0,  # don't use them
+        height=0,  # don't use them
     )
     # NOTE : On peut facilement se tromper en laissant width et height alors qu'on devrait utiliser bar_size
     STYLE.create(
+        length=100,
+        wideness=10,
         has_indicator=True,
         bloc_class=SliderBloc,
         bar_class=SliderBar,
         axis="x",
     )
-    STYLE.set_constraint("axis", lambda val: val in ("x", "y"), "must be 'x' or 'y'")
-
     STYLE.set_type("has_indicator", bool)
+    STYLE.set_constraint("axis", lambda val: val in ("x", "y"), "must be 'x' or 'y'")
     STYLE.set_constraint("bloc_class", lambda val: issubclass(val, SliderBloc))
     STYLE.set_constraint("bar_class", lambda val: issubclass(val, SliderBar))
+    STYLE.set_constraint("height", lambda val: val == 0, "Use length and wideness instead of width and height")
+    STYLE.set_constraint("width", lambda val: val == 0, "Use length and wideness instead of width and height")
 
-    def __init__(self, parent, minval, maxval,
-                 defaultval=None, step=None, title=None, printed_title=False, **kwargs):
+    def __init__(self, parent, minval, maxval, defaultval=None, step=None, title=None, printed_title=False, **kwargs):
 
         if defaultval is None:
             defaultval = minval
 
-        assert minval < maxval, f"There must be a positive difference between minval and maxval " \
-                                f"(minval : {minval}, maxval : {maxval})"
+        assert minval <= maxval, f"There must be a positive difference between minval and maxval " \
+                                 f"(minval : {minval}, maxval : {maxval})"
         assert minval <= defaultval <= maxval, f"The defaultval must be included between minval and maxval " \
                                                f"(minval : {minval}, maxval : {maxval}, defaultval : {defaultval})"
         if step is not None:
@@ -110,20 +136,23 @@ class Slider(Container, LinkableByMouse):
         self._range = self.maxval - self.minval
         self._defaultval = self._val = defaultval
         self._step = step
-        self._link_origin = None  # the link x position, relative to self
+        self._link_origin = None  # the link's position, relative to self
         self._axis = self.style["axis"]
+        self._length = self.style["length"]
+        self._wideness = self.style["wideness"]
+
+        self.create_signal("NEW_VAL")
 
         self.bar = self.style["bar_class"](self)
         self.bloc = self.style["bloc_class"](self)
 
-        self.resize(
-            width=self.bar.rect.width + max(0, self.bloc.border_width - self.bar.border_width) * 2,
-            height=max(self.bar.rect.height, self.bloc.rect.height),
-        )
-        self._max_bloc_index = self.bloc._max_index = self.rect.width - self.bloc.rect.width
-        self.bloc.update()
+        assert self.rect.size == (0, 0), "Use length and wideness instead of size, width and height"
+        if self.axis == "x":
+            self.resize(width=self._length, height=self._wideness)
+        else:
+            self.resize(width=self._wideness, height=self._length)
 
-        self.create_signal("NEW_VAL")
+        self.bloc.update()
 
         if self.style["has_indicator"]:
             if title:
@@ -147,11 +176,13 @@ class Slider(Container, LinkableByMouse):
     def _update_val(self, val=None, x=None):
 
         assert (val is None) != (x is None)
+
         if x is not None:
-            if x == self.bloc.rect.left:
+            current_x = self.bloc.rect.left if self.axis == "x" else self.bloc.rect.top
+            if x == current_x:
                 return
             # val = x * (max - min) / max_index + min
-            val = x * self.range / self._max_bloc_index + self.minval
+            val = x * self.range / self.bloc.max_x + self.minval
         if self.step is not None:
             def cut(n, length):
                 # print(n, l, float(("{:." + str(l-1) + "e}").format(n)))
@@ -172,13 +203,17 @@ class Slider(Container, LinkableByMouse):
         self._val = val
         # x = (val - min) / (max - min) * max_index
         self.bloc.update()
-        if self.bloc.rect.left == 0:
+        current_x = self.bloc.rect.left if self.axis == "x" else self.bloc.rect.top
+        if current_x == 0:
             self._val = self.minval  # prevent approximations
         self.signal.NEW_VAL.emit(self.val)
 
     def get_pourcent(self):
         """Return the percentage from min to val in the range min -> max"""
-        return (self.val - self.minval) / self.range
+        if self.range:
+            return (self.val - self.minval) / self.range
+        else:
+            return 0
 
     def handle_link(self):
 
@@ -186,12 +221,14 @@ class Slider(Container, LinkableByMouse):
             """Clamp f between min and max"""
             return min(max(val, min_), max_)
 
+        size_index = 0 if self.axis == "x" else 1
         if self.bloc.collidemouse():
-            self._link_origin = mouse.get_pos_relative_to(self.bloc)[0]
+            self._link_origin = mouse.get_pos_relative_to(self.bloc)[size_index]
         else:
-            self._link_origin = self.bloc.rect.width / 2
-            self._update_val(x=clamp(mouse.get_pos_relative_to(self)[0] - self._link_origin,
-                                     0, self._max_bloc_index))
+            size_val = self.bloc.rect.width if self.axis == "x" else self.bloc.rect.height
+            self._link_origin = size_val / 2
+            self._update_val(x=clamp(mouse.get_pos_relative_to(self)[size_index] - self._link_origin,
+                                     0, self.bloc.max_x))
 
     def handle_link_motion(self, rel):
 
@@ -199,16 +236,22 @@ class Slider(Container, LinkableByMouse):
             """Clamp f between min and max"""
             return min(max(val, min_), max_)
 
+        size_index = 0 if self.axis == "x" else 1
         x = clamp(
-            mouse.get_pos_relative_to(self)[0] - self._link_origin,
-            0, self._max_bloc_index
+            mouse.get_pos_relative_to(self)[size_index] - self._link_origin,
+            0, self.bloc.max_x
         )
         self._update_val(x=x)
 
     def handle_resize(self):
 
+        super().handle_resize()
+        # TODO : bloc.length, bloc.wideness
         bar_margin = max(0, self.bloc.border_width - self.bar.border_width) * 2
-        self.bar.resize_width(self.rect.width - bar_margin)
+        if self.axis == "x":
+            self.bar.resize_width(self.rect.width - bar_margin)
+        else:
+            self.bar.resize_height(self.rect.height - bar_margin)
 
     def resize_TBR(self, w, h):
         pass

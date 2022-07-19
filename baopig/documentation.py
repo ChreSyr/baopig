@@ -393,6 +393,12 @@ class Validable:
     pass
 
 
+class ScrollableByMouse(Widget):
+
+    def handle_mouse_scroll(self, scroll_event):
+        """TODO"""
+
+
 class LinkableByMouse(HoverableByMouse):
     """
     Class for widgets who need to capture mouse clicks

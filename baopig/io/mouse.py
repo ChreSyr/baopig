@@ -4,7 +4,7 @@ import time
 import pygame
 from baopig.pybao.objectutilities import Object, History
 from baopig.communicative import Communicative
-from baopig.documentation import Container, Focusable, HoverableByMouse, LinkableByMouse
+from baopig.documentation import Container, Focusable, HoverableByMouse, LinkableByMouse, ScrollableByMouse
 from .logging import LOGGER
 
 
@@ -262,7 +262,20 @@ class _Mouse(Communicative):
 
             # ACTUALIZING MOUSE STATE
 
-            if event.button not in (4, 5):  # Ignore wheel
+            if event.button in (4, 5):
+
+                def first_scrollable_in_family_tree(widget):
+                    if widget.parent == widget:
+                        return None
+                    if isinstance(widget, ScrollableByMouse) and widget.is_touchable_by_mouse:
+                        return widget
+                    return first_scrollable_in_family_tree(widget.parent)
+
+                pointed = self._get_touched_widget()
+                scrolled = first_scrollable_in_family_tree(pointed)
+                scrolled.handle_mouse_scroll(event)
+
+            else:  # Ignore wheel
                 self.clic_history.append(Object(time=time.time(), button=event.button, pos=event.pos))
                 self._pressed_buttons[event.button] = True
 

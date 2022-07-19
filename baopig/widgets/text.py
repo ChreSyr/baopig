@@ -182,8 +182,6 @@ class _Line(Widget):
 
                 if end is not None:
                     assert end in ('\n', '')
-                    if self.parent.width_is_adaptable:
-                        assert end == '\n'
                     if end != '\n' and self.line_index == len(self.parent.lines) - 1:
                         raise AssertionError
                     self._end = end
@@ -297,18 +295,18 @@ class _SelectableLine(_Line):
             self._selection_ref = _LineSelection(self).get_weakref()  # TODO : solve bug : multiple lines selection
 
         selecting_line_end = False
-        if self.abs_rect.top <= selection.start[1] < self.abs_rect.bottom:
-            start = self.find_index(selection.start[0] - self.abs_rect.left)
-        elif selection.start[1] < self.abs_rect.top:
+        if self.abs_rect.top <= selection.abs_start[1] < self.abs_rect.bottom:
+            start = self.find_index(selection.abs_start[0] - self.abs_rect.left)
+        elif selection.abs_start[1] < self.abs_rect.top:
             start = 0
         else:
             start = len(self.text)
             if self is not self.parent.lines[-1]:
                 selecting_line_end = True
 
-        if self.abs_rect.top <= selection.end[1] < self.abs_rect.bottom:
-            end = self.find_index(selection.end[0] - self.abs_rect.left)
-        elif selection.end[1] < self.abs_rect.top:
+        if self.abs_rect.top <= selection.abs_end[1] < self.abs_rect.bottom:
+            end = self.find_index(selection.abs_end[0] - self.abs_rect.left)
+        elif selection.abs_end[1] < self.abs_rect.top:
             end = 0
         else:
             end = len(self.text)
@@ -688,7 +686,7 @@ class Text(Zone, SelectableWidget):
         """
         Return the closest index from mouse.x
         """
-        return self._find_index(pos=mouse.get_pos_relative_to(self))
+        return self._find_index(pos=self.abs_rect.referencing(mouse.pos))
 
     def get_text(self):
         return ''.join(line.text_with_end for line in self.lines)[:-1]  # Discard last \n
