@@ -48,14 +48,14 @@ class ColorSlider(Slider):
         bar_class=ColorSliderBar,
     )
 
-    def __init__(self, parent, attr, y, maxval=255, step=1, **kwargs):
+    def __init__(self, parent, attr, y, maxval=255, **kwargs):
 
         self.attr = attr
         self.color = parent.color.copy()
         self.color_before_link = None
         Slider.__init__(
             self, parent,
-            minval=0, maxval=maxval, defaultval=getattr(parent.color, attr), step=step,
+            minval=0, maxval=maxval, defaultval=getattr(parent.color, attr), step=1,
             pos=(parent.slider_x, y), **kwargs
         )
         parent.sliders.append(self)
@@ -64,7 +64,6 @@ class ColorSlider(Slider):
 
     def handle_link(self):
 
-        # self.color = self.parent.color.copy()
         self.color_before_link = self.color.copy()
         super().handle_link()
 
@@ -110,7 +109,7 @@ class ColorEntry(NumEntry):
         self.parent.update()
 
     def update(self):
-        val = str(int(getattr(self.parent.color, self.attr)))
+        val = str(round(getattr(self.parent.color, self.attr)))
         self.set_text(val)
 
 

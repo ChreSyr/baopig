@@ -18,5 +18,5 @@ ut_zone_class = UT_ColorChooserDialog_Zone
 if __name__ == "__main__":
     from baopig.unit_tests.testerscene import TesterScene
     app = Application()
-    TesterScene(app, ut_zone_class)
+    TesterScene(app, ut_zone_class).open()
     app.launch()
