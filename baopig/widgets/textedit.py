@@ -20,7 +20,7 @@ class TextEdit(ScrollView, Selector):
     STYLE.modify(
         background_color="theme-color-font_opposite",
         height=15,
-        padding=5,
+        padding=(0, 0, 5, 0),
         width=100,
     )
 
@@ -245,7 +245,7 @@ class Cursor(Rectangle, RepetivelyAnimated):
             assert line_index is not None
             text_index = self.text_widget.find_index(line_index, char_index)
 
-        assert text_index == self.text_widget.find_index(line_index, char_index)
+        # assert text_index == self.text_widget.find_index(line_index, char_index)
 
         if selecting:
             if self.parent.selection_rect is None:
@@ -260,7 +260,7 @@ class Cursor(Rectangle, RepetivelyAnimated):
             return v
 
         self._text_index = fit(text_index, 0, len(self.text_widget.text))
-        self._line_index = fit(line_index, 0, len(self.text_widget.lines))
+        self._line_index = fit(line_index, 0, len(self.text_widget.lines) - 1)
         self._char_index = fit(char_index, 0, len(self.line.text))
 
         if self.char_index == len(self.line.text_with_end):

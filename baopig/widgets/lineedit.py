@@ -5,8 +5,14 @@ from .textedit import TextEdit
 
 class LineEdit(TextEdit):
     """
-    LineEdit is a Text who only contains 1 line
+    LineEdit is a TextEdit who only contains 1 line
     """
+
+    def __init__(self, parent, **kwargs):
+
+        TextEdit.__init__(self, parent, **kwargs)
+        self.x_scroller.hide()
+        self.x_scroller.set_lock(visibility=True)
 
     def handle_keydown(self, key):
 

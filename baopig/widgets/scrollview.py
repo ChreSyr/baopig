@@ -1,4 +1,5 @@
 import time
+import pygame
 from baopig.documentation import ScrollableByMouse as ScrollableByMouseDoc
 from baopig.io import keyboard
 from baopig.lib import Rectangle
@@ -59,11 +60,11 @@ class ScrollSlider(Slider):
         if axis == "x":
             pos = (0, 0)
             sticky = "midbottom"
-            length = scroller.content_rect.width
+            length = scroller.rect.width
         else:
             pos = (0, 0)
             sticky = "midright"
-            length = scroller.content_rect.height
+            length = scroller.rect.height
 
         Slider.__init__(
             self, scroller, step=1e-9, axis=axis, pos=pos, sticky=sticky, layer_level=LayersManager.FOREGROUND,
@@ -106,9 +107,9 @@ class ScrollSlider(Slider):
         self._range = self._maxval = maxval
 
         if self.axis == "x":
-            val = - self.parent.main_widget.rect.left
+            val = - self.parent.main_widget.rect.left + self.parent.padding.left
         else:
-            val = - self.parent.main_widget.rect.top
+            val = - self.parent.main_widget.rect.top + self.parent.padding.top
 
         if val == self.val:
             self.bloc.update()
@@ -133,9 +134,6 @@ class ScrollView(ScrollableByMouseDoc, Zone):
 
         Zone.__init__(self, parent, **kwargs)
 
-        # TODO : add padding, so blank space for easy cursor control
-        assert self.padding.is_null, "ScrollView does not support padding"
-
         self.max = {"x": 0, "y": 0}
         self._last_scroll_time = 0
 
@@ -154,18 +152,29 @@ class ScrollView(ScrollableByMouseDoc, Zone):
         super()._add_child(child)
         if child.layer.level == LayersManager.MAINGROUND:
             assert self._main_widget is None, "A ScrollView cannot contain more than one widget"
+            assert child.pos_manager.reference is self
+            assert child.pos_manager.location == "topleft"
+            assert child.pos_manager.reference_location == "topleft"
+            assert child.pos_manager.pos == (0, 0)
+
             self._main_widget = child.get_weakref()
+            self.main_widget.set_pos(topleft=(self.padding.left, self.padding.top))
             self._handle_mainwidget_resize()
             self.main_widget.signal.RESIZE.connect(self._handle_mainwidget_resize, owner=None)
 
     def _handle_mainwidget_resize(self):
 
+        rect = pygame.Rect(self.main_widget.rect)
+        rect.left -= self.padding.left
+        rect.top -= self.padding.top
+        rect.width += self.padding.left + self.padding.right
+        rect.height += self.padding.top + self.padding.bottom
+
         self.max = {
-            "x": max(0, self.main_widget.rect.width - self.rect.width),
-            "y": max(0, self.main_widget.rect.height - self.rect.height),
+            "x": max(0, rect.width - self.rect.width),
+            "y": max(0, rect.height - self.rect.height),
         }
 
-        rect = self.main_widget.rect
         dx = 0
         if 0 <= (self.rect.width - rect.right) <= - rect.left:
             dx = (self.rect.width - rect.right)
@@ -181,9 +190,9 @@ class ScrollView(ScrollableByMouseDoc, Zone):
     def _set_scrollval(self, axis, val):
 
         if axis == "x":
-            self.main_widget.set_pos(left=-val)
+            self.main_widget.set_pos(left=-val + self.padding.left)
         else:
-            self.main_widget.set_pos(top=-val)
+            self.main_widget.set_pos(top=-val + self.padding.top)
 
     def handle_mouse_scroll(self, scroll_event):
 
