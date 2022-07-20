@@ -286,7 +286,7 @@ class InstanciatedStyle(SubStyleClass):
     def set_theme(self, theme):
 
         if isinstance(theme, str):
-            theme = all_themes[theme]
+            theme = get_subtheme_from_prefab(name=theme)
         assert isinstance(theme, Theme)
         self._theme = theme
 
@@ -324,16 +324,6 @@ class Theme:
     def __init__(self):
         self._all_styles = {}
         self.colors = ThemeColors()
-        self.colors2 = [
-            (200, 200, 200),
-            (0, 50, 50),
-            (85, 85, 85),
-            (100, 100, 100),
-            (0, 0, 0),
-            (24, 0, 200),
-            (57, 57, 155, 40),
-            (57, 57, 155),
-        ]
 
     def __repr__(self):
         string = "Theme("
@@ -374,15 +364,6 @@ class Theme:
 
     def issubtheme(self, theme):
         return False
-
-    def modify_colors(self, **kwargs):
-
-        for key in self.colors_dict.keys():
-            if key in kwargs:
-                self.colors_dict[key] = kwargs.pop(key)
-
-        if kwargs:
-            raise KeyError(f"These are not color keys : {kwargs.keys()} (color keys={self.colors_dict.keys()})")
 
     def set_style_for(self, widget_class, **style):
 
@@ -431,61 +412,6 @@ class SubTheme(Theme):
         self._all_styles[widget_class].modify(**style)
 
 
-class DarkTheme(Theme):
-
-    def __init__(self):
-        super().__init__()
-        self.colors.content = (168, 119, 30)
-        self.colors.font = (220, 220, 220)
-        self.colors.font_opposite = (0, 0, 0)
-        self.colors.scene_background = (85, 85, 85)
-        self.colors.selection = (24, 0, 200)
-        self.colors.selection_rect = (0, 0, 0)
-
-
-class DefaultTheme_COPY(Theme):
-
-    def __init__(self):
-        super().__init__()
-        self.colors.border = (0, 0, 0)
-        self.colors.content = (0, 200, 200)
-        self.colors.font = (0, 0, 0)
-        self.colors.font_opposite = (255, 255, 255)
-        self.colors.scene_background = (170, 170, 170)
-        self.colors.selection = (167, 213, 255)
-        self.colors.selection_rect = (107, 107, 205)
-
-
-class PinkyTheme(Theme):
-
-    def __init__(self):
-        super().__init__()
-        self.colors.border = (61, 12, 51)
-        self.colors.content = (255, 117, 163)
-        self.colors.scene_background = (255, 214, 220)
-        self.colors.selection = (255, 53, 90)
-        self.colors.selection_rect = (255, 53, 90)
-
-
-class GreenTheme(Theme):
-
-    def __init__(self):
-        super().__init__()
-        self.colors.content = (0, 255, 0)
-        self.colors.font_opposite = (100, 255, 100)
-        self.colors.scene_background = (190, 210, 190)
-        self.colors.selection = (0, 255, 0)
-        self.colors.selection_rect = (0, 255, 0)
-
-
-all_themes = {
-    "dark": DarkTheme(),
-    "default": Theme(),
-    "pinky": PinkyTheme(),
-    "green": GreenTheme(),
-}
-
-
 class HasStyle:
     """
     A style is a dictionnary containing appearance attributes and values
@@ -514,7 +440,7 @@ class HasStyle:
         if isinstance(arg, Theme):
             theme = arg
         elif isinstance(arg, str):
-            theme = all_themes[arg]
+            theme = get_subtheme_from_prefab(name=arg)
         else:
             parent = arg
             self._parent = parent
@@ -522,7 +448,7 @@ class HasStyle:
             if "theme" in options:  # here, theme is the parent widget
                 theme = options.pop("theme")
                 if isinstance(theme, str):
-                    theme = all_themes[theme]
+                    theme = get_subtheme_from_prefab(name=theme)
                 elif not theme.issubtheme(parent.theme):
                     raise PermissionError("Must be an parent sub-theme")
             else:
@@ -562,3 +488,8 @@ class HasStyle:
         if not hasattr(self, "_theme"):
             raise PermissionError("You must inherit style before using it")
         self.theme.set_style_for(*widget_classes, **kwargs)
+
+
+def get_subtheme_from_prefab(name):
+    from baopig.prefabs.themes import all_themes
+    return all_themes[name].subtheme()

@@ -1,4 +1,4 @@
-from .style import Theme, DarkTheme  # TODO : pre-defined themes
+from .style import Theme
 from .utilities import *
 from .widget import Widget, Communicative
 from .widget_supers import DraggableByMouse, Focusable, HoverableByMouse, LinkableByMouse, \
