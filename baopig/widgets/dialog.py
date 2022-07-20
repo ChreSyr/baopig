@@ -62,7 +62,7 @@ class DialogFrame(Zone):
         loc="center",
         width=450,
         height=300,
-        background_color="theme-color-dialog_background",
+        background_color="theme-color-scene_background",
     )
 
     def __init__(self, dialog, **kwargs):

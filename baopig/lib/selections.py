@@ -96,13 +96,14 @@ class SelectionRect(Rectangle):
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
         color="theme-color-selection_rect",
-        border_color="theme-color-selection_rect_border",
+        border_color="theme-color-selection_rect",
         border_width=1,
     )
 
     def __init__(self, parent, abs_start, **kwargs):
         Rectangle.__init__(self, parent=parent, layer=parent.selectionrect_layer,
                            name=parent.name + ".selection_rect", **kwargs)
+        self.set_color(tuple(self.color)[:3] + (40,))
 
         self.abs_start = pygame.Vector2(abs_start)
         self.abs_end = None

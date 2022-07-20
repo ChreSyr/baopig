@@ -273,7 +273,8 @@ class _Mouse(Communicative):
 
                 pointed = self._get_touched_widget()
                 scrolled = first_scrollable_in_family_tree(pointed)
-                scrolled.handle_mouse_scroll(event)
+                if scrolled:
+                    scrolled.handle_mouse_scroll(event)
 
             else:  # Ignore wheel
                 self.clic_history.append(Object(time=time.time(), button=event.button, pos=event.pos))

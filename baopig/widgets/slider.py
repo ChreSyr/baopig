@@ -102,8 +102,8 @@ class Slider(Container, LinkableByMouse):
     )
     # NOTE : On peut facilement se tromper en laissant width et height alors qu'on devrait utiliser bar_size
     STYLE.create(
-        length=100,
-        wideness=10,
+        length=150,
+        wideness=15,
         has_indicator=True,
         bloc_class=SliderBloc,
         bar_class=SliderBar,

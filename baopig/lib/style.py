@@ -300,10 +300,8 @@ class ThemeColors:
         self.font = (0, 0, 0)
         self.font_opposite = (255, 255, 255)
         self.scene_background = (170, 170, 170)
-        self.dialog_background = (120, 120, 120)
         self.selection = (167, 213, 255)
-        self.selection_rect = (107, 107, 205, 40)
-        self.selection_rect_border = (107, 107, 205)
+        self.selection_rect = (107, 107, 205)
 
         for key in tuple(kwargs.keys()):
             if hasattr(self, key):
@@ -436,22 +434,55 @@ class SubTheme(Theme):
 class DarkTheme(Theme):
 
     def __init__(self):
-
         super().__init__()
-        self.colors.border = (200, 200, 200)
-        self.colors.font = (200, 200, 200)
+        self.colors.content = (168, 119, 30)
+        self.colors.font = (220, 220, 220)
         self.colors.font_opposite = (0, 0, 0)
-        self.colors.content = (0, 50, 50)
         self.colors.scene_background = (85, 85, 85)
-        self.colors.dialog_background = (100, 100, 100)
         self.colors.selection = (24, 0, 200)
-        self.colors.selection_rect = (57, 57, 155, 40)
-        self.colors.selection_rect_border = (57, 57, 155)
+        self.colors.selection_rect = (0, 0, 0)
+
+
+class DefaultTheme(Theme):
+
+    def __init__(self):
+        super().__init__()
+        self.colors.border = (0, 0, 0)
+        self.colors.content = (0, 200, 200)
+        self.colors.font = (0, 0, 0)
+        self.colors.font_opposite = (255, 255, 255)
+        self.colors.scene_background = (170, 170, 170)
+        self.colors.selection = (167, 213, 255)
+        self.colors.selection_rect = (107, 107, 205)
+
+
+class PinkyTheme(Theme):
+
+    def __init__(self):
+        super().__init__()
+        self.colors.border = (61, 12, 51)
+        self.colors.content = (255, 117, 163)
+        self.colors.scene_background = (255, 214, 220)
+        self.colors.selection = (255, 53, 90)
+        self.colors.selection_rect = (255, 53, 90)
+
+
+class GreenTheme(Theme):
+
+    def __init__(self):
+        super().__init__()
+        self.colors.content = (0, 255, 0)
+        self.colors.font_opposite = (100, 255, 100)
+        self.colors.scene_background = (190, 210, 190)
+        self.colors.selection = (0, 255, 0)
+        self.colors.selection_rect = (0, 255, 0)
 
 
 all_themes = {
-    "default": Theme(),
     "dark": DarkTheme(),
+    "default": Theme(),
+    "pinky": PinkyTheme(),
+    "green": GreenTheme(),
 }
 
 
@@ -492,7 +523,7 @@ class HasStyle:
                 theme = options.pop("theme")
                 if isinstance(theme, str):
                     theme = all_themes[theme]
-                if not theme.issubtheme(parent.theme):
+                elif not theme.issubtheme(parent.theme):
                     raise PermissionError("Must be an parent sub-theme")
             else:
                 theme = parent.theme.subtheme()

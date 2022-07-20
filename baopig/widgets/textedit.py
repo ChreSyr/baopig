@@ -20,6 +20,7 @@ class TextEdit(ScrollView, Selector):
     STYLE.modify(
         background_color="theme-color-font_opposite",
         height=15,
+        padding=5,
         width=100,
     )
 

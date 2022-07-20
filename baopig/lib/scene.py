@@ -30,8 +30,8 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             theme = kwargs.pop("theme")
             if not isinstance(theme, str):  # theme name
                 assert isinstance(theme, Theme)
-                if not theme.issubtheme(application.theme):
-                    raise PermissionError("Must be an application sub-theme")
+                # if not theme.issubtheme(application.theme):
+                #     raise PermissionError("Must be an application sub-theme")
         else:
             theme = application.theme.subtheme()
 
@@ -123,7 +123,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
 
         if not self.is_alive:
             return
-        if self.app.focused_scene is self:
+        if self.application.focused_scene is self:
             raise PermissionError("Cannot kill a focused scene")
 
         with paint_lock:
@@ -132,7 +132,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             self.disconnect()
             self.signal.KILL.emit(self._weakref)
             self._weakref._ref = None
-            self.app.scenes.remove(self)
+            self.application.scenes.remove(self)
 
         del self
 

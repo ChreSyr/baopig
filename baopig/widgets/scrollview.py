@@ -46,6 +46,7 @@ class ScrollSlider(Slider):
         bloc_class=ScrollBloc,
         bar_class=ScrollBar,
         has_indicator=False,
+        wideness=10,
     )
 
     def __init__(self, scroller, axis):
@@ -132,6 +133,7 @@ class ScrollView(ScrollableByMouseDoc, Zone):
 
         Zone.__init__(self, parent, **kwargs)
 
+        # TODO : add padding, so blank space for easy cursor control
         assert self.padding.is_null, "ScrollView does not support padding"
 
         self.max = {"x": 0, "y": 0}
