@@ -26,7 +26,7 @@ class UT_TextEdit_Zone(Zone):
 
         # Z3
         LineEdit(z3)
-        LineEdit(z3, size=(190, 30))
+        LineEdit(z3, width=190, padding=5, font_height=30)
         z3.pack()
 
         # Z4
