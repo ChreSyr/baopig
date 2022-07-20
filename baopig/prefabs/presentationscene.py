@@ -1,7 +1,7 @@
 
 from baopig import *
 from baopig.version.version import version
-from baopig.unit_tests.testerscene import TesterScene
+from baopig.prefabs.testerscene import TesterScene
 
 
 class PresentationScene(Scene):

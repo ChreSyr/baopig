@@ -154,8 +154,7 @@ class UT_Hoverable_Zone(Zone):
 ut_zone_class = UT_Hoverable_Zone
 
 if __name__ == "__main__":
-    from baopig.unit_tests.testerscene import TesterScene
-
+    from baopig.prefabs.testerscene import TesterScene
     app = Application()
     TesterScene(app, ut_zone_class)
     app.launch()

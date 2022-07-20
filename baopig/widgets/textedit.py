@@ -47,8 +47,8 @@ class TextEdit(ScrollView, Selector):
 
         self.set_selectionrect_visibility(False)
 
-        self._cursor_ref = lambda: None
-        self.cursors_layer = Layer(self, Cursor, name="cursors_layer", level=LayersManager.FOREGROUND)
+        self._cursor_ref = Cursor(self).get_weakref()
+        self.cursor.sleep()
 
         self.set_style_for(SelectionRect, ref=self.text_widget)
 
@@ -98,13 +98,12 @@ class TextEdit(ScrollView, Selector):
 
         super().handle_focus()
 
-        text_index = self.text_widget._find_index(pos=(self.x_scroller.val, self.y_scroller.val))
+        text_index = self.text_widget._find_index(  # stupid looking bug fix
+            pos=(self.x_scroller.val + self.rect.width, self.y_scroller.val + self.rect.height)
+        )
 
-        if self.cursor is None:
-            self._cursor_ref = Cursor(self, text_index=text_index).get_weakref()
-        else:
-            self.cursor.wake()
-            self.cursor.config(text_index=text_index)
+        self.cursor.wake()
+        self.cursor.config(text_index=text_index)
 
     def handle_keydown(self, key):
 
@@ -118,6 +117,7 @@ class TextEdit(ScrollView, Selector):
         super().handle_link()
 
         if not mouse.has_double_clicked and not mouse.has_triple_clicked:  # else, the cursor follow the selection
+            self.cursor.wake()
             self.cursor.config(text_index=self.text_widget._find_mouse_index())
 
     def paste(self, data):
@@ -146,10 +146,9 @@ class Cursor(Rectangle, RepetivelyAnimated):
         color="theme-color-font"
     )
 
-    def __init__(self, parent, text_index):
+    def __init__(self, parent):
 
         assert isinstance(parent, TextEdit)
-        assert parent.cursor is None
 
         h = parent.text_widget.font.height
 
@@ -159,15 +158,15 @@ class Cursor(Rectangle, RepetivelyAnimated):
             ref=parent.text_widget,
             size=(int(h / 10), h),
             name=parent.name + " -> cursor",
-            layer="cursors_layer",
+            layer=Layer(parent, Cursor, name="cursor_layer", level=LayersManager.FOREGROUND, maxlen=1),
             touchable=False
         )
         RepetivelyAnimated.__init__(self, parent, interval=.5)
 
-        self._char_index = None  # index of cursor position, see _Line._chars_pos for more explanations
-        self.__line_index = None  # index of cursor line, see Text._lines_pos for more explanations
+        self._char_index = 0  # index of cursor position, see _Line._chars_pos for more explanations
+        self.__line_index = 0  # index of cursor line, see Text._lines_pos for more explanations
         self._line = None
-        self._text_index = None  # index of cusor in Text.text
+        self._text_index = 0  # index of cusor in Text.text
 
         # History
         """
@@ -184,8 +183,6 @@ class Cursor(Rectangle, RepetivelyAnimated):
         max_item_stored = 50
         self.history = deque(maxlen=max_item_stored)
         self.back_history = deque(maxlen=max_item_stored)
-
-        self.config(text_index=text_index)
 
     char_index = property(lambda self: self._char_index)
 
@@ -276,7 +273,7 @@ class Cursor(Rectangle, RepetivelyAnimated):
         self.clip()
 
         self.start_animation()
-        self.show()
+        self.show()  # always shown when the animation starts
 
         if selecting == "done":
             pass

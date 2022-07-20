@@ -130,7 +130,7 @@ class UT_Selections_Zone(SelectorZone):
 ut_zone_class = UT_Selections_Zone
 
 if __name__ == "__main__":
-    from baopig.unit_tests.testerscene import TesterScene
+    from baopig.prefabs.testerscene import TesterScene
     app = Application()
     TesterScene(app, ut_zone_class)
     app.launch()

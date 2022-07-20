@@ -296,7 +296,7 @@ class ThemeColors:
     def __init__(self, **kwargs):
 
         self.border = (0, 0, 0)
-        self.content = (0, 200, 200)
+        self.content = (0, 100, 125)
         self.font = (0, 0, 0)
         self.font_opposite = (255, 255, 255)
         self.scene_background = (170, 170, 170)
@@ -443,7 +443,7 @@ class DarkTheme(Theme):
         self.colors.selection_rect = (0, 0, 0)
 
 
-class DefaultTheme(Theme):
+class DefaultTheme_COPY(Theme):
 
     def __init__(self):
         super().__init__()

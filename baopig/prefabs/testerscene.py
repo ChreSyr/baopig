@@ -42,6 +42,9 @@ class TesterScene(Scene):
         Button(self.menu_zone, "< BACK", col=0, command=PrefilledFunction(app.open, "UTMenu_Scene"))
 
         def try_it_yourself():
+            if self.try_it_yourself is None:
+                self._init_try_it_yourself()
+
             if self.try_it_yourself.is_visible:
                 self.try_it_yourself.hide()
                 self.run_tiy.hide()
@@ -61,7 +64,6 @@ class TesterScene(Scene):
 
         # Try it yourself
         self.try_it_yourself = None
-        self._init_try_it_yourself()
 
     def _init_try_it_yourself(self):
 
