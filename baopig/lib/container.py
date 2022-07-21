@@ -336,10 +336,10 @@ class Container(ContainerDoc, Widget):
         rect = self.auto_hitbox.clip(rect)
         if rect.size == (0, 0):
             return
-        if self._rect_to_update is None:
-            self._rect_to_update = pygame.Rect(rect)  # from ProtectedHitbox to pygame.Rect
-        else:
+        try:
             self._rect_to_update.union_ip(rect)
+        except AttributeError:
+            self._rect_to_update = pygame.Rect(rect)  # from ProtectedHitbox to pygame.Rect
 
     def _warn_parent(self, rect):
         """Request updates at rects referenced by self"""
