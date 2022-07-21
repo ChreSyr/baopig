@@ -24,14 +24,15 @@ class PainterThread(ExtraThread):
 
         self._required_fps = None
 
-        if self.app._debug_averagefps:
-            def _tick_fps():
-                # being a deque, it manages its data itself
-                self.fps_history.append(self.screenupdates_during_current_second)
-                self.screenupdates_during_current_second = 0
+        # if self.app._debug_averagefps:
+        def _tick_fps():
+            # being a deque, it manages its data itself
+            self.fps_history.append(self.screenupdates_during_current_second)
             self.screenupdates_during_current_second = 0
-            self.fps_history = History(seq=[], maxlen=500)
-            self.fps_history_updater = RepeatingTimer(1, _tick_fps)
+
+        self.screenupdates_during_current_second = 0
+        self.fps_history = History(seq=[], maxlen=500)
+        self.fps_history_updater = RepeatingTimer(1, _tick_fps)
 
         # The clock is the object who freeze enough the thread in order to have maximum app.required_fps FPS
         self.clock = pygame.time.Clock()
@@ -39,8 +40,8 @@ class PainterThread(ExtraThread):
 
     def __del__(self):
 
-        if self.app._debug_averagefps:
-            self.fps_history_updater.cancel()
+        # if self.app._debug_averagefps:
+        self.fps_history_updater.cancel()
 
     is_recording = property(lambda self: self._is_recording)
     required_fps = property(lambda self: self._required_fps)
@@ -50,18 +51,18 @@ class PainterThread(ExtraThread):
 
         :return:
         """
-        if self.app._debug_averagefps:
-            if len(self.fps_history) > 0:
-                return self.fps_history[-1]
-            else:
-                return None
+        # if self.app._debug_averagefps:
+        if len(self.fps_history) > 0:
+            return self.fps_history[-1]
         else:
-            return self.clock.get_fps()  # TODO : fps track even with infinite fps
+            return None
+        # else:
+        #     return self.clock.get_fps()  # TODO : fps track even with infinite fps
 
     def init(self):
 
-        if self.app._debug_averagefps:
-            self.fps_history_updater.start()
+        # if self.app._debug_averagefps:
+        self.fps_history_updater.start()
 
     def screenshot(self):
 
@@ -80,8 +81,8 @@ class PainterThread(ExtraThread):
 
         with paint_lock:
             super().stop()
-            if self.app._debug_averagefps:
-                self.fps_history_updater.cancel()
+            # if self.app._debug_averagefps:
+            self.fps_history_updater.cancel()
 
     def start_recording(self, only_at_change=False):
 
@@ -129,8 +130,8 @@ class PainterThread(ExtraThread):
                     self.record_index += 1
 
             # FPS
-            if self.app._debug_averagefps:
-                self.screenupdates_during_current_second += 1
+            # if self.app._debug_averagefps:
+            self.screenupdates_during_current_second += 1
             # NOTE : Pour mieux tester les FPS, on ne fait pas ticker l'horloge
             if self.required_fps is not None:
                 self.clock.tick(self.required_fps)  # keep the game running slower than the given FPS
