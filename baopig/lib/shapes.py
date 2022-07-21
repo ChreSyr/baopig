@@ -54,7 +54,8 @@ class Rectangle(Widget):
 
     def set_color(self, color=None):
 
-        if color is None: color = (0, 0, 0, 0)
+        if color is None:
+            color = (0, 0, 0, 0)
         self._color = Color(color)
         self.send_paint_request()
 
@@ -118,17 +119,21 @@ class Polygon(Widget):
 
     def __init__(self, parent, color, vertices, width=0, offset=(0, 0), offset_angle=None, **kwargs):
 
+        if True and 1:
+            raise NotImplemented  # TODO
+
         assert "pos" not in kwargs, "Use offset instead"
 
         def plus(p1, p2):
             return p1[0] + p2[0], p1[1] + p2[1]
+
         def minus(p1, p2):
             return p1[0] - p2[0], p1[1] - p2[1]
 
         if offset_angle:
             import numpy
-            rotation_matrix = numpy.array([[numpy.cos(offset_angle) ,-numpy.sin(offset_angle)],
-                                           [numpy.sin(offset_angle) ,numpy.cos(offset_angle)]])
+            rotation_matrix = numpy.array([[numpy.cos(offset_angle), -numpy.sin(offset_angle)],
+                                           [numpy.sin(offset_angle), numpy.cos(offset_angle)]])
             vertices = tuple(rotation_matrix.dot(v) for v in vertices)
 
         topleft_corner = min(v[0] for v in vertices), min(v[1] for v in vertices)
@@ -160,14 +165,15 @@ class Line(Widget):
 
         def plus(p1, p2):
             return p1[0] + p2[0], p1[1] + p2[1]
+
         def minus(p1, p2):
             return p1[0] - p2[0], p1[1] - p2[1]
 
         points = point_a, point_b
         if offset_angle:
             import numpy
-            rotation_matrix = numpy.array([[numpy.cos(offset_angle) ,-numpy.sin(offset_angle)],
-                                           [numpy.sin(offset_angle) ,numpy.cos(offset_angle)]])
+            rotation_matrix = numpy.array([[numpy.cos(offset_angle), -numpy.sin(offset_angle)],
+                                           [numpy.sin(offset_angle), numpy.cos(offset_angle)]])
             points = tuple(rotation_matrix.dot(p) for p in points)
 
         topleft_corner = min(p[0] for p in points), min(p[1] for p in points)
@@ -195,10 +201,12 @@ class Circle(Widget):
 
     def __init__(self, parent, color, center, radius, border_width=0, **kwargs):
 
-        if isinstance(radius, float): radius = int(radius)
+        if isinstance(radius, float):
+            radius = int(radius)
         assert "pos" not in kwargs, "Use center instead"
         assert isinstance(radius, int)
-        if border_width > 1: raise NotImplemented
+        if border_width > 1:
+            raise NotImplemented
         surf = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(surf, color, (radius, radius), radius, border_width)
         Widget.__init__(self, parent, surface=surf, center=center, **kwargs)
@@ -213,7 +221,8 @@ class Circle(Widget):
 
     def set_radius(self, radius):
 
-        if isinstance(radius, float): radius = int(radius)
+        if isinstance(radius, float):
+            radius = int(radius)
         assert isinstance(radius, int)
         assert radius >= 0
 
@@ -221,4 +230,3 @@ class Circle(Widget):
         surf = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(surf, self.color, (radius, radius), radius, self.border_width)
         self.set_surface(surf)
-

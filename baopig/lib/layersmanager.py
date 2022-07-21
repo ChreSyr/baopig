@@ -5,9 +5,9 @@ from .layer import Widget, Layer
 class LayersManager:
 
     levels = {
-        0:"BACKGROUND",
-        1:"MAINGROUND",
-        2:"FOREGROUND",
+        0: "BACKGROUND",
+        1: "MAINGROUND",
+        2: "FOREGROUND",
     }
     BACKGROUND = 0
     MAINGROUND = 1
@@ -115,7 +115,8 @@ class LayersManager:
 
     def find_layer_for(self, child, layer_level=None):
 
-        if layer_level is None: layer_level = self.DEFAULT_LEVEL
+        if layer_level is None:
+            layer_level = self.DEFAULT_LEVEL  # TODO : default level is always MAINGROUND
 
         for layer in self.layers:
             if layer.level == layer_level and layer.accept(child):

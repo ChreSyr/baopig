@@ -434,9 +434,12 @@ class Cursor(Rectangle, RepetivelyAnimated):
                     self.text_widget.lines[self.line_index + 1].pop(0)
             else:
                 self.line.pop(self.char_index)
-            self.config(line_index=self.line_index,  # We don't use text_index because, if self.char_index is 0,
-                        char_index=self.char_index)  # we want to stay at 0, text_index might send the cursor at the
-                                                     # end of the previous line if it is a cutted line
+
+            # We don't use text_index because, if self.char_index is 0,
+            # we want to stay at 0, text_index might send the cursor at the
+            # end of the previous line if it is a cutted line
+            self.config(line_index=self.line_index,
+                        char_index=self.char_index)
 
         elif key == pygame.K_ESCAPE:
             self.parent.defocus()

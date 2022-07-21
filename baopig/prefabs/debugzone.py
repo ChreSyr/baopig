@@ -1,5 +1,5 @@
 from baopig import mouse
-from baopig import Zone, Handler_SceneClose, Text, DynamicText, Highlighter, GridLayer
+from baopig import Zone, Handler_SceneClose, Text, DynamicText, Highlighter
 
 
 # --- DEBUG ---

@@ -94,10 +94,10 @@ class ColorEntry(NumEntry):
         loc="midleft",
     )
 
-    def __init__(self, parent, attr, max, y):
+    def __init__(self, parent, attr, maxval, y):
         NumEntry.__init__(
             self, parent,
-            min=0, max=max, accept_floats=False, default=getattr(parent.color, attr),
+            minval=0, maxval=maxval, accept_floats=False, default=getattr(parent.color, attr),
             pos=(parent.entry_x, y),
         )
         self.attr = attr

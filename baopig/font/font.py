@@ -4,6 +4,7 @@ import pygame
 from baopig.io import LOGGER
 # TODO : change the height system ? go back to default from pygame ?
 
+
 class Font:
 
     def __init__(self, owner=None, file=None, height=None, color=None, bold=None, italic=None, underline=None):

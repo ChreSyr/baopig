@@ -66,9 +66,11 @@ class Timer(Communicative):
 
     def get_time_left(self):
 
-        if self._start_time is None: return 0
+        if self._start_time is None:
+            return 0
 
-        if self.is_paused: return self.interval - (self._pause_time - self._start_time)
+        if self.is_paused:
+            return self.interval - (self._pause_time - self._start_time)
 
         return max(self._end_time - time.time(), 0)
 

@@ -14,12 +14,12 @@ class Layer(Communicative):
     to stand behind a layer with weight 6. The default weight is 2.
     """
 
-    def __init__(self, container, *filter, name=None, level=None, weight=None, padding=None, children_margins=None,
+    def __init__(self, container, *filter_cls, name=None, level=None, weight=None, padding=None, children_margins=None,
                  default_sortkey=None, sort_by_pos=False, touchable=True, maxlen=None, adaptable=False):
         """
         :param container: the Container who owns the layer
         :param name: an unic identifier for the layer
-        :param filter: a class or list of class from wich every layer's widget must herit
+        :param filter_cls: a class or list of class from wich every layer's widget must herit
         :param level: inside the container's layers : lowest behind greatest in front, default to MAINGROUND
         :param weight: inside the layer's level : lowest behind greatest in front, default to 2
         :param padding: space between the widgets and the container. If None, set to the container's padding
@@ -30,10 +30,14 @@ class Layer(Communicative):
         :param maxlen: the maximum numbers of children the layer can contain
         """  # TODO : start_pos
 
-        if name is None: name = "UnnamedLayer{}".format(len(container.layers))
-        if not filter: filter = [Widget]
-        if level is None: level = container.layers_manager.DEFAULT_LEVEL
-        if weight is None: weight = 2
+        if name is None:
+            name = "UnnamedLayer{}".format(len(container.layers))
+        if not filter_cls:
+            filter_cls = [Widget]
+        if level is None:
+            level = container.layers_manager.DEFAULT_LEVEL
+        if weight is None:
+            weight = 2
         if padding is None:
             padding = container.padding  # Same object
         else:
@@ -46,7 +50,7 @@ class Layer(Communicative):
             assert default_sortkey is None
             default_sortkey = lambda c: (c.rect.top, c.rect.left)
 
-        for filter_class in filter:
+        for filter_class in filter_cls:
             assert issubclass(filter_class, Widget), filter_class
         assert isinstance(name, str), name
         assert name not in container.layers, name
@@ -64,9 +68,9 @@ class Layer(Communicative):
         # NOTE : adaptable, container, name, touchable and level are not editable, because you
         #        need to know what kind of layer you want since its creation
         self._is_adaptable = bool(adaptable)
-        self._widgets = WeakTypedList(*filter)
+        self._widgets = WeakTypedList(*filter_cls)
         self._container = container
-        self._filter = filter
+        self._filter = filter_cls
         self._name = name
         self._level = level
         self._weight = weight
@@ -99,7 +103,7 @@ class Layer(Communicative):
         return self._widgets.__len__()
 
     def __repr__(self):
-        return "{}(name:{}, index:{}, filter:{}, touchable:{}, level:{}, weight:{}, children:{})".format(
+        return "{}(name:{}, index:{}, filter_cls:{}, touchable:{}, level:{}, weight:{}, children:{})".format(
             # "Widgets" if self.touchable else "",
             self.__class__.__name__, self.name, self._layer_index, self._filter, self.touchable,
             self.level, self.weight, self._widgets)
@@ -118,7 +122,8 @@ class Layer(Communicative):
 
     def accept(self, widget):
 
-        if self.maxlen and self.maxlen <= len(self._widgets): return False
+        if self.maxlen and self.maxlen <= len(self._widgets):
+            return False
         return self._widgets.accept(widget)
 
     def add(self, widget):
@@ -221,9 +226,9 @@ class Layer(Communicative):
         if self.is_adaptable:
             self.container.adapt(self)
 
-    def set_filter(self, filter):
+    def set_filter(self, filter_cls):
 
-        self._widgets.set_ItemsClass(filter)
+        self._widgets.set_ItemsClass(filter_cls)
 
     def set_maxlen(self, maxlen):
 
@@ -242,7 +247,8 @@ class Layer(Communicative):
         Cette fonction ne deplace pas les enfants, elle ne fait que changer leur
         superpositionnement
         """
-        if key is None: key = self.default_sortkey
+        if key is None:
+            key = self.default_sortkey
         if key is None:  # No sort key defined
             return
         self._widgets.sort(key=key)

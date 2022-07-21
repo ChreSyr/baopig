@@ -165,7 +165,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
     def run(self):
         """Stuff to repeat endlessly while this scene is focused"""
 
-    def set_mode_TBR(self, mode):
+    """def set_mode_TBR(self, mode):
 
         if mode is self.mode:
             return
@@ -180,7 +180,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             # mode = 0
 
         self._mode = mode
-        self.application._update_display()
+        self.application._update_display()"""
 
     def toggle_debugging(self):
 
@@ -191,12 +191,13 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         else:
             self.debug_zone.toggle_debugging()
 
-    def toggle_fullscreen(self):  # TODO : fullscreen
+    # TODO : fullscreen
+    """def toggle_fullscreen(self):  
 
         if self.mode == pygame.FULLSCREEN:
             self.set_mode(self._mode_before_fullscreen)
         else:
-            self.set_mode(pygame.FULLSCREEN)
+            self.set_mode(pygame.FULLSCREEN)"""
 
     # FORBIDDEN METHODS
     def sleep(self):

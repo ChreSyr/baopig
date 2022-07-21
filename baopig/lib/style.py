@@ -108,11 +108,13 @@ class StyleClass:
         """Check if the value at key follows the defined constraint"""
 
         constraint = self.get_constraint(key)
-        if constraint is None: return
+        if constraint is None:
+            return
         value = self[key]
         try:
             ok = constraint(value)
-            if not ok: raise ValueError(f"Wrong value for {key} : {value}")
+            if not ok:
+                raise ValueError(f"Wrong value for {key} : {value}")
         except Exception as e:
             custom_message = self.get_constraint_error_message(key)
             if custom_message is not None:
@@ -122,15 +124,18 @@ class StyleClass:
     def check_type(self, key):
         """Check if the value at key matches with defined type, but don't apply the type"""
 
-        type = self.get_type(key)
-        if type is None: return
+        required_type = self.get_type(key)
+        if required_type is None:
+            return
         value = self[key]
-        if isinstance(value, type): return
-        if isinstance(value, str) and value.startswith("theme-"): return
+        if isinstance(value, required_type):
+            return
+        if isinstance(value, str) and value.startswith("theme-"):
+            return
         try:
-            value = type(value)  # raise an error if this is impossible
-        except Exception as e:
-            raise e.__class__(str(e), f", value for {key} must be convertible in type {type}")
+            _ = required_type(value)  # raise an error if this is impossible
+        except Exception as e:  # TODO : TypeError
+            raise e.__class__(str(e), f", value for {key} must be convertible in type {required_type}")
 
     def create(self, **kwargs):
 
@@ -162,13 +167,17 @@ class StyleClass:
 
     def get_constraint(self, key):
 
-        try:                return self._constraints[key]
-        except KeyError:    return None
+        try:
+            return self._constraints[key]
+        except KeyError:
+            return None
 
     def get_constraint_error_message(self, key):
 
-        try:                return self._constraint_error_messages[key]
-        except KeyError:    return None
+        try:
+            return self._constraint_error_messages[key]
+        except KeyError:
+            return None
 
     def get_priority(self, key):
 
@@ -176,8 +185,10 @@ class StyleClass:
 
     def get_type(self, key):
 
-        try:                return self._types[key]
-        except KeyError:    return None
+        try:
+            return self._types[key]
+        except KeyError:
+            return None
 
     def get_modified_keys(self):
         """Return a generator containing all style attributes modified by this style, not its superstyle"""
@@ -204,10 +215,10 @@ class StyleClass:
             self._constraint_error_messages[key] = error_message
         self.check_constraint(key)  # check constraint on current value
 
-    def set_type(self, key, type):
+    def set_type(self, key, required_type):
 
-        assert inspect.isclass(type)
-        self._types[key] = type
+        assert inspect.isclass(required_type)
+        self._types[key] = required_type
         self.check_type(key)
 
     def substyle(self):
@@ -260,25 +271,27 @@ class InstanciatedStyle(SubStyleClass):
                     value = self._theme.get_value(value)
                 elif value.startswith("CALCUL "):
                     value = eval(value[7:], {"self": owner})
-            type = self.get_type(key)
-            if type is not None:
-                self._types[key] = type
-                if not isinstance(value, type):
-                    value = type(value)
+            required_type = self.get_type(key)
+            if required_type is not None:
+                self._types[key] = required_type
+                if not isinstance(value, required_type):
+                    value = required_type(value)
             constraint = self.get_constraint(key)
-            if constraint is not None: self._constraints[key] = constraint
+            if constraint is not None:
+                self._constraints[key] = constraint
             message = self.get_constraint_error_message(key)
-            if message is not None: self._constraint_error_messages[key] = message
+            if message is not None:
+                self._constraint_error_messages[key] = message
             self._dict[key] = value
 
     def _setitem(self, key, value):
 
         if isinstance(value, str) and value.startswith("theme-"):
             value = self._theme.get_value(value)
-        type = self.get_type(key)
-        if type is not None:
-            if not isinstance(value, type):
-                value = type(value)
+        required_type = self.get_type(key)
+        if required_type is not None:
+            if not isinstance(value, required_type):
+                value = required_type(value)
         self._dict[key] = value
         self._priority_dict[key] = self._priority
         self.check_constraint(key)

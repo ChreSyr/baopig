@@ -12,17 +12,17 @@ class NumEntry(Entry):
     # TODO : Writing a long number va faire une retour à la ligne
     STYLE = Entry.STYLE.substyle()
     STYLE.modify(
-        width = 40
+        width=40
     )
 
-    def __init__(self, parent, min=None, max=None, default=None,
+    def __init__(self, parent, minval=None, maxval=None, default=None,
                  accept_floats=True, *args, **kwargs):
 
-        type = float if accept_floats else int
-        Entry.__init__(self, parent, entry_type=type, *args, **kwargs)
+        entry_type = float if accept_floats else int
+        Entry.__init__(self, parent, entry_type=entry_type, *args, **kwargs)
 
-        self._min = min
-        self._max = max
+        self._minval = minval
+        self._maxval = maxval
         self._accepted_numbers = None  # TODO : use or remove ?
         if default is not None:
             assert self.accept(default)
@@ -36,12 +36,12 @@ class NumEntry(Entry):
             LOGGER.warning(e)
             return False
 
-        if self._min and value < self._min:
-            LOGGER.warning("Wrong value : {}, the minimum value is {}".format(value, self._min))
+        if self._minval and value < self._minval:
+            LOGGER.warning("Wrong value : {}, the minimum value is {}".format(value, self._minval))
             return False
 
-        if self._max and value > self._max:
-            LOGGER.warning("Wrong value : {}, the maximum value is {}".format(value, self._max))
+        if self._maxval and value > self._maxval:
+            LOGGER.warning("Wrong value : {}, the maximum value is {}".format(value, self._maxval))
             return False
 
         if self._accepted_numbers and value not in self._accepted_numbers:

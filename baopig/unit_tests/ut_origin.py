@@ -46,16 +46,16 @@ class UT_Origin_Zone(Zone):
         radius = 100
         step = int(math.degrees((2 * math.pi) / 8))
         for i in range(0, int(math.degrees(2 * math.pi)), step):
-            r = Rectangle(z2, color=(150, 120, 0), size=ref.rect.size,
-                          pos=(math.cos(math.radians(i)) * radius,
-                               math.sin(math.radians(i)) * radius),
-                          ref=ref, name="rect({})".format(i))
+            Rectangle(z2, color=(150, 120, 0), size=ref.rect.size,
+                      pos=(math.cos(math.radians(i)) * radius,
+                           math.sin(math.radians(i)) * radius),
+                      ref=ref, name="rect({})".format(i))
         for i in range(0, int(math.degrees(2 * math.pi)), step):
             i += step / 2
-            r = Rectangle(z3, color=ref.color, size=ref.rect.size,
-                          pos=(math.cos(math.radians(i)) * radius,
-                               math.sin(math.radians(i)) * radius),
-                          ref=ref, name="rect({})".format(i))
+            Rectangle(z3, color=ref.color, size=ref.rect.size,
+                      pos=(math.cos(math.radians(i)) * radius,
+                           math.sin(math.radians(i)) * radius),
+                      ref=ref, name="rect({})".format(i))
 
         # Family
         r1 = DragableRectangle(self, pos=(0, "50%"), color=(100, 50, 25), size=(30, 30), name="r1")

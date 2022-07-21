@@ -135,6 +135,7 @@ class Dialog(Scene):
             )
         self.frame = self.style["dialogframe_class"](self)  # TODO : a class style cannot be a parameter
 
+        self.hovered_scene = None
         self.answer = None
         self.create_signal("ANSWERED")
         self.one_shot = one_shot

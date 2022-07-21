@@ -3,24 +3,27 @@ import pygame
 from baopig.lib import Rectangle, Runable
 
 
-class ProgressBar(Rectangle, Runable):
+class ProgressBar(Rectangle, Runable):  # TODO : tests & documentation
+    STYLE = Rectangle.STYLE.substyle()
+    STYLE.modify(
+        border_width=2
+    )
 
-    def __init__(self, parent, min, max, get_progress, **kwargs):
+    def __init__(self, parent, minval, maxval, get_progress, **kwargs):
 
-        try: Rectangle.__init__(self, parent, **kwargs)
+        try:
+            Rectangle.__init__(self, parent, **kwargs)
         except AttributeError:
             pass  # 'ProgressBar' object has no attribute '_progression'
         Runable.__init__(self, parent, **kwargs)
 
         # Non protected fields (don't need it)
-        self.min = min
-        self.max = max
+        self._minval = minval
+        self._maxval = maxval
         self.get_progress = get_progress
         # Protected field
         self._progression = 0  # percentage between 0 and 1
 
-        self.set_border_color(2)  # TODO : style
-        self.set_border_width((0, 0, 0))  # TODO : style
         self.run()
         self.set_running(True)
 
@@ -30,9 +33,7 @@ class ProgressBar(Rectangle, Runable):
         self.surface.fill((0, 0, 0, 0))
         pygame.draw.rect(self.surface, self.color, (0, 0, self.progression * self.rect.w, self.rect.h))
         pygame.draw.rect(self.surface, self.border_color, self.auto_hitbox, self.border_width * 2 - 1)
-        # self.signal.NEW_SURFACE.emit()
-        # self.send_display_request()
 
     def run(self):
-        self._progression = (float(self.get_progress()) - self.min) / (self.max - self.min)
+        self._progression = (float(self.get_progress()) - self._minval) / (self._maxval - self._minval)
         self.send_paint_request()

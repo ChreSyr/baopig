@@ -36,6 +36,7 @@ class UT_TextEdit_Zone(Zone):
         NumEntry(z4, min=0, max=10, accept_floats=True, default=5)
         z4.pack()
 
+
 # For the PresentationScene import
 ut_zone_class = UT_TextEdit_Zone
 

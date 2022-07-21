@@ -40,7 +40,7 @@ setup(
         "Operating System :: OS Independent"
     ],
     packages=["baopig"],
-    package_data={'baopig': ['*','*/*','*/*/*','*/*/*/*','*/*/*/*/*','*/*/*/*/*/*'],},
+    package_data={'baopig': ['*', '*/*', '*/*/*', '*/*/*/*', '*/*/*/*/*', '*/*/*/*/*/*'], },  # TODO : find a better way
     include_package_data=True,
     install_requires=["pygame"]
 )

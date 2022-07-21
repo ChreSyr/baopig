@@ -117,7 +117,7 @@ class Application(HasStyle):
                     # Cmd + e -> toggle debugging
                     if event.key == pygame.K_e:
                         if keyboard.mod.maj:
-                            c = self.focused_scene.children
+                            _ = self.focused_scene.children
                             raise Exception("Made for debugging")
                         self.toggle_debugging()
                     # Cmd + g -> collect garbage
@@ -140,8 +140,8 @@ class Application(HasStyle):
                         self.set_display_mode(self.default_mode - pygame.FULLSCREEN)
                     else:
                         self.exit("pressed ESCAPE")
-                elif event.key == pygame.K_F5:  # fullscreen
-                    self.focused_scene.toggle_fullscreen()
+                # elif event.key == pygame.K_F5:  # fullscreen
+                #     self.focused_scene.toggle_fullscreen()
                 elif event.key == pygame.K_F4:  # minimize
                     self.iconify()
                 elif event.key == pygame.K_F3:  # refresh
@@ -313,7 +313,7 @@ class Application(HasStyle):
         self.painter.start()
 
         pygame.scrap.init()  # clipboard uses
-        events = pygame.event.get()  # ignore events that took place during the app's load
+        pygame.event.get()  # ignore events that took place during the app's load
         mouse._pos = pygame.mouse.get_pos()
         self._run()
 
@@ -324,7 +324,7 @@ class Application(HasStyle):
                 if s.name == scene:
                     scene = s
                     break
-        if not scene in self.scenes:
+        if scene not in self.scenes:
             raise PermissionError(f"Unknown scene : '{scene}' "
                                   f"(existing scenes : {tuple(str(s) for s in self.scenes)})")
 
@@ -345,7 +345,8 @@ class Application(HasStyle):
 
     def set_default_size(self, size):  # TODO : resize ?
 
-        if size == self.default_size: return
+        if size == self.default_size:
+            return
         self._default_size = size
         for scene in self.scenes:
             if scene.asked_size is not None:
@@ -364,7 +365,8 @@ class Application(HasStyle):
 
     def set_display_mode(self, mode):
 
-        if mode is self.default_mode: return
+        if mode is self.default_mode:
+            return
 
         assert mode in (0, pygame.NOFRAME, pygame.RESIZABLE, pygame.FULLSCREEN)
 

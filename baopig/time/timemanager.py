@@ -13,7 +13,7 @@ class _TimeManager:
         self._paused_timers = None
         self._paused_stopwatches = None
 
-    def pause_TBR(self):
+    """def pause_TBR(self):
 
         if self._paused_timers is not None:
             raise PermissionError("The TimeThread is already paused")
@@ -36,7 +36,7 @@ class _TimeManager:
         self._paused_timers = None
         for stopwatch in self._paused_stopwatches:
             stopwatch.start()
-        self._paused_stopwatches = None
+        self._paused_stopwatches = None"""
 
     @staticmethod
     def update():

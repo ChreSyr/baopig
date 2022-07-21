@@ -100,7 +100,8 @@ def present_time(time, max_unit=SECONDS, min_unit=MILLISECONDS):
         return res + ("{:0>2}".format(minutes) if got_max_unit else str(minutes))
     if got_max_unit:
         res += "{:0>2}:".format(minutes)
-        if minutes: time = time % MINUTES
+        if minutes:
+            time = time % MINUTES
     elif minutes or max_unit >= MINUTES:
         got_max_unit = True
         res += str(minutes) + ":"
@@ -114,7 +115,8 @@ def present_time(time, max_unit=SECONDS, min_unit=MILLISECONDS):
         res += "{:0>2}:".format(seconds)
     else:  # If the time is .345, we want 0:345
         res += str(seconds) + ":"
-    if seconds: time = time % SECONDS
+    if seconds:
+        time = time % SECONDS
 
     # milliseconds
     milliseconds = int(time // MILLISECONDS)

@@ -45,7 +45,7 @@ class Color(pygame.Color):
         if val[1] > 100:
             val = val[0], 100, val[2]
         try:
-            self.hsva = val + (100,)
+            self.hsva = val + (100.,)
         except ValueError as e:
             raise ValueError(str(e) + f" : {val}")
     hsv = property(lambda self: self.hsva[:-1], set_hsv)
@@ -54,7 +54,7 @@ class Color(pygame.Color):
         if val[1] > 100:
             val = val[0], 100, val[2]
         try:
-            self.hsla = val + (100,)
+            self.hsla = val + (100.,)
         except ValueError as e:
             raise ValueError(str(e) + f" : {val}")
     hsl = property(lambda self: self.hsla[:-1], set_hsl)
@@ -104,13 +104,13 @@ class MarginType:
         elif isinstance(margin, MarginType):
             margin = margin.left, margin.top, margin.right, margin.bottom
         else:
-            l = len(margin)
-            if l == 2:
+            ln = len(margin)
+            if ln == 2:
                 margin = tuple(margin) + tuple(margin)
-            elif l == 3:
+            elif ln == 3:
                 margin = tuple(margin) + tuple([margin[1]])
             else:
-                assert l == 4, f"Wrong value for margin type : {margin}"
+                assert ln == 4, f"Wrong value for margin type : {margin}"
 
         self._left = margin[0]
         self._top = margin[1]

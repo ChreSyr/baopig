@@ -10,11 +10,11 @@ class UT_Focusable_Zone(Zone):
             def __init__(self, parent, pos):
                 Button.__init__(self, parent, pos=pos, text="({}, {})".format(*pos))
 
-        b1 = PosButton(self, pos=(10, 10))
-        b0 = PosButton(self, pos=(10, 45))
-        b0 = PosButton(self, pos=(80, 10))
-        b2 = PosButton(self, pos=(80, 45))
-        b0 = PosButton(self, pos=(10, 80))
+        PosButton(self, pos=(10, 10))
+        PosButton(self, pos=(10, 45))
+        PosButton(self, pos=(80, 10))
+        PosButton(self, pos=(80, 45))
+        PosButton(self, pos=(10, 80))
         b0 = PosButton(self, pos=(80, 80))
 
         z = Zone(self, pos=(-5, 5), sticky="topright",

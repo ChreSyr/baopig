@@ -94,24 +94,28 @@ class UT_LayerPack_Zone(Zone):
         sliders_layer = Layer(gridlayer_tester, children_margins=25)
         s = Slider(gridlayer_tester, layer=sliders_layer, step=1, minval=0, maxval=100, title="padding.left",
                    defaultval=self.package2.padding.left, printed_title=True, length=150, wideness=15)
+
         def new_paddingleft(val):
             self.package2.padding._left = val
         s.signal.NEW_VAL.connect(new_paddingleft, owner=None)
 
         s = Slider(gridlayer_tester, layer=sliders_layer, step=1, minval=0, maxval=100, title="padding.top",
                    defaultval=self.package2.padding.top, printed_title=True, length=150, wideness=15)
+
         def new_paddingtop(val):
             self.package2.padding._top = val
         s.signal.NEW_VAL.connect(new_paddingtop, owner=None)
 
         s = Slider(gridlayer_tester, layer=sliders_layer, step=1, minval=0, maxval=100, title="children_margins.left",
                    defaultval=self.package2.children_margins.left, printed_title=True, length=150, wideness=15)
+
         def new_childrenmargins_left(val):
             self.package2.children_margins._left = val
         s.signal.NEW_VAL.connect(new_childrenmargins_left, owner=None)
 
         s = Slider(gridlayer_tester, layer=sliders_layer, step=1, minval=0, maxval=100, title="children_margins.top",
                    defaultval=self.package2.children_margins.top, printed_title=True, length=150, wideness=15)
+
         def new_childrenmargins_top(val):
             self.package2.children_margins._top = val
         s.signal.NEW_VAL.connect(new_childrenmargins_top, owner=None)

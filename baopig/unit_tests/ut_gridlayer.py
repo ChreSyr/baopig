@@ -50,33 +50,46 @@ class UT_GridLayer_Zone(Zone):
 
             def handle_link(self):
                 self.kill()
+
         import random
         random_color = lambda: [int(random.random() * 255)] * 2 + [128]
+
         def toggle_col_size(col_index):
             col = grid.get_col(col_index)
-            if col.is_adaptable:  col.set_width(40)
-            elif col.get_width() == 40: col.set_width(20)
-            else:                 col.set_width(None)
-            if col.is_adaptable:  col[-1].kill()
+            if col.is_adaptable:
+                col.set_width(40)
+            elif col.get_width() == 40:
+                col.set_width(20)
+            else:
+                col.set_width(None)
+            if col.is_adaptable:
+                col[-1].kill()
+
         def toggle_row_size(row_index):
             row = grid.get_row(row_index)
-            if row.is_adaptable:   row.set_height(40)
-            elif row.get_height() == 40: row.set_height(20)
-            else:                  row.set_height(None)
-            if row.is_adaptable:   row[-1].kill()
+            if row.is_adaptable:
+                row.set_height(40)
+            elif row.get_height() == 40:
+                row.set_height(20)
+            else:
+                row.set_height(None)
+            if row.is_adaptable:
+                row[-1].kill()
+
         def add_rect():
             for row in range(grid.nbrows):
                 for col in range(grid.nbcols):
                     if grid._data[row][col] is None:
-                        if row is grid.nbrows-1:
+                        if row is grid.nbrows - 1:
                             Button(z3, "TOG", row=row, col=col, size=(30, 30), catching_errors=True,
                                    command=PrefilledFunction(toggle_col_size, col))
-                        elif col is grid.nbcols-1:
+                        elif col is grid.nbcols - 1:
                             Button(z3, "TOG", row=row, col=col, size=(30, 30), catching_errors=True,
                                    command=PrefilledFunction(toggle_row_size, row))
                         else:
                             RemovableRect(z3, color=random_color(), size=(30, 30), col=col, row=row, loc="center")
         Button(z3, "ADD", row=0, col=0, command=add_rect, width=30, height=30)
+
         def fix():
             if grid.cols_are_adaptable:
                 grid.set_row_height(30)
@@ -93,6 +106,7 @@ class UT_GridLayer_Zone(Zone):
                 Rectangle(z4, color=(130, 49, 128), row=row, col=col, size=("33%", "33%"), loc="topright")
 
         buttons_layer = GridLayer(z4, nbrows=3, nbcols=3)
+
         def click():
             for w in grid4:
                 w.set_lock(pos=False)  # TODO : remove ?

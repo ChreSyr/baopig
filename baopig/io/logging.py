@@ -1,6 +1,4 @@
 
-## BiblioLogging is expressively dedicated to BiblioApplication
-
 import os
 import sys
 import logging
@@ -8,11 +6,13 @@ import tempfile
 import time
 from logging import FileHandler
 
-formatters = [logging.Formatter("%(asctime)s :: %(threadName)s :: %(module)s :: %(funcName)s :\n    %(levelname)s :: %(msg)s"),  # WARNING, INFO
+formatters = [logging.Formatter("%(asctime)s :: %(threadName)s :: %(module)s :: %(funcName)s :\n"
+                                "    %(levelname)s :: %(msg)s"),  # WARNING, INFO
               logging.Formatter("%(asctime)s :: %(module)s :: %(funcName)s :\n    %(levelname)s :: %(msg)s"),
               logging.Formatter("%(module)s :: %(funcName)s :: %(levelname)s :: %(msg)s"),  # DEBUG
               logging.Formatter("%(asctime)s :: %(levelname)s :: %(msg)s"),
               logging.Formatter("%(levelname)s :: %(msg)s")]  # Console
+
 
 class PersonalizedLogger(logging.Logger):
 

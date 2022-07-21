@@ -19,6 +19,7 @@ class BaopigVersion(tuple):
     minor = property(lambda self: self[1])
     patch = property(lambda self: self[2])
 
+
 version = BaopigVersion(0, 11, 4)
 
 if __name__ == "__main__":

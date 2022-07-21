@@ -97,7 +97,8 @@ class UT_Selections_Zone(SelectorZone):
                 "When receive Ctrl + A, calls the 'select_all' method",
                 "The default implementation of 'select_all' selects all selectable children",
                 "When receive link_motion, it creates a SelectionRect",
-                "The default implementation of 'copy' collects data from selected Selectables, join into a string and send it to the clipboard",
+                "The default implementation of 'copy' collects data from selected Selectables, join into a string "
+                "and send it to the clipboard",
                 "When receive Ctrl + V, calls the 'paste' method (no default implementation)",
                 "The call of 'disable_selecting' will deactivate the selection ability",
             ]
@@ -117,7 +118,8 @@ class UT_Selections_Zone(SelectorZone):
             tests=[
                 "A drag on a focused Selector create a selection rect",
                 "A released drag will hide the selection rect",
-                "The selection rect can be configured throught passing a subclass of SelectionRect in the Selector constructor",
+                "The selection rect can be configured throught passing a subclass of SelectionRect "
+                "in the Selector constructor",
                 "The visibility of the selection rect can be edited -> set_selectionrect_visibility",
                 "When setting an end position for the selection rect, a temporary visibility can be given in argument",
                 "The selection rect is always fitting inside its parent",

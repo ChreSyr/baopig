@@ -344,9 +344,10 @@ class WeakList(list):
         list.__init__(self)
         self._refs = []
         self._dirty = False
-        for x in seq: self.append(x)
+        for x in seq:
+            self.append(x)
 
-    def _mark_dirty(self, wref):
+    def _mark_dirty(self, _):
         self._dirty = True
 
     def flush(self):
@@ -358,13 +359,15 @@ class WeakList(list):
         return self is other
 
     def __getitem__(self, idx):
-        if self._dirty: self.flush()
+        if self._dirty:
+            self.flush()
         if type(idx) == slice:
             return list(ref() for ref in self._refs[idx])
         return self._refs[idx]()
 
     def __iter__(self):
-        if self._dirty: self.flush()
+        if self._dirty:
+            self.flush()
         for ref in self._refs:
             yield ref()
 
@@ -375,12 +378,13 @@ class WeakList(list):
         return "[{}]".format(", ".join(list((item.__str__() for item in list(self)))))
 
     def __len__(self):
-        if self._dirty: self.flush()
+        if self._dirty:
+            self.flush()
         return len(self._refs)
 
     def __setitem__(self, idx, obj):
         if isinstance(idx, slice):
-            self._refs[idx] = [ref(obj, self._mark_dirty) for x in obj]
+            self._refs[idx] = [ref(obj, self._mark_dirty) for _ in obj]
         else:
             self._refs[idx] = ref(obj, self._mark_dirty)
 
@@ -413,7 +417,8 @@ class WeakList(list):
         return obj
 
     def remove(self, obj):
-        if self._dirty: self.flush()  # Ensure all valid.
+        if self._dirty:
+            self.flush()  # Ensure all valid.
         for i, x in enumerate(self):
             if x == obj:
                 del self[i]
@@ -423,7 +428,8 @@ class WeakList(list):
         self._refs.reverse()
 
     def sort(self, key=None, reverse=False):
-        if self._dirty: self.flush()
+        if self._dirty:
+            self.flush()
         if key is not None:
             key = lambda x, key=key: key(x())
         else:
@@ -431,9 +437,9 @@ class WeakList(list):
         self._refs.sort(key=key, reverse=reverse)
 
     def __add__(self, other):
-        l = WeakList(self)
-        l.extend(other)
-        return l
+        wl = WeakList(self)
+        wl.extend(other)
+        return wl
 
     def __iadd__(self, other):
         self.extend(other)
