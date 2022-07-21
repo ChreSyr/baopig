@@ -9,6 +9,7 @@ class UT_Button_Zone(Zone):
         layer = Layer(self, children_margins=10)
         z1 = Zone(self, size=("100%", 60), background_color=(150, 150, 150), children_margins=5, padding=5)
         z2 = Zone(self, size=("100%", 100), background_color=(150, 150, 150), children_margins=5, padding=5)
+        z3 = Zone(self, size=("100%", 500), background_color=(150, 150, 150))
         layer.pack()
 
         # Z1
@@ -37,6 +38,19 @@ class UT_Button_Zone(Zone):
         Button(z2, "-----------l1-----------", row=1, col=2)
         Text(z2, text=f"padding:{z2.get_style_for(Button)['padding']}", row=1, col=3)
         z2.pack()
+
+        # Z3
+        class PosButton(Button):
+            def __init__(self, parent, pos):
+                Button.__init__(self, parent, pos=pos, text="({}, {})".format(*pos))
+
+        import random
+        width = Button.STYLE["width"]
+        height = Button.STYLE["height"]
+        for i in range(10):
+            x = random.randrange(z3.rect.w - width)
+            y = random.randrange(z3.rect.h - height)
+            PosButton(z3, pos=(x, y))
 
 
 # For the PresentationScene import
