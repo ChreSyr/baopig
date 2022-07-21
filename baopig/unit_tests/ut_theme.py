@@ -11,7 +11,7 @@ class ThemePresentator(Zone, Selector):
     def __init__(self, parent, theme):
         Zone.__init__(self, parent, theme=theme, size=("100%", 200))
         Selector.__init__(self, parent)
-        Layer(self, padding=10, children_margins=10)
+        Layer(self, padding=10, spacing=10)
 
         def click():
             ColorChooserDialog(self.application, one_shot=True, theme=self.theme.subtheme()).open()
@@ -31,7 +31,7 @@ class UT_Theme_Zone(Zone):
         Zone.__init__(self, *args, **kwargs)
 
         sv = ScrollView(self, size=("100%", "100%"))
-        z = Zone(sv, width="100%", padding=(0, 10), children_margins=(0, 10))
+        z = Zone(sv, width="100%", padding=(0, 10), spacing=(0, 10))
 
         ThemePresentator(z, theme="default")
         ThemePresentator(z, theme="dark")

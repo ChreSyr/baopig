@@ -56,7 +56,7 @@ class Column(RowOrCol):
         if self.is_first:
             self._left = grid.padding.left
         else:
-            self._left = self.get_previous_col().right + grid.children_margins.left
+            self._left = self.get_previous_col().right + grid.spacing.left
 
         grid._cols.append(self)
 
@@ -87,7 +87,7 @@ class Column(RowOrCol):
             self._grid._update_widget(widget)
 
         if not self.is_last:
-            self.get_next_col()._update_left(self.left + self.get_width() + self._grid.children_margins.left)
+            self.get_next_col()._update_left(self.left + self.get_width() + self._grid.spacing.left)
 
     def _update_left(self, left):
 
@@ -99,7 +99,7 @@ class Column(RowOrCol):
             self._grid._update_widget(widget)
 
         if not self.is_last:
-            self.get_next_col()._update_left(left + self.get_width() + self._grid.children_margins.left)
+            self.get_next_col()._update_left(left + self.get_width() + self._grid.spacing.left)
 
     def get_cell_rect(self, row):
         """
@@ -156,7 +156,7 @@ class Row(RowOrCol):
         if self.is_first:
             self._top = grid.padding.top
         else:
-            self._top = self.get_previous_row().bottom + grid.children_margins.top
+            self._top = self.get_previous_row().bottom + grid.spacing.top
 
         grid._rows.append(self)
 
@@ -188,10 +188,10 @@ class Row(RowOrCol):
             self._grid._update_widget(widget)
 
         if not self.is_last:
-            self.get_next_row()._update_top(self.top + self.get_height() + self._grid.children_margins.top)
+            self.get_next_row()._update_top(self.top + self.get_height() + self._grid.spacing.top)
 
         # if not self.is_last:
-        #     self.get_next_row()._update_top(top + h + self._grid.children_margins.top)
+        #     self.get_next_row()._update_top(top + h + self._grid.spacing.top)
 
     def _update_top(self, top):
 
@@ -203,7 +203,7 @@ class Row(RowOrCol):
             self._grid._update_widget(widget)
 
         if not self.is_last:
-            self.get_next_row()._update_top(top + self.get_height() + self._grid.children_margins.top)
+            self.get_next_row()._update_top(top + self.get_height() + self._grid.spacing.top)
 
     def get_cell_rect(self, col):
         """
@@ -449,7 +449,7 @@ class GridLayer(Layer):
 
     def pack(self, start_pos=(0, 0), **kwargs):
         """
-        Updates from children_margins, not col.width & row.height
+        Updates from spacing, not col.width & row.height
         """
         if kwargs:
             raise PermissionError("GridLayer.pack() only supports 'start_pos' parameters")
@@ -460,13 +460,13 @@ class GridLayer(Layer):
                 if col.is_first:
                     col._left = self.padding.left + start_pos[0]
                 else:
-                    col._left = col.get_previous_col().right + self.children_margins.left
+                    col._left = col.get_previous_col().right + self.spacing.left
 
             for row in self._rows:
                 if row.is_first:
                     row._top = self.padding.top + start_pos[1]
                 else:
-                    row._top = row.get_previous_row().bottom + self.children_margins.top
+                    row._top = row.get_previous_row().bottom + self.spacing.top
 
                 for widget in row.ichildren:
                     self._update_widget(widget)

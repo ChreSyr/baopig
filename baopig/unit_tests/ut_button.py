@@ -6,9 +6,9 @@ class UT_Button_Zone(Zone):
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
 
-        layer = Layer(self, children_margins=10)
-        z1 = Zone(self, size=("100%", 60), background_color=(150, 150, 150), children_margins=5, padding=5)
-        z2 = Zone(self, size=("100%", 100), background_color=(150, 150, 150), children_margins=5, padding=5)
+        layer = Layer(self, spacing=10)
+        z1 = Zone(self, size=("100%", 60), background_color=(150, 150, 150), spacing=5, padding=5)
+        z2 = Zone(self, size=("100%", 100), background_color=(150, 150, 150), spacing=5, padding=5)
         z3 = Zone(self, size=("100%", 500), background_color=(150, 150, 150))
         layer.pack()
 
@@ -17,6 +17,7 @@ class UT_Button_Zone(Zone):
             def handle_validate(self):
                 super().handle_validate()
                 t.set_text(f"You clicked on : {self.text}")
+
         MyButton(z1, "Hello world")
         MyButton(z1, "Dlrow olleh")
         b = Button(z1, "Other way")

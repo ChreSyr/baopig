@@ -7,7 +7,7 @@ class UT_GridLayer_Zone(Zone):
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
 
-        Layer(self, name="zones_layer", children_margins=10)
+        Layer(self, name="zones_layer", spacing=10)
         z1 = Zone(self, size=("100%", 130), background_color=(150, 150, 150))
         z2 = Zone(self, size=("100%", 130), background_color=(150, 150, 150))
         z3 = Zone(self, size=("100%", 155), background_color=(150, 150, 150))

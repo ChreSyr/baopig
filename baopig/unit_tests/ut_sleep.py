@@ -5,8 +5,8 @@ class UT_Sleep_Zone(Zone):
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
 
-        Layer(self, name="zones_layer", children_margins=10)
-        z1 = Zone(self, size=("100%", 50), background_color=(150, 150, 150), padding=10, children_margins=5)
+        Layer(self, name="zones_layer", spacing=10)
+        z1 = Zone(self, size=("100%", 50), background_color=(150, 150, 150), padding=10, spacing=5)
         z2 = Zone(self, size=("100%", 250), background_color=(150, 150, 150))
         z3 = Zone(self, size=("100%", 335), background_color=(150, 150, 150))
         self.default_layer.pack()

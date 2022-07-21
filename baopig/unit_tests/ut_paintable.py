@@ -16,12 +16,12 @@ class UT_Paintable_Zone(Zone):
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
 
-        Layer(self, name="zones_layer", children_margins=10)
-        z1 = Zone(self, background_color=(150, 150, 150), padding=10, children_margins=10)
+        Layer(self, name="zones_layer", spacing=10)
+        z1 = Zone(self, background_color=(150, 150, 150), padding=10, spacing=10)
         self.default_layer.pack()
 
         rainbow = RainbowRect(z1)
-        buttons_zone = Zone(z1, children_margins=10)
+        buttons_zone = Zone(z1, spacing=10)
         Button(buttons_zone, text="dirty = 0", command=PrefilledFunction(rainbow.set_dirty, 0))
         Button(buttons_zone, text="dirty = 1", command=PrefilledFunction(rainbow.set_dirty, 1))
         Button(buttons_zone, text="dirty = 2", command=PrefilledFunction(rainbow.set_dirty, 2))

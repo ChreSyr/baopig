@@ -30,8 +30,8 @@ class DialogButtonsZone(Zone):
             size=(dialog_frame.rect.w - 60, int(46 * ((len(choices) - 1) / 3 + 1))),
         )
         grid = GridLayer(self, nbrows=int((len(choices) - 1) / 3) + 1, nbcols=min(len(choices), 3),
-                         row_height=46, children_margins=10)
-        grid.set_col_width(int((self.rect.w - (grid.nbcols - 1) * grid.children_margins.left) / grid.nbcols))
+                         row_height=46, spacing=10)
+        grid.set_col_width(int((self.rect.w - (grid.nbcols - 1) * grid.spacing.left) / grid.nbcols))
         for i, choice in enumerate(choices):
             assert isinstance(choice, str), "Other types are not implemented"
             self.dialog.style["answerbutton_class"](self, choice, col=i % 3, row=i // 3, loc="center")

@@ -96,8 +96,8 @@ class UT_Hoverable_Zone(Zone):
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
 
-        Layer(self, name="zones_layer", children_margins=10)
-        z1 = Zone(self, size=(90, 50), background_color=(150, 150, 150), padding=10, children_margins=10)
+        Layer(self, name="zones_layer", spacing=10)
+        z1 = Zone(self, size=(90, 50), background_color=(150, 150, 150), padding=10, spacing=10)
         z2 = Zone(self, size=("100%", 250))
         self.default_layer.pack()
 

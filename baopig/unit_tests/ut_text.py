@@ -6,13 +6,13 @@ class UT_Text_Zone(Zone):
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
 
-        Layer(self, name="zones_layer", children_margins=10)
-        z1 = Zone(self, size=("100%", 80), background_color=(150, 150, 150), children_margins=5, padding=5)
-        z2 = Zone(self, size=("100%", 98), background_color=(150, 150, 150), children_margins=5, padding=5)
+        Layer(self, name="zones_layer", spacing=10)
+        z1 = Zone(self, size=("100%", 80), background_color=(150, 150, 150), spacing=5, padding=5)
+        z2 = Zone(self, size=("100%", 98), background_color=(150, 150, 150), spacing=5, padding=5)
         sv = ScrollView(self, size=("100%", 300), background_color=(150, 150, 150), padding=5)
-        z3 = Zone(sv, children_margins=10)
-        z4 = Zone(self, size=("100%", 120), background_color=(150, 150, 150), children_margins=5, padding=5)
-        z5 = Zone(self, size=("100%", 120), background_color=(150, 150, 150), children_margins=5, padding=5)
+        z3 = Zone(sv, spacing=10)
+        z4 = Zone(self, size=("100%", 120), background_color=(150, 150, 150), spacing=5, padding=5)
+        z5 = Zone(self, size=("100%", 120), background_color=(150, 150, 150), spacing=5, padding=5)
         self.default_layer.pack()
 
         # Z1
@@ -79,14 +79,14 @@ class UT_Text_Zone(Zone):
         self.b = Button(z3, "Click here to see more fonts provided by your OS", command=preview_fonts,
                         width=sv.content_rect.width)
         fonts_zone = Zone(z3, height=0)
-        GridLayer(fonts_zone, nbcols=4, col_width=int(sv.rect.width / 4), children_margins=(5, 2))
+        GridLayer(fonts_zone, nbcols=4, col_width=int(sv.rect.width / 4), spacing=(5, 2))
         z3.pack(adapt=True)
 
         # Z4
         Text(z4, "max_width:150", max_width=150)
         Text(z4, "max_width:75", max_width=75)
         Text(z4, "padding:5", padding=5)
-        Text(z4, "1\n2\n3", max_width=85, padding=10, children_margins=10)
+        Text(z4, "1\n2\n3", max_width=85, padding=10, spacing=10)
         z4.pack()
 
         # Z5

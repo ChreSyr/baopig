@@ -111,13 +111,13 @@ class Container(ContainerDoc, Widget):
         background_image=None,
         border_color="theme-color-border",
         border_width=0,
-        children_margins=0,
+        spacing=0,
         padding=0,
     )
     STYLE.set_type("background_color", Color)
     STYLE.set_type("border_color", Color)
     STYLE.set_type("border_width", int)
-    STYLE.set_type("children_margins", MarginType)
+    STYLE.set_type("spacing", MarginType)
     STYLE.set_type("padding", MarginType)
 
     # NOTE : if width or height is defined in style, and a background_image is set,
@@ -143,7 +143,7 @@ class Container(ContainerDoc, Widget):
         self.layers = self.layers_manager.layers
 
         # Box attributes
-        self._children_margins = self.style["children_margins"]
+        self._spacing = self.style["spacing"]
         self._border_color = self.style["border_color"]
         self._border_width = self.style["border_width"]
         self._padding = self.style["padding"]
@@ -166,7 +166,7 @@ class Container(ContainerDoc, Widget):
     default_layer = property(lambda self: self.layers_manager.default_layer)
 
     # Box attributes
-    children_margins = property(lambda self: self._children_margins)
+    spacing = property(lambda self: self._spacing)
     # -
     border_width = property(lambda self: self._border_width)
     padding = property(lambda self: self._padding)

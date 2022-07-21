@@ -38,7 +38,7 @@ class TesterScene(Scene):
         self.run_tiy = Button(self, "RUN", command=run, sticky="topright", ref=self.menu_zone, visible=False)
 
         # Back & Try_it_yourself buttons
-        GridLayer(self.menu_zone, nbrows=1, children_margins=10)
+        GridLayer(self.menu_zone, nbrows=1, spacing=10)
         Button(self.menu_zone, "< BACK", col=0, command=PrefilledFunction(app.open, "UTMenu_Scene"))
 
         def try_it_yourself():
@@ -81,7 +81,7 @@ app = Application(size=(700, 700))
 main_zone = {self.content.__class__.__name__}(Scene(app), size=("90%", "90%"), sticky="center")
 app.launch()"""
 
-        self.try_it_yourself = Zone(self, size=("50%", self.rect.h - 20), children_margins=10,
+        self.try_it_yourself = Zone(self, size=("50%", self.rect.h - 20), spacing=10,
                                     pos=(0, self.menu_zone.rect.bottom + 10), name="try_it_yourself")
         code_window = Zone(self.try_it_yourself, size=("100%", 550))
         self.try_it_yourself.code = TextEdit(code_window, text=code, font_file="monospace", width="100%", height=550,

@@ -5,7 +5,7 @@ from baopig import *
 
 class UT_Scrollable_Zone(Zone):
     def __init__(self, *args, **kwargs):
-        Zone.__init__(self, *args, padding=10, children_margins=10, **kwargs)
+        Zone.__init__(self, *args, padding=10, spacing=10, **kwargs)
 
         self.set_style_for(Button, height=20)
 

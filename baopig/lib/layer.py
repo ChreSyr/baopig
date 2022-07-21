@@ -14,7 +14,7 @@ class Layer(Communicative):
     to stand behind a layer with weight 6. The default weight is 2.
     """
 
-    def __init__(self, container, *filter_cls, name=None, level=None, weight=None, padding=None, children_margins=None,
+    def __init__(self, container, *filter_cls, name=None, level=None, weight=None, padding=None, spacing=None,
                  default_sortkey=None, sort_by_pos=False, touchable=True, maxlen=None, adaptable=False):
         """
         :param container: the Container who owns the layer
@@ -23,7 +23,7 @@ class Layer(Communicative):
         :param level: inside the container's layers : lowest behind greatest in front, default to MAINGROUND
         :param weight: inside the layer's level : lowest behind greatest in front, default to 2
         :param padding: space between the widgets and the container. If None, set to the container's padding
-        :param children_margins: space between 2 widgets. If None, set to the container's children_margins
+        :param spacing: space between 2 widgets. If None, set to the container's spacing
         :param default_sortkey: default key fo layer.sort(). if set, at each append, the layer will be sorted
         :param sort_by_pos: if set, the default sortkey will be a function who sort children by y then x
         :param touchable: children of non-touchable layer are not hoverable
@@ -42,10 +42,10 @@ class Layer(Communicative):
             padding = container.padding  # Same object
         else:
             padding = MarginType(padding)
-        if children_margins is None:
-            children_margins = container.children_margins  # Same object
+        if spacing is None:
+            spacing = container.spacing  # Same object
         else:
-            children_margins = MarginType(children_margins)
+            spacing = MarginType(spacing)
         if sort_by_pos:
             assert default_sortkey is None
             default_sortkey = lambda c: (c.rect.top, c.rect.left)
@@ -57,7 +57,7 @@ class Layer(Communicative):
         assert level in container.layers_manager.levels, level
         assert isinstance(weight, (int, float)), weight
         assert isinstance(padding, MarginType), padding
-        assert isinstance(children_margins, MarginType), children_margins
+        assert isinstance(spacing, MarginType), spacing
         if default_sortkey is not None:
             assert callable(default_sortkey), default_sortkey
         if maxlen is not None:
@@ -75,7 +75,7 @@ class Layer(Communicative):
         self._level = level
         self._weight = weight
         self._padding = padding
-        self._children_margins = children_margins
+        self._spacing = spacing
         self.default_sortkey = default_sortkey  # don't need protection
         self._layer_index = None  # defined by container.layers
         self._layers_manager = container.layers_manager
@@ -108,7 +108,7 @@ class Layer(Communicative):
             self.__class__.__name__, self.name, self._layer_index, self._filter, self.touchable,
             self.level, self.weight, self._widgets)
 
-    children_margins = property(lambda self: self._children_margins)
+    spacing = property(lambda self: self._spacing)
     container = property(lambda self: self._container)
     is_adaptable = property(lambda self: self._is_adaptable)
     layer_index = property(lambda self: self._layer_index)
@@ -184,7 +184,7 @@ class Layer(Communicative):
         self._widgets.insert(index, widget)
         self.container._warn_change(widget.hitbox)
 
-    def pack(self, key=None, axis="vertical", children_margins=None, padding=None, start_pos=(0, 0)):
+    def pack(self, key=None, axis="vertical", spacing=None, padding=None, start_pos=(0, 0)):
         """
         Place children on one row or one column, sorted by key (default : pos)
         axis can either be horizontal or vertical
@@ -192,12 +192,12 @@ class Layer(Communicative):
         """
         if key is None:
             key = lambda o: (o.rect.top, o.rect.left)
-        if children_margins is None:
-            children_margins = self._children_margins
+        if spacing is None:
+            spacing = self._spacing
         if padding is None:
             padding = self._padding
-        if not isinstance(children_margins, MarginType):
-            children_margins = MarginType(children_margins)
+        if not isinstance(spacing, MarginType):
+            spacing = MarginType(spacing)
         if not isinstance(padding, MarginType):
             padding = MarginType(padding)
 
@@ -210,9 +210,9 @@ class Layer(Communicative):
             widget.set_pos(topleft=(left, top))
 
             if axis == "horizontal":
-                left = widget.hitbox.right + children_margins.left
+                left = widget.hitbox.right + spacing.left
             elif axis == "vertical":
-                top = widget.hitbox.bottom + children_margins.top
+                top = widget.hitbox.bottom + spacing.top
             else:
                 raise ValueError(f"axis must be either 'horizontal' or 'vertical', not {axis}")
 

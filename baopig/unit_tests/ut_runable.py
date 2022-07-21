@@ -34,12 +34,12 @@ class UT_Runable_Zone(Zone):
     def __init__(self, *args, **kwargs):
         Zone.__init__(self, *args, **kwargs)
 
-        Layer(self, name="zones_layer", children_margins=10)
-        z1 = Zone(self, background_color=(150, 150, 150), padding=10, children_margins=10)
+        Layer(self, name="zones_layer", spacing=10)
+        z1 = Zone(self, background_color=(150, 150, 150), padding=10, spacing=10)
         self.default_layer.pack()
 
         rainbow = RainbowRect(z1)
-        buttons_zone = Zone(z1, children_margins=10)
+        buttons_zone = Zone(z1, spacing=10)
         buttons_zone.set_style_for(Button, width=200)
         Button(buttons_zone, text="start running", command=PrefilledFunction(rainbow.set_running, True))
         Button(buttons_zone, text="stop running", command=PrefilledFunction(rainbow.set_running, False))

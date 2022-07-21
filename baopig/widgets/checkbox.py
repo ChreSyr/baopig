@@ -45,7 +45,7 @@ class CheckBox(Button):
         background_color=(0, 0, 0, 0),
         text_style={"font_height": 15, "loc": "midleft", "refloc": "midleft"},
         padding=2,
-        children_margins=10,
+        spacing=10,
     )
     # TODO : rework checkbox's margin padding and this kind of stuff
     STYLE.create(
@@ -64,7 +64,7 @@ class CheckBox(Button):
         self._checkmarkframe_ref = CheckMarkFrame(self).get_weakref()
         self._checkmark_ref = CheckMark(self).get_weakref()
 
-        self.text_widget.set_pos(left=self.checkmarkframe.rect.right + self.children_margins.left)
+        self.text_widget.set_pos(left=self.checkmarkframe.rect.right + self.spacing.left)
 
         self.checkmark.hide()
 
