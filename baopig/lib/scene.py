@@ -41,6 +41,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         Selector.__init__(self, parent=self, can_select=can_select)
 
         # self._mode = 0
+        self._size_is_shared_with_appliation = size is None
         self._asked_size = self.rect.size
         self._mode_before_fullscreen = None
         self._size_before_fullscreen = None
@@ -117,7 +118,7 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         widget.handle_focus()
 
     def handle_event(self, event):
-        """This method is called at every pygame event"""
+        """ Called at every pygame event, while this scene is open """
 
     def kill(self):
 
@@ -141,6 +142,9 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         app = self.application
         if app.focused_scene is self:
             return
+
+        if self._size_is_shared_with_appliation:
+            self.resize(*self.application.default_size)
 
         with paint_lock:
             scene_to_close = app.focused_scene
