@@ -43,7 +43,7 @@ class TextEdit(ScrollView, Selector):
         ScrollView.__init__(self, parent)
 
         self._text_widget_ref = Text(self, text=text, selectable=True, **text_kwargs).get_weakref()
-        self.text_widget.signal.MOTION.disconnect(self.text_widget.handle_unselect)
+        # self.text_widget.signal.MOTION.disconnect(self.text_widget.handle_unselect)
 
         self.set_selectionrect_visibility(False)
 

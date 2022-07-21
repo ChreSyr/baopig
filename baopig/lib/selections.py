@@ -1,6 +1,5 @@
 import pygame
 from baopig.documentation import Selector as SelectorDoc
-from baopig.pybao.issomething import is_point
 from baopig.io import keyboard, mouse
 from .utilities import paint_lock
 from .widget import Widget
@@ -46,7 +45,7 @@ class SelectableWidget(Widget):
         self.selector.selectables.add(self)
 
         self.signal.NEW_SURFACE.connect(self.handle_unselect, owner=self)
-        self.signal.MOTION.connect(self.handle_unselect, owner=self)
+        # self.signal.MOTION.connect(self.handle_unselect, owner=self)
         self.signal.HIDE.connect(self.handle_unselect, owner=self)
         self.signal.KILL.connect(lambda: self.selector.selectables.remove(self), owner=self)
 

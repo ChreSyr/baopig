@@ -200,9 +200,7 @@ class ScrollView(ScrollableByMouseDoc, Zone):
         self._last_scroll_time = time.time()
         d = self._last_scroll_time - old_scroll_time
 
-        accelerator = 10
-        if d < .1:
-            accelerator = 1 / d
+        accelerator = max(20., 1 / d)
 
         if keyboard.mod.maj:
             scroller = self.x_scroller
@@ -222,5 +220,6 @@ class ScrollView(ScrollableByMouseDoc, Zone):
     def handle_resize(self):
 
         super().handle_resize()
-        self.x_scroller.resize_width(self.rect.w)  # TODO
+        self.x_scroller.resize_width(self.rect.w)
         self.y_scroller.resize_height(self.rect.h)
+        self._handle_mainwidget_resize()

@@ -37,8 +37,8 @@ class GreenTheme(Theme):
         self.colors.selection = (0, 255, 0)
         self.colors.selection_rect = (0, 255, 0)
 
-        from baopig.widgets.button import Button
-        self.set_style_for(Button, width=400)
+        from baopig.widgets.text import Text
+        self.set_style_for(Text, font_file="passeroone", font_height=20)
 
 
 class PinkyTheme(Theme):
@@ -50,6 +50,9 @@ class PinkyTheme(Theme):
         self.colors.scene_background = (255, 214, 220)
         self.colors.selection = (255, 53, 90)
         self.colors.selection_rect = (255, 53, 90)
+
+        from baopig.widgets.text import Text
+        self.set_style_for(Text, font_file="inkfree", font_bold=True)
 
 
 all_themes = {

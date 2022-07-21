@@ -174,7 +174,7 @@ class _PosManager:
     pos = property(get_pos_relative_to_owner_parent)
 
 
-class _Window:
+class _Window:  # TODO : Layouts -> no more window & no more hitbox
 
     def __init__(self, owner):
 
@@ -217,8 +217,6 @@ class _Window:
         )
 
         return pygame.Rect(offset_refed_from_owner_parent, self._size).clip(self._owner.rect)
-
-        return offset_refed_from_owner_parent + self._size
 
 
 class Location(str):
@@ -880,6 +878,9 @@ class HasProtectedSurface(HasProtectedHitbox):
 
     def resize(self, width, height):
         """Sets up the new widget's surface"""
+
+        if (width, height) == self._asked_size:
+            return
 
         if self.has_locked("width"):
             raise PermissionError("Cannot resize : the width is locked")

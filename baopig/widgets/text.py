@@ -379,7 +379,7 @@ class _LineSelection(Rectangle):
                            pos=line.rect.topleft,
                            size=(0, line.rect.h),
                            name=line.name + " -> selection",
-                           layer="line_selections"
+                           layer=line.parent.line_selections
                            )
 
         # self.is_selecting = False  # True if the user is pressing the mouse button for a selection
@@ -482,7 +482,7 @@ class Text(Zone, SelectableWidget):
         self._padding = self.style["padding"]
         self._has_locked.text = False  # TODO : remove ?
 
-        self.line_selections = Layer(self, _LineSelection, name="line_selections", touchable=False, sort_by_pos=True)
+        self.line_selections = Layer(self, _LineSelection, touchable=False, sort_by_pos=True)
         self.lines = Layer(self, _Line, name="lines", default_sortkey=lambda line: line.line_index)
         self.set_text(text)
 
@@ -513,7 +513,8 @@ class Text(Zone, SelectableWidget):
     def _add_child(self, child):
 
         super()._add_child(child)
-        self._pack()
+        if isinstance(child, _Line):
+            self._pack()
 
     def _cut_text(self, text):
 
@@ -787,7 +788,8 @@ class Text(Zone, SelectableWidget):
             return
 
         for line in self.lines:
-            line.handle_unselect()
+            if line.is_selected:
+                line.handle_unselect()
 
 
 class DynamicText(Text, Runable):

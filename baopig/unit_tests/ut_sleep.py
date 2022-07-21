@@ -146,7 +146,7 @@ class UT_Sleep_Zone(Zone):
             else:
                 clicked_button.text_widget.set_text("state:RED")
             original.color.h = (original.color.h + 120) % 360
-            original.paint()
+            original.send_paint_request()
 
         Button(z3, text="state:RED", width="25%", ref=b3, refloc="topright", command=toggle_color)
 

@@ -9,7 +9,7 @@ class Entry(LineEdit, Validable):
     An Entry is a LineEdit who can be validated
     """
 
-    def __init__(self, parent, entry_type, command=None, *args, validate_on_defocus=True, **kwargs):
+    def __init__(self, parent, entry_type, command=None, validate_on_defocus=True, **kwargs):
 
         """
 
