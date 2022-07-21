@@ -26,8 +26,8 @@ class UT_LayerPack_Zone(Zone):
 
         Button(classiclayer_tester, "ADD", command=add)
         b = Button(classiclayer_tester, "PACK", command=self.package.pack)
-        b.set_window((b.rect.left, b.rect.top, b.rect.w, 20),
-                     follow_movements=True)  # TODO : remove, here for some tests
+        # b.set_window((b.rect.left, b.rect.top, b.rect.w, 20),
+        #              follow_movements=True)  # DONE : remove, here for some tests
         Indicator(b, "NOTE : By default, pack() sorts widgets by position", loc="bottom", max_width=200)
         Button(classiclayer_tester, "CLEAR", command=self.package.default_layer.clear)
         safe_layer.pack(axis="horizontal")

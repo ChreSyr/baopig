@@ -6,36 +6,26 @@ from baopig import *
 class SelectableRectangle(Rectangle, SelectableWidget):
 
     def __init__(self, parent, pos):
-
         Rectangle.__init__(self, parent, color="blue", size=(30, 30), pos=pos)
         SelectableWidget.__init__(self, parent)
-        self.hightlighter = None
-        self.timer = None
+        self._hightlighter_ref = Highlighter(self.parent, self, border_width=2, layer_level=2).get_weakref()
+        self.hightlighter.sleep()
+        self.timer = Timer(.4, self.hightlighter.sleep)
+
+    hightlighter = property(lambda self: self._hightlighter_ref())
 
     def handle_select(self):
-
         self.set_color("blue4")
         self.highlight("green")
 
     def handle_unselect(self):
-
         self.set_color("blue")
         self.highlight("red")
 
     def highlight(self, color):
-
-        def timeout():
-            if self.hightlighter:
-                self.hightlighter.kill()
-            self.hightlighter = None
-
-        if self.hightlighter is not None:
-            if self.hightlighter.color == Color(color):
-                return
-            self.timer.cancel()
-            timeout()
-        self.hightlighter = Highlighter(self.parent, self, border_color=color, border_width=2)
-        self.timer = Timer(.4, timeout)
+        self.timer.cancel()
+        self.hightlighter.wake()
+        self.hightlighter.set_border_color(color)
         self.timer.start()
 
 

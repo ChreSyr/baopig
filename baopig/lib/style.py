@@ -309,7 +309,7 @@ class ThemeColors:
     def __init__(self, **kwargs):
 
         self.border = (0, 0, 0)
-        self.content = (0, 100, 125)
+        self.content = (0, 213, 240)
         self.font = (0, 0, 0)
         self.font_opposite = (255, 255, 255)
         self.scene_background = (170, 170, 170)

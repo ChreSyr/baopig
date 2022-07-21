@@ -44,9 +44,8 @@ class SelectableWidget(Widget):
         assert self not in self.selector.selectables
         self.selector.selectables.add(self)
 
-        self.signal.NEW_SURFACE.connect(self.handle_unselect, owner=self)
-        # self.signal.MOTION.connect(self.handle_unselect, owner=self)
-        self.signal.HIDE.connect(self.handle_unselect, owner=self)
+        self.signal.HIDE.connect(self.unselect, owner=None)
+        self.signal.SLEEP.connect(self.unselect, owner=None)
         self.signal.KILL.connect(lambda: self.selector.selectables.remove(self), owner=self)
 
     is_selected = property(lambda self: self._is_selected)
@@ -66,13 +65,11 @@ class SelectableWidget(Widget):
 
         assert self.is_alive
         if self.abs_hitbox.colliderect(selection_rect.abs_rect):
-            self._is_selected = True
-            self.handle_select()
+            if not self._is_selected:
+                self._is_selected = True
+                self.handle_select()
         else:
-            if not self.is_selected:
-                return
-            self._is_selected = False
-            self.handle_unselect()
+            self.unselect()
 
     def get_selected_data(self):
 
@@ -89,9 +86,13 @@ class SelectableWidget(Widget):
         Called when the selection rect don't collide anymore with this SelectableWidget
         """
 
+    def unselect(self):
+        if self.is_selected:
+            self._is_selected = False
+            self.handle_unselect()
+
 
 class SelectionRect(Rectangle):
-
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(
         color="theme-color-selection_rect",

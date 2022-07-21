@@ -19,8 +19,8 @@ class TextEdit(ScrollView, Selector):
     STYLE = ScrollView.STYLE.substyle()
     STYLE.modify(
         background_color="theme-color-font_opposite",
-        height=15,
-        padding=(0, 0, 5, 0),
+        height=45,
+        padding=2,
         width=100,
     )
 
@@ -456,13 +456,12 @@ class Cursor(Rectangle, RepetivelyAnimated):
 
     def write(self, string):
 
+        if self.text_widget.is_selected:
+            self.parent.del_selection_data()
+
         # Letters (lowercase and uppercase)
         text = self.text_widget.text[:self.char_index] + string + self.text_widget.text[self.char_index:]
         if self.parent.accept(text):
-
-            if self.text_widget.is_selected:
-                self.parent.del_selection_data()
-
             self.line.insert(self.char_index, string)
             self.config(text_index=self.text_index + len(string))
             # TODO : solve : when a TextEdit is resized, the cursor does not follow its text

@@ -5,32 +5,32 @@ from baopig.lib import Rectangle, Image, Container
 from .text import Text
 
 
-class ButtonText(Text):
-    STYLE = Text.STYLE.substyle()
-    STYLE.modify(
-        align_mode="left",
-        loc="center",
-        refloc="center",
-    )
+class AButton_FocusSail(Rectangle):
+    STYLE = Rectangle.STYLE.substyle()
+    STYLE.modify(width="100%", height="100%", color=(0, 0, 0, 0), border_color="theme-color-border", border_width=1)
 
-    def __init__(self, button, text, **kwargs):
+    def __init__(self, abutton):
+        Rectangle.__init__(self, abutton, visible=False, layer=abutton.behind_content)
 
-        assert isinstance(button, AbstractButton)
 
-        Text.__init__(self, button, text=text, selectable=False, **kwargs)
+class AButton_HoverSail(Rectangle):
+    STYLE = Rectangle.STYLE.substyle()
+    STYLE.modify(width="100%", height="100%")
+    STYLE.create(alpha=63)
 
-        assert self.width_is_adaptable
+    def __init__(self, abutton):
+        Rectangle.__init__(self, abutton, visible=False, layer=abutton.above_content)
+        self.set_color((0, 0, 0, self.style["alpha"]))
 
-        content_rect = button.content_rect
-        if content_rect.height < self.font.height:
-            self.font.config(height=content_rect.height)  # changing the font will automatically update the text
-        while self.rect.width > content_rect.width or self.rect.height > content_rect.height:
-            if self.font.height == 2:
-                break
-                # raise ValueError(f"This text is too long for the text area : {text} (area={content_rect})")
-            self.font.config(height=self.font.height - 1)  # changing the font will automatically update the text
-        # if self.rect.height > content_rect.height:
-        #     self.resize_height(content_rect.height)
+
+class AButton_LinkSail(Rectangle):
+    STYLE = Rectangle.STYLE.substyle()
+    STYLE.modify(width="100%", height="100%")
+    STYLE.create(alpha=63)
+
+    def __init__(self, abutton):
+        Rectangle.__init__(self, abutton, visible=False, layer=abutton.behind_content)
+        self.set_color((0, 0, 0, self.style["alpha"]))
 
 
 class AbstractButton(Container, Focusable, Validable):
@@ -56,6 +56,9 @@ class AbstractButton(Container, Focusable, Validable):
     )
     STYLE.create(
         catching_errors=False,
+        focus_class=AButton_FocusSail,
+        hover_class=AButton_HoverSail,
+        link_class=AButton_LinkSail,
     )
 
     def __init__(self, parent, command=None, hover=None, link=None, focus=None, **kwargs):
@@ -75,46 +78,27 @@ class AbstractButton(Container, Focusable, Validable):
         self.above_content = Layer(self, weight=2)
 
         void = Object(show=lambda: None, hide=lambda: None)
-        self._hover_sail_ref = lambda: void
-        self._link_sail_ref = lambda: void
-        self._focus_sail_ref = lambda: void
 
         self.set_style_for(Rectangle, width="100%", height="100%")
         self.set_style_for(Image, width="100%", height="100%")  # TODO : implement (this is not working)
 
-        if hover != -1:
-            if hover is None:
-                hover = 63
-            if isinstance(hover, int):
-                self._hover_sail_ref = Rectangle(
-                    self, color=(0, 0, 0, hover), visible=False,
-                    layer=self.above_content, name=self.name + ".hover_sail",
-                ).get_weakref()
-            else:
-                self._hover_sail_ref = Image(
-                    self, hover, visible=False, layer=self.above_content, name=self.name + ".hover_sail",
-                ).get_weakref()
+        hover_class = self.style["hover_class"]
+        if hover_class:
+            self._hover_sail_ref = hover_class(self).get_weakref()
+        else:
+            self._hover_sail_ref = lambda: void
 
-        if focus != -1:
-            if focus is None:
-                self._focus_sail_ref = Rectangle(
-                    self, color=(0, 0, 0, 0), border_color="theme-color-border", border_width=1, visible=False,
-                    layer=self.behind_content, name=self.name + ".focus_sail",
-                ).get_weakref()
-            else:  # TODO : implement properly
-                self._focus_sail_ref = Image(
-                    self, focus, visible=False, layer=self.behind_content, name=self.name + ".focus_sail"
-                ).get_weakref()
+        focus_class = self.style["focus_class"]
+        if focus_class:
+            self._focus_sail_ref = focus_class(self).get_weakref()
+        else:
+            self._focus_sail_ref = lambda: void
 
-        if link != -1:
-            if link is None:
-                self._link_sail_ref = Rectangle(
-                    self, color=(0, 0, 0, 63), visible=False, layer=self.behind_content, name=self.name + ".link_sail",
-                ).get_weakref()
-            else:
-                self._link_sail_ref = Image(
-                    self, link, visible=False, layer=self.behind_content, name=self.name + ".link_sail"
-                ).get_weakref()
+        link_class = self.style["link_class"]
+        if link_class:
+            self._link_sail_ref = link_class(self).get_weakref()
+        else:
+            self._link_sail_ref = lambda: void
 
         self._disable_sail_ref = Rectangle(  # TODO : same as hover, focus and link
             self, color=(255, 255, 255, 128), visible=False, layer=self.above_content, name=self.name + ".disable_sail",
@@ -207,6 +191,34 @@ class AbstractButton(Container, Focusable, Validable):
             self.disable_sail.show()
 
 
+class Button_Text(Text):
+    STYLE = Text.STYLE.substyle()
+    STYLE.modify(
+        align_mode="left",
+        loc="center",
+        refloc="center",
+    )
+
+    def __init__(self, button, text, **kwargs):
+
+        assert isinstance(button, AbstractButton)
+
+        Text.__init__(self, button, text=text, selectable=False, **kwargs)
+
+        assert self.width_is_adaptable
+
+        content_rect = button.content_rect
+        if content_rect.height < self.font.height:
+            self.font.config(height=content_rect.height)  # changing the font will automatically update the text
+        while self.rect.width > content_rect.width or self.rect.height > content_rect.height:
+            if self.font.height == 2:
+                break
+                # raise ValueError(f"This text is too long for the text area : {text} (area={content_rect})")
+            self.font.config(height=self.font.height - 1)  # changing the font will automatically update the text
+        # if self.rect.height > content_rect.height:
+        #     self.resize_height(content_rect.height)
+
+
 class Button(AbstractButton):
     """
     Un Button est un bouton classique, avec un text
@@ -215,10 +227,10 @@ class Button(AbstractButton):
 
     STYLE = AbstractButton.STYLE.substyle()
     STYLE.create(
-        text_class=ButtonText,
+        text_class=Button_Text,
         text_style={},
     )
-    STYLE.set_constraint("text_class", lambda val: issubclass(val, ButtonText))
+    STYLE.set_constraint("text_class", lambda val: issubclass(val, Button_Text))
 
     text = property(lambda self: self.text_widget.text)
 

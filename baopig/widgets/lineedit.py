@@ -3,7 +3,7 @@ import pygame
 from .textedit import TextEdit
 
 
-class LineEdit(TextEdit):
+class LineEdit(TextEdit):  # TODO : mouse's double click at text_widget's right -> select the text
     """
     LineEdit is a TextEdit who only contains 1 line
     """

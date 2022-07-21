@@ -85,7 +85,7 @@ app.launch()"""
                                     pos=(0, self.menu_zone.rect.bottom + 10), name="try_it_yourself")
         code_window = Zone(self.try_it_yourself, size=("100%", 550))
         self.try_it_yourself.code = TextEdit(code_window, text=code, font_file="monospace", width="100%", height=550,
-                                             padding=(0, 0, 30, 60))
+                                             padding=(2, 0, 30, 60))
         self.try_it_yourself.console = Text(self.try_it_yourself, font_file="monospace",
                                             background_color=(211, 189, 189))
 

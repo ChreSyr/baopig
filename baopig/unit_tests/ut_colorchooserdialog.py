@@ -1,5 +1,6 @@
 
 from baopig import *
+from baopig.prefabs.colorchooserdialog import ColorChooserDialog
 
 
 class UT_ColorChooserDialog_Zone(Zone):

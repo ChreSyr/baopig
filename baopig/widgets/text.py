@@ -482,6 +482,8 @@ class Text(Zone, SelectableWidget):
         self._padding = self.style["padding"]
         self._has_locked.text = False  # TODO : remove ?
 
+        self.signal.NEW_SURFACE.connect(self.unselect, owner=None)
+
         self.line_selections = Layer(self, _LineSelection, touchable=False, sort_by_pos=True)
         self.lines = Layer(self, _Line, name="lines", default_sortkey=lambda line: line.line_index)
         self.set_text(text)

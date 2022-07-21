@@ -20,7 +20,7 @@ class UT_TextEdit_Zone(Zone):
         z1.mirrored = TextEdit(z1, text="0123456789012345", max_width=40, pos=(10, 10), size=(100, 120))
         z1.d = DynamicText(z1, z1.mirrored.text_widget.get_text, pos=z1.mirrored.rect.topright)
 
-        text = TextEdit(z2, max_width=z2.rect.w - 20, pos=(10, 10), size=(z2.rect.w - 20, 120))
+        text = TextEdit(z2, pos=(10, 10), size=(z2.rect.w - 20, 120))
 
         Button(z2, text="RUN", sticky="topright", ref=text, command=lambda: exec(text.text), catching_errors=True)
 
@@ -33,7 +33,7 @@ class UT_TextEdit_Zone(Zone):
         Entry(z4, entry_type=int)
         Entry(z4, entry_type=float)
         Entry(z4, entry_type=str)
-        NumEntry(z4, min=0, max=10, accept_floats=True, default=5)
+        NumEntry(z4, minval=0, maxval=10, accept_floats=True, default=5)
         z4.pack()
 
 

@@ -77,6 +77,9 @@ class Application(HasStyle):
 
     def _manage_events(self):
 
+        # TODO : solve : mouse entering and leaving the display are not properly handled
+        #                      -> hovered widget may stay hovered
+
         # Events listening
         # Only apply on keyboard, mouse and application's operations
         events = pygame.event.get()

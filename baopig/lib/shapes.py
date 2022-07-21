@@ -61,12 +61,7 @@ class Rectangle(Widget):
 
     def set_border_color(self, color):
 
-        if not isinstance(color, Color):
-            color = Color(color)
-
-        assert is_color(color)
-        self._border_color = color
-
+        self._border_color = Color(color)
         self.send_paint_request()
 
     def set_border_width(self, border_width):

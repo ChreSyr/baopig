@@ -1,10 +1,9 @@
-
 import pygame
 from baopig.lib import Rectangle, Color, paint_lock
-from .slider import Slider, SliderBar, SliderBloc
-from .text import Text
-from .numentry import NumEntry
-from .dialog import Dialog, DialogFrame, DialogAnswerButton
+from baopig.widgets.slider import Slider, SliderBar, SliderBloc
+from baopig.widgets.text import Text
+from baopig.widgets.numentry import NumEntry
+from baopig.widgets.dialog import Dialog, DialogFrame, DialogAnswerButton
 
 
 class ColorSliderBloc(SliderBloc):
@@ -92,6 +91,7 @@ class ColorEntry(NumEntry):
     STYLE = NumEntry.STYLE.substyle()
     STYLE.modify(
         loc="midleft",
+        padding=2,
     )
 
     def __init__(self, parent, attr, maxval, y):

@@ -143,7 +143,6 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
             return
 
         with paint_lock:
-            self.pre_open()
             scene_to_close = app.focused_scene
             app._focused_scene = self
             if scene_to_close:
