@@ -9,7 +9,8 @@ class Image(Widget):
 
     # TODO : self.tiled instead of parameter in resize()
 
-    def __init__(self, parent, image, w=None, h=None, tiled=False, **kwargs):  # TODO : rework w & h params
+    def __init__(self, parent, image, w=None, h=None, tiled=False, smoothscale=True,
+                 **kwargs):  # TODO : rework w & h params
         """
         Cree une image
 
@@ -37,6 +38,7 @@ class Image(Widget):
 
         self._original = image
         self._tiled = tiled
+        self._smoothscale = smoothscale
 
     def _update_surface_from_resize(self, asked_size):
 
@@ -44,7 +46,10 @@ class Image(Widget):
             super()._update_surface_from_resize(asked_size)
 
         else:
-            self.set_surface(pygame.transform.scale(self._original, asked_size))
+            if self._smoothscale:
+                self.set_surface(pygame.transform.smoothscale(self._original, asked_size))
+            else:
+                self.set_surface(pygame.transform.scale(self._original, asked_size))
 
     def collidemouse_alpha(self):  # TODO
         raise NotImplemented
@@ -65,3 +70,7 @@ class Image(Widget):
                 row = self.surface.subsurface((0, 0, width, original_h)).copy()
                 for i in range(int(height / original_h)):
                     self.surface.blit(row, (0, original_h * (i + 1)))
+
+    def set_smoothscale(self, boolean):
+
+        self._smoothscale = boolean
