@@ -161,25 +161,40 @@ class Layer(Communicative):
         self.clear()
         self.layers_manager._remove_layer(self)
 
+    def move_at_bottom(self, widget):
+        self.overlay(0, widget)
+
+    def move_on_top(self, widget):
+        self.overlay(len(self) - 1, widget)
+
     def move_widget1_behind_widget2(self, widget1, widget2):
-        assert widget1 in self._widgets, "{} not in {}".format(widget1, self)
-        assert widget2 in self._widgets, "{} not in {}".format(widget2, self)
-        self.overlay(self.index(widget2), widget1)
+        assert widget1 in self._widgets, f"{widget1} not in {self}"
+        assert widget2 in self._widgets, f"{widget2} not in {self}"
+        w1_index = self.index(widget1)
+        w2_index = self.index(widget2)
+        if w1_index < w2_index:
+            if w1_index + 1 == w2_index:
+                return
+            w2_index -= 1
+        self.overlay(w2_index, widget1)
 
     def move_widget1_in_front_of_widget2(self, widget1, widget2):
-        assert widget1 in self, "{} not in {}".format(widget1, self)
-        assert widget2 in self, "{} not in {}".format(widget2, self)
-        self.overlay(self.index(widget2) + 1, widget1)
-        # self._remove(widget1)
-        # super().insert(self.index(widget2) + 1, widget1)
-        # self._warn_change(widget1.hitbox)
+        assert widget1 in self, f"{widget1} not in {self}"
+        assert widget2 in self, f"{widget2} not in {self}"
+        w1_index = self.index(widget1)
+        w2_index = self.index(widget2)
+        if w1_index > w2_index:
+            if w1_index - 1 == w2_index:
+                return
+            w2_index += 1
+        self.overlay(w2_index + 1, widget1)
 
     def overlay(self, index, widget):
         """
         Move a widget at index
         """
 
-        assert widget in self._widgets
+        assert widget in self._widgets, f"{widget} not in {self}"
         self._widgets.remove(widget)
         self._widgets.insert(index, widget)
         self.container._warn_change(widget.hitbox)
