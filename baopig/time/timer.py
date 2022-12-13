@@ -3,7 +3,7 @@
 import time
 import threading
 from baopig.pybao.objectutilities import PrefilledFunction
-from baopig.communicative import Communicative
+from baopig.communicative import Communicative, LOGGER
 from .utilities import *
 
 
@@ -103,7 +103,9 @@ class Timer(Communicative):
         if self in _running_timers:
             raise PermissionError("The timer has already started")
         if _running_timers.manager is None:
-            raise PermissionError("Must launch an Application before starting a Timer")
+            # TODO
+            LOGGER.debug("Timer started before the application's launch")
+            # raise PermissionError("Must launch an Application before starting a Timer")
 
         with timer_lock:
             self._start_time = time.time()

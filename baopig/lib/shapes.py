@@ -2,7 +2,6 @@
 
 import pygame
 
-from baopig.pybao.issomething import *
 from .utilities import Color
 from .widget import Widget
 
@@ -194,7 +193,7 @@ class Line(Widget):
 
 class Circle(Widget):
 
-    def __init__(self, parent, color, center, radius, border_width=0, **kwargs):
+    def __init__(self, parent, color, radius, border_width=0, **kwargs):
 
         if isinstance(radius, float):
             radius = int(radius)
@@ -204,7 +203,7 @@ class Circle(Widget):
             raise NotImplemented
         surf = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(surf, color, (radius, radius), radius, border_width)
-        Widget.__init__(self, parent, surface=surf, center=center, **kwargs)
+        Widget.__init__(self, parent, surface=surf, **kwargs)
 
         self._color = color
         self._radius = radius

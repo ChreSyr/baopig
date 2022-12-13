@@ -233,7 +233,8 @@ class _Mouse(Communicative):
         if event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN):
 
             if event.button not in (1, 2, 3, 4, 5):
-                LOGGER.warning(f"Unknown button id : {event.button} (event : {event})")
+                if event.button not in (6, 7, 8, 10):  # TODO : what are these events ?
+                    LOGGER.warning(f"Unknown button id : {event.button} (event : {event})")
                 return
 
             # if self._pressed_buttons[event.button] is False:
