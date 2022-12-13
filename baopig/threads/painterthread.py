@@ -67,7 +67,7 @@ class PainterThread(ExtraThread):
     def screenshot(self):
 
         os.makedirs(self.out_directory, exist_ok=True)
-        screenshot = self.app.display.copy()
+        screenshot = self.app.focused_scene.surface.copy()
         name = time.strftime("%Y.%m.%d-%Hh%M-%S.png", time.localtime())
         print(self.out_directory + name)
         pygame.image.save(screenshot, self.out_directory + name)
