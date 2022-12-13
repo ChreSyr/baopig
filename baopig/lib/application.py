@@ -246,17 +246,16 @@ class Application(HasStyle):
             self._current_mode = mode
             self._current_size = size
 
-    def set_debug(self, **kwargs):
+    def set_debug(self, averagefps=None, launchtime=None):
         """
-        arguments must be True or False
-        keywords must be from this list :
-            averagefps, launchtime
+        arguments must be booleans
         """
 
-        for kw, arg in kwargs.items():
-            if arg is not None:
-                assert hasattr(self, "_debug_" + kw)
-                self.__setattr__("_debug_" + kw, arg)
+        if averagefps is not None:
+            self._debug_averagefps = bool(averagefps)
+
+        if launchtime is not None:
+            self._debug_launchtime = bool(launchtime)
 
     def exit(self, reason=None):
 
