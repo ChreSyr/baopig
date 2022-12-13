@@ -158,8 +158,7 @@ class Container(ContainerDoc, Widget):
             self.set_background_image(background_image)
         self.signal.RESIZE.connect(self.handle_resize, owner=None)
 
-        # self._flip()  # TODO : remove flip_all at application launch, because a Zone created
-        #                   during the app lifetime is not correctly printed
+        self._rect_to_update = pygame.Rect(self.auto_rect)
 
     children = property(lambda self: self._children_manager.all)
     background_color = property(lambda self: self._background_color)
@@ -336,10 +335,10 @@ class Container(ContainerDoc, Widget):
         rect = self.auto_hitbox.clip(rect)
         if rect.size == (0, 0):
             return
-        try:
-            self._rect_to_update.union_ip(rect)
-        except AttributeError:
+        if self._rect_to_update is None:
             self._rect_to_update = pygame.Rect(rect)  # from ProtectedHitbox to pygame.Rect
+        else:
+            self._rect_to_update.union_ip(rect)
 
     def _warn_parent(self, rect):
         """Request updates at rects referenced by self"""
