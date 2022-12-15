@@ -1,6 +1,5 @@
 
 
-# TODO : move to prefabs folder
 from baopig import *
 
 
