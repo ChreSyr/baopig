@@ -32,9 +32,6 @@ class Dictionnary(dict):
                 raise ConnectionError("Translation impossible : "
                                       "baopig.googletrans.lang_manager is not connected to internet")
 
-            old_cursor = bp.pygame.mouse.get_cursor()
-            bp.pygame.mouse.set_cursor(bp.SYSTEM_CURSOR_WAIT)
-
             try:
                 import time
                 start_time = time.time()
@@ -43,14 +40,11 @@ class Dictionnary(dict):
                                                               src=lang_manager.ref_language, dest=lang_id)
 
                 end_time = time.time()
-                bp.LOGGER.info(f"Language loading time : {end_time - start_time}")
+                bp.LOGGER.fine(f"Language loading time : {end_time - start_time}")
 
             except Exception as e:
                 bp.LOGGER.warning(e)
                 raise e
-
-            finally:  # TODO : set_cursor est géré par AddLangBtn.handle_validate()
-                bp.pygame.mouse.set_cursor(old_cursor)
 
             for text_id, translation in zip(dicts[lang_manager.ref_language].keys(), translations):
                 self[text_id] = translation
