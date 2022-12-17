@@ -42,5 +42,9 @@ setup(
     packages=["baopig"],
     package_data={'baopig': ['*', '*/*', '*/*/*', '*/*/*/*', '*/*/*/*/*', '*/*/*/*/*/*'], },  # TODO : find a better way
     include_package_data=True,
-    install_requires=["pygame"]
+    install_requires=[
+        "pygame",
+        "httpcore",
+        "httpx"
+    ]
 )

@@ -20,7 +20,7 @@ class BaopigVersion(tuple):
     patch = property(lambda self: self[2])
 
 
-version = BaopigVersion(0, 19, 0)
+version = BaopigVersion(0, 20, 0)
 
 if __name__ == "__main__":
     # TODO : try to access baopig.version without creating application, threads...
