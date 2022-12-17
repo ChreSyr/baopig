@@ -3,29 +3,16 @@ import sys
 import importlib
 from httpcore import ConnectError
 import baopig as bp
-from .constants import LANGUAGES
 from .client import Translator
-
-
-class Dictionnaries(dict):
-
-    def add(self, lang_id, text):
-        raise NotImplemented
-
-        # text_id = len(self[lang_id])
-        # self[lang_id][text_id] = text
-        # return text_id
 
 
 class Dictionnary(dict):
 
-    def __init__(self, lang_id, translated_lang_name=None):
+    def __init__(self, lang_id):
 
         dict.__init__(self)
 
         self.lang_id = lang_id
-        self.lang_name_in_english = LANGUAGES[lang_id]
-        self.translated_lang_name = translated_lang_name  # TODO : LANGUAGES_TRANSLATED
 
         assert lang_id not in dicts
         dicts[lang_id] = self
@@ -34,10 +21,39 @@ class Dictionnary(dict):
 
             module = importlib.import_module(f"lang.dict_{lang_id}")
 
-            self.translated_lang_name = module.translated_lang_name
-
             for text_id, text in enumerate(module.texts):
                 self[text_id] = text
+
+        else:
+            if self.lang_id == lang_manager.ref_language:
+                raise FileNotFoundError("The dictionnary for the ref language has not been found")
+
+            if not lang_manager.is_connected_to_network:
+                raise ConnectionError("Translation impossible : "
+                                      "baopig.googletrans.lang_manager is not connected to internet")
+
+            old_cursor = bp.pygame.mouse.get_cursor()
+            bp.pygame.mouse.set_cursor(bp.SYSTEM_CURSOR_WAIT)
+
+            try:
+                import time
+                start_time = time.time()
+
+                translations = translator.optimized_translate(list(dicts[lang_manager.ref_language].values()),
+                                                              src=lang_manager.ref_language, dest=lang_id)
+
+                end_time = time.time()
+                bp.LOGGER.info(f"Language loading time : {end_time - start_time}")
+
+            except Exception as e:
+                bp.LOGGER.warning(e)
+                raise e
+
+            finally:  # TODO : set_cursor est géré par AddLangBtn.handle_validate()
+                bp.pygame.mouse.set_cursor(old_cursor)
+
+            for text_id, translation in zip(dicts[lang_manager.ref_language].keys(), translations):
+                self[text_id] = translation
 
     def save(self):
 
@@ -46,21 +62,14 @@ class Dictionnary(dict):
         with open(absfilename, 'w', encoding='utf8') as writer:
 
             writer.write('texts = [\n')
-            # writer.write(f'    "{self[0]}", "{self[1]}", "{self[2]}",\n')
+            writer.write(f'    "{self[0]}", "{self[1]}", "{self[2]}",\n')
 
             for i, text in self.items():
                 if i > 2:
                     text = text.replace('\n', '\\n')
                     writer.write(f'    "{text}",\n')
-                elif i == 0:
-                    writer.write(f'    "{text}",')
-                elif i == 1:
-                    writer.write(f' "{text}",')
-                elif i == 2:
-                    writer.write(f' "{text}",\n')
 
-            writer.write(']\n')
-            writer.write(f'translated_lang_name = "{self.translated_lang_name}"')
+            writer.write(']')
 
 
 class LangManager(bp.Communicative):
@@ -114,36 +123,7 @@ class LangManager(bp.Communicative):
             return
 
         if lang_id not in dicts:
-
-            if not self.is_connected_to_network:
-                raise ConnectionError("Translation impossible : "
-                                      "baopig.googletrans.lang_manager is not connected to internet")
-
-            old_cursor = bp.pygame.mouse.get_cursor()
-            bp.pygame.mouse.set_cursor(bp.SYSTEM_CURSOR_WAIT)
-
-            try:
-                import time
-                start_time = time.time()
-
-                translations = translator.optimized_translate(list(dicts[self._ref_language].values()),
-                                                              src=self._ref_language, dest=lang_id)
-
-                end_time = time.time()
-                bp.LOGGER.info(f"Language loading time : {end_time - start_time}")
-
-            except Exception as e:
-                bp.LOGGER.warning(e)
-                raise e
-
-            finally:
-                bp.pygame.mouse.set_cursor(old_cursor)
-
-            new_dict = Dictionnary(lang_id)
-
-            for text_id, translation in zip(dicts[self._ref_language].keys(), translations):
-                if translation is not None:
-                    new_dict[text_id] = translation
+            Dictionnary(lang_id)
 
         self._language = lang_id
 
@@ -187,34 +167,36 @@ class OptimizedTranslator(Translator):
 
         if isinstance(text, list):
 
-            sep = '¸'
-
+            sep = '\n'
+            sep_transition = '▓'
+            sep_encoded = '░'
             ln = len(text)
-            joined = sep.join(text)
+            joined = sep_transition.join(text)
+            joined = joined.replace(sep, sep_encoded)
+            joined = joined.replace(sep_transition, sep)
             joined_translated = self.optimized_translate(joined, dest=dest, src=src)
-            result = joined_translated.split(sep)
-            if ln != len(result):
-                for t in text:
-                    if sep in t:
-                        raise ValueError(f"Cannot translate a text containing the {sep} symbol")
-                bp.LOGGER.warning("Translation optimization has failed")
-                result = tuple(self.optimized_translate(t, src=src, dest=dest) for t in text)
-            # for t in result:
-            #     print(t)
-            return result
+            joined_translated = joined_translated.replace(sep, sep_transition)
+            joined_translated = joined_translated.replace(sep_encoded, sep)
+            result = joined_translated.split(sep_transition)
+            if ln == len(result):
+                return result
+            else:
+                bp.LOGGER.info("Translation optimization has failed")
+
+            return tuple(self.optimized_translate(t, src=src, dest=dest) for t in text)
 
         elif not text:
-            return None
+            return ""
 
         try:
             data, response = self._translate(text, dest, src, None)
 
         except ConnectError:
             bp.LOGGER.warning(f"Couldn't translate {text} from {src} to {dest}")
-            return None
+            return ""
 
         # this code will be updated when the format is changed.
-        return ''.join([d[0] for d in data[0]])
+        return ''.join([d[0] if d[0] else '' for d in data[0]])
 
     def test_connection(self):
 
@@ -226,6 +208,6 @@ class OptimizedTranslator(Translator):
             return True
 
 
-dicts = Dictionnaries()
+dicts = {}
 lang_manager = LangManager()
 translator = OptimizedTranslator()
