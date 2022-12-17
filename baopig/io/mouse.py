@@ -233,7 +233,7 @@ class _Mouse(Communicative):
         if event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN):
 
             if event.button not in (1, 2, 3, 4, 5):
-                if event.button not in (6, 7, 8, 10):  # TODO : what are these events ?
+                if event.button not in (6, 7, 8, 9, 10):  # TODO : what are these events ?
                     LOGGER.warning(f"Unknown button id : {event.button} (event : {event})")
                 return
 
@@ -292,27 +292,32 @@ class _Mouse(Communicative):
                     self.clic_history[-3].button == self.clic_history[-1].button == 1 and \
                     self.clic_history[-3].pos == self.clic_history[-1].pos
 
-            if event.button == 1:
                 # UPDATING CLICKS, FOCUSES, HOVERS...
 
-                def first_linkable_in_family_tree(widget):
-                    # The recursivity always ends because a Scene is a LinkableByMouse
-                    if isinstance(widget, LinkableByMouse) and widget.is_touchable_by_mouse:
-                        return widget
-                    return first_linkable_in_family_tree(widget.parent)
+                if event.button in (1, 2, 3):
 
-                def first_focusable_in_family_tree(widget):
-                    # The recursivity always ends because a Scene is a Focusable
-                    if isinstance(widget, Focusable) and widget.is_touchable_by_mouse:
-                        return widget
-                    return first_focusable_in_family_tree(widget.parent)
+                    def first_linkable_in_family_tree(widget):
+                        # The recursivity always ends because a Scene is a LinkableByMouse
+                        if isinstance(widget, LinkableByMouse) and widget.is_touchable_by_mouse:
+                            return widget
+                        return first_linkable_in_family_tree(widget.parent)
 
-                pointed = self._get_touched_widget()
-                linked = first_linkable_in_family_tree(pointed)
-                focused = first_focusable_in_family_tree(linked)
-                # Le focus passe avant le link
-                self._application.focused_scene.focus(focused)
-                self._link(linked)
+                    def first_focusable_in_family_tree(widget):
+                        # The recursivity always ends because a Scene is a Focusable
+                        if isinstance(widget, Focusable) and widget.is_touchable_by_mouse:
+                            return widget
+                        return first_focusable_in_family_tree(widget.parent)
+
+                    pointed = self._get_touched_widget()
+                    linked = first_linkable_in_family_tree(pointed)
+
+                    linked.handle_mousebuttondown(event)
+
+                    if event.button == 1:
+                        focused = first_focusable_in_family_tree(linked)
+                        # Le focus passe avant le link
+                        self._application.focused_scene.focus(focused)
+                        self._link(linked)
 
         elif event.type == pygame.MOUSEBUTTONUP:
 

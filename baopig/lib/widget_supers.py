@@ -113,6 +113,9 @@ class LinkableByMouse(LinkableByMouseDoc, HoverableByMouse):
     def handle_link_motion(self, rel):
         """Stuff to do when the widget'link has changed"""
 
+    def handle_mousebuttondown(self, event):
+        """Stuff to do when the mouse clicks on the widget - called before handle_link()"""
+
     def handle_unlink(self):
         """Stuff to do when the widget's link is over"""
 
