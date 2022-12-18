@@ -45,6 +45,6 @@ setup(
     install_requires=[
         "pygame",
         "httpcore",
-        "httpx"
+        "httpx[http2]"
     ]
 )
