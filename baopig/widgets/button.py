@@ -147,6 +147,7 @@ class AbstractButton(Container, Focusable, Validable):
 
         if key == pygame.K_RETURN:
             self.validate()
+            self.link_sail.show()
         else:
             super().handle_keydown(key)
 
@@ -179,7 +180,6 @@ class AbstractButton(Container, Focusable, Validable):
     def handle_validate(self):
 
         self.command()
-        self.link_sail.show()  # For validation via RETURN key
 
     def set_touchable_by_mouse(self, val):
 
