@@ -35,8 +35,7 @@ class UTMenu_Scene(Scene):
         Text(self, text="Which class do you want to test ?", row=1)
         Text(self, text="", row=2)
 
-        back = Button(self, "Menu", command=PrefilledFunction(app.open, "PresentationScene"), col=1)
-        back.set_pos(bottomright=self.rect.bottomright)
+        Button(self, "Menu", command=PrefilledFunction(app.open, "PresentationScene"), col=1)
 
         def get_ut_filenames():
             import os
@@ -54,7 +53,12 @@ class UTMenu_Scene(Scene):
 
                 def open_testerscene(zc):
                     TesterScene(app, zc).open()
+
                 Button(self, row=len(self.default_layer), text=zone_class.__name__[3:-5],  # discards 'UT_' and '_Zone'
                        command=PrefilledFunction(open_testerscene, zone_class), catching_errors=False)  # TODO : True
             except AttributeError:
                 pass
+
+
+if __name__ == "__main__":
+    Application().launch()
