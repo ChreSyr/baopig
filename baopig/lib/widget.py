@@ -679,10 +679,21 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
             self._parent._warn_change(rect)
 
     def set_pos(self, **kwarg):
-        """ Example : my_widget.set_pos(midtop=(50, 10) """
+        """ Example : my_widget.set_pos(midtop=(50, 10)) """
 
         assert len(kwarg) == 1
-        self._move_at(*kwarg.popitem())
+
+        key, value = kwarg.popitem()
+
+        simul = pygame.Rect(self.rect)
+        setattr(simul, self.pos_manager.location, self.pos_manager.asked_pos)
+        old = getattr(simul, key)
+
+        if old == value:
+            return
+
+        setattr(simul, key, value)
+        self.pos_manager.config(pos=getattr(simul, self.pos_manager.location))
 
     def set_window(self, window, follow_movements):  # TODO : refed from self
         """window is a rect relative to the parent
