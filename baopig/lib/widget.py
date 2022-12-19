@@ -685,15 +685,17 @@ class HasProtectedHitbox(Widget_VisibleSleepy, HasStyle, TouchableByMouse):
 
         key, value = kwarg.popitem()
 
-        simul = pygame.Rect(self.rect)
-        setattr(simul, self.pos_manager.location, self.pos_manager.asked_pos)
-        old = getattr(simul, key)
-
-        if old == value:
-            return
-
-        setattr(simul, key, value)
-        self.pos_manager.config(pos=getattr(simul, self.pos_manager.location))
+        old_value = getattr(self.rect, key)
+        if isinstance(value, (int, float)):
+            movement = value - old_value
+            if key in ("x", "centerx", "left", "right"):
+                self.move(dx=movement)
+            else:
+                self.move(dy=movement)
+        else:
+            old_value = pygame.Vector2(old_value)
+            movement = value - old_value
+            self.move(*movement)
 
     def set_window(self, window, follow_movements):  # TODO : refed from self
         """window is a rect relative to the parent
