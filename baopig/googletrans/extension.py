@@ -19,7 +19,12 @@ class Dictionnary(dict):
 
         if os.path.exists(f"{os.path.abspath(os.path.dirname(sys.argv[0]))}{os.sep}lang{os.sep}dict_{lang_id}.py"):
 
-            module = importlib.import_module(f"lang.dict_{lang_id}")
+            import pathlib
+            file_path = f"{pathlib.Path.cwd()}{os.sep}lang{os.sep}dict_{lang_id}.py"
+            file_name = f"dict_{lang_id}"
+            spec = importlib.util.spec_from_file_location(file_name, file_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
 
             for text_id, text in enumerate(module.texts):
                 self[text_id] = text
