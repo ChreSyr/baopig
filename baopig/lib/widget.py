@@ -777,14 +777,23 @@ class HasProtectedSurface(HasProtectedHitbox):
         self._dirty = 0
         self._waiting_line = self.parent._children_to_paint
 
-        def update_size_from_askedsize():
+        def update_size_from_wake():
+
+            asked_size = self._asked_size
+            int_asked_size = self._get_asked_size()
+            self._asked_size = 0, 0
+            self.resize(*int_asked_size)
+            self._asked_size = asked_size
+
+        self.signal.WAKE.connect(update_size_from_wake, owner=self)
+
+        def update_size_from_ref_resize():
 
             asked_size = self._asked_size
             self.resize(*self._get_asked_size())
             self._asked_size = asked_size
 
-        self.signal.WAKE.connect(update_size_from_askedsize, owner=self)
-        self.pos_manager.reference.signal.RESIZE.connect(update_size_from_askedsize, owner=self)
+        self.pos_manager.reference.signal.RESIZE.connect(update_size_from_ref_resize, owner=self)
 
         def check_dirty():
             if self.dirty:
