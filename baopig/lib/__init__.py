@@ -1,5 +1,6 @@
 from .style import Theme
 from .utilities import *
+from .widget import Widget
 from .widget_supers import DraggableByMouse, Focusable, HoverableByMouse, LinkableByMouse, MaintainableByFocus, \
     RepetivelyAnimated, Runable, Validable
 from .imagewidget import Image

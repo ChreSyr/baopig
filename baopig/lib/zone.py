@@ -1,11 +1,10 @@
-
-
 import pygame
-from baopig.lib import Container, paint_lock, Widget
+from .utilities import paint_lock
+from .widget import Widget
+from .container import Container
 
 
 class Zone(Container):
-
     STYLE = Container.STYLE.substyle()
     STYLE.modify(
         width=100,
