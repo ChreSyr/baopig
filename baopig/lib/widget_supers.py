@@ -133,6 +133,9 @@ class Focusable(FocusableDoc, LinkableByMouse):
 
         self._is_focused = False
 
+        self.create_signal("FOCUS")
+        self.create_signal("DEFOCUS")
+
         self.signal.HIDE.connect(self.defocus, owner=None)
         self.signal.SLEEP.connect(self.defocus, owner=None)
 

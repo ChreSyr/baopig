@@ -112,9 +112,9 @@ class Scene(Zone, Selector, Handler_SceneOpen, Handler_SceneClose):
         self._focused_widget_ref = widget.get_weakref()  # (lambda: None) if widget is None else
 
         if old_focused is not None:
-            # old_focused.signal.DEFOCUS_.emit()
+            old_focused.signal.DEFOCUS.emit()
             old_focused.handle_defocus()
-        # widget.signal.FOCUS_.emit()
+        widget.signal.FOCUS.emit()
         widget.handle_focus()
 
     def handle_event(self, event):
