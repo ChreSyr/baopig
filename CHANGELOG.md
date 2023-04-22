@@ -1,3 +1,3 @@
-## 0.20.4 (22/04/2023)
+## 0.20.5 (22/04/2023)
 
-- Added MaintainableByFocus
+- Fixed some import issues
