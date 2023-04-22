@@ -4,7 +4,7 @@ from .extension import lang_manager
 
 class Translatable(bp.Widget):
 
-    def __init__(self, parent, text_id=None, **kwargs):
+    def __init__(self, parent, text_id, **kwargs):
         bp.Widget.__init__(self, parent, **kwargs)
 
         self.text_id = text_id
@@ -24,7 +24,7 @@ class Translatable(bp.Widget):
 
 class TranslatableText(bp.Text, Translatable):
 
-    def __init__(self, parent, text_id=None, **kwargs):
+    def __init__(self, parent, text_id, **kwargs):
         bp.Text.__init__(self, parent=parent, text=lang_manager.get_text_from_id(text_id), **kwargs)
         Translatable.__init__(self, parent, text_id=text_id)
 
@@ -55,3 +55,10 @@ class PartiallyTranslatableText(TranslatableText):
                 super().set_text(text)
         else:
             super().set_text(text)
+
+
+class TranslatableIndicator(bp.Indicator, Translatable):
+
+    def __init__(self, target, text_id, **kwargs):
+        bp.Indicator.__init__(self, target=target, text=lang_manager.get_text_from_id(text_id), **kwargs)
+        Translatable.__init__(self, self.parent, text_id=text_id)
