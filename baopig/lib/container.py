@@ -413,6 +413,14 @@ class Container(ContainerDoc, Widget):
             if background_adapt is False:
                 self.resize(*self.background_image.size)
 
+    def set_border(self, color=None, width=None):
+
+        if color is not None:
+            self._border_color = Color(color)
+        if width is not None:
+            self._border_width = int(width)
+        self._warn_change(self.auto_hitbox)
+
     def set_window(self, *args, **kwargs):
 
         super().set_window(*args, **kwargs)
