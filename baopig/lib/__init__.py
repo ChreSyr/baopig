@@ -1,7 +1,6 @@
 from .style import Theme
 from .utilities import *
-from .widget import Widget, Communicative
-from .widget_supers import DraggableByMouse, Focusable, HoverableByMouse, LinkableByMouse, \
+from .widget_supers import DraggableByMouse, Focusable, HoverableByMouse, LinkableByMouse, MaintainableByFocus, \
     RepetivelyAnimated, Runable, Validable
 from .imagewidget import Image
 from .shapes import Rectangle, Highlighter, Polygon, Line, Circle

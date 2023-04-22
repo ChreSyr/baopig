@@ -190,6 +190,45 @@ class Focusable(FocusableDoc, LinkableByMouse):
             self.scene.focus(all_focs[(all_focs.index(self) + d) % len(all_focs)])
 
 
+class MaintainableByFocus(Widget):
+    """ Class for widgets who need to be open as long as they have a focused maintainer """
+
+    def __init__(self, parent, is_valid_maintainer):
+
+        Widget.__init__(self, parent)
+
+        self._maintainer_ref = lambda: None  # this is the child that is focused
+        self.is_valid_maintainer = is_valid_maintainer
+
+    maintainer = property(lambda self: self._maintainer_ref())
+
+    def _handle_maintainer_defocus(self):
+
+        self.maintainer.signal.DEFOCUS.disconnect(self._handle_maintainer_defocus)
+
+        focused_widget = self.scene.focused_widget
+        if focused_widget is None:
+            return self.close()
+
+        if self.is_valid_maintainer(focused_widget):
+            self._maintainer_ref = focused_widget.get_weakref()
+            self.maintainer.signal.DEFOCUS.connect(self._handle_maintainer_defocus, owner=self)
+
+        else:
+            self.close()
+
+    def close(self):
+        """ Stuff to do when there is no focused maintainer anymore """
+
+    def open(self, maintainer):
+
+        if not self.is_valid_maintainer(maintainer):
+            raise PermissionError(f"Invalid maintainer : {maintainer}")
+
+        self._maintainer_ref = maintainer.get_weakref()
+        self.maintainer.signal.DEFOCUS.connect(self._handle_maintainer_defocus, owner=self)
+
+
 class DraggableByMouse(LinkableByMouse):
     """
     Class for widgets who want to be moved by mouse
