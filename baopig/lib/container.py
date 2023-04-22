@@ -389,7 +389,7 @@ class Container(ContainerDoc, Widget):
     def set_background_color(self, *args, **kwargs):
 
         self._background_color = Color(*args, **kwargs)
-        self._warn_change(self.auto_hitbox)  # TODO : test it
+        self._warn_change(self.auto_hitbox)
 
     def set_background_image(self, surf, background_adapt=True):
         """

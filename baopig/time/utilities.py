@@ -23,7 +23,7 @@ def format_time(time, formatter=None):
 
     Examples :
 
-        format_time(time=600, foramtter="%H hours and %M minutes") -> "10 hours and 0 minutes"
+        format_time(time=600, formatter="%H hours and %M minutes") -> "10 hours and 0 minutes"
 
     """
 
