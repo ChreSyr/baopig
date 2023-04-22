@@ -41,7 +41,7 @@ class UT_Sleep_Zone(Zone):
                 z2.test_zone.togglers.default_layer.clear()
                 z2.test_zone.default_layer.pack(axis="horizontal")
             t = Text(z2.test_zone.texts, text=f"index:{z2.index}",
-                     width="100%", border_width=2, padding=5, align_mode="center", pos=(0, z2.index * 35))
+                     border_width=2, padding=5, align_mode="center", pos=(0, z2.index * 35))
             Button(z2.test_zone.togglers, text="state:AWAKE", command=PrefilledFunction(tog, t), pos=t.rect.topleft)
             z2.index += 1
 
