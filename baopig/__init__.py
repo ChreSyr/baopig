@@ -6,11 +6,12 @@ BAOPIG : Boite A Outils Pour Interfaces Graphiques
 
 """
 
-print("baopig from WIP")
+# print("baopig from WIP")
 
 # TODO : compilation executable
 from .version.version import version
-print(f"baopig {version} - ", end="")
+
+print(f"baopig {version}")
 from pygame import *
 from .pybao.issomething import *
 from .pybao.objectutilities import Object, PrefilledFunction, PackedFunctions
