@@ -5,6 +5,14 @@ from baopig.lib import Rectangle, Image, Container
 from .text import Text
 
 
+class AButton_DisableSail(Rectangle):
+    STYLE = Rectangle.STYLE.substyle()
+    STYLE.modify(width="100%", height="100%", color=(255, 255, 255, 128))
+
+    def __init__(self, abutton):
+        Rectangle.__init__(self, abutton, visible=False, layer=abutton.above_content)
+
+
 class AButton_FocusSail(Rectangle):
     STYLE = Rectangle.STYLE.substyle()
     STYLE.modify(width="100%", height="100%", color=(0, 0, 0, 0), border_color="theme-color-border", border_width=1)
@@ -56,6 +64,7 @@ class AbstractButton(Container, Focusable, Validable):
     )
     STYLE.create(
         catching_errors=False,
+        disable_class=AButton_DisableSail,
         focus_class=AButton_FocusSail,
         hover_class=AButton_HoverSail,
         link_class=AButton_LinkSail,
@@ -79,8 +88,8 @@ class AbstractButton(Container, Focusable, Validable):
 
         void = Object(show=lambda: None, hide=lambda: None)
 
-        self.set_style_for(Rectangle, width="100%", height="100%")
-        self.set_style_for(Image, width="100%", height="100%")  # TODO : implement (this is not working)
+        self.set_style_for(Rectangle, width="100%", height="100%")  # TODO : remove this in AButton_Sail.STYLE
+        self.set_style_for(Image, width="100%", height="100%")  # TODO : implement ? (this is not working)
 
         hover_class = self.style["hover_class"]
         if hover_class:
@@ -100,9 +109,11 @@ class AbstractButton(Container, Focusable, Validable):
         else:
             self._link_sail_ref = lambda: void
 
-        self._disable_sail_ref = Rectangle(  # TODO : same as hover, focus and link
-            self, color=(255, 255, 255, 128), visible=False, layer=self.above_content, name=self.name + ".disable_sail",
-        ).get_weakref()
+        disable_class = self.style["disable_class"]
+        if disable_class:
+            self._disable_sail_ref = disable_class(self).get_weakref()
+        else:
+            self._disable_sail_ref = lambda: void
 
         if isinstance(hover, int) and hover != -1:  # TODO : hover_alpha=False or Sail
             # Adapts the hover sail to the surface -> alpha pixels are not hovered
