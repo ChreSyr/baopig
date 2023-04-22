@@ -28,14 +28,14 @@ def _init_loc(location):
 
 class Indicator(Text):
 
-    def __init__(self, widget, text, indicator=None, loc="top", **kwargs):
-        """Create a Text above the widget when hovered"""
+    def __init__(self, target, text, parent=None, indicator=None, loc="top", **kwargs):
+        """Create a Text above the target when hovered"""
 
-        assert isinstance(widget, HoverableByMouse), "Indicator can only indicate HoverableByMouse widgets"
-        if widget._indicator is not None:
+        assert isinstance(target, HoverableByMouse), "Indicator can only indicate HoverableByMouse widgets"
+        if target._indicator is not None:
             raise PermissionError("A Widget can only have one indicator")
         if indicator is not None:
-            widget._indicator = indicator
+            target._indicator = indicator
             raise NotImplementedError
 
         pos, loc_opposite = _init_loc(loc)
@@ -43,19 +43,43 @@ class Indicator(Text):
         kwargs["loc"] = loc_opposite
 
         Text.__init__(
-            self, widget.parent, text, font_color=(255, 255, 255), font_height=15, pos=pos,
-            ref=widget, refloc=loc, referenced_by_hitbox=True,
+            self, target.parent if parent is None else parent, text, font_color=(255, 255, 255), font_height=15,
+            pos=pos, ref=target, refloc=loc, referenced_by_hitbox=True,
             background_color=(0, 0, 0, 192), padding=(8, 4), selectable=False, layer_level=2, **kwargs
         )
 
-        widget._indicator = self
-        widget.signal.HOVER.connect(self.wake, owner=self)
-        widget.signal.UNHOVER.connect(self.sleep, owner=self)
-        if not widget.is_hovered:
+        self.target = target
+        target._indicator = self
+        target.signal.HOVER.connect(self.handle_target_hover, owner=self)
+        target.signal.UNHOVER.connect(self.handle_target_unhover, owner=self)
+        if not target.is_hovered:
+            self.handle_target_unhover()
+
+    def handle_target_hover(self):
+        self.wake()
+
+    def handle_target_unhover(self):
+        self.sleep()
+
+
+class CasualIndicator(Indicator):
+
+    def __init__(self, target, get_active, *args, **kwargs):
+
+        self.get_active = get_active
+        Indicator.__init__(self, target, *args, **kwargs)
+
+    def handle_target_hover(self):
+        if self.get_active():
+            self.wake()
+        else:
             self.sleep()
 
+    def handle_target_unhover(self):
+        self.sleep()
 
-class DynamicIndicator(DynamicText):
+
+class DynamicIndicator(DynamicText):  # TODO : update like Indicator
 
     def __init__(self, widget, get_text, indicator=None, loc="top", **kwargs):
         """Create a DynamicText above the widget when hovered"""
