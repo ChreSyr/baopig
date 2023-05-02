@@ -1,3 +1,4 @@
-## 0.20.5 (22/04/2023)
+## 0.20.6 (02/05/2023)
 
-- Fixed some import issues
+- Added lang_manager.dicts_path
+- Small improvements of CheckBox
