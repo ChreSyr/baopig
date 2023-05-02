@@ -12,7 +12,7 @@ from .button import AButton_FocusSail as Button_FocusSail
 from .button import AButton_HoverSail as Button_HoverSail
 from .button import AButton_LinkSail as Button_LinkSail
 
-from .checkbox import CheckBox
+from .checkbox import CheckBox, CheckMarkFrame, CheckMark
 from .progressbar import ProgressBar
 from .slider import Slider, SliderBloc, SliderBar
 from .dialog import Dialog, DialogFrame, DialogButtonsZone, DialogAnswerButton

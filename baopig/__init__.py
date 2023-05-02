@@ -12,7 +12,6 @@ BAOPIG : Boite A Outils Pour Interfaces Graphiques
 from .version.version import version
 
 print(f"baopig {version}")
-print('WIP')
 from pygame import *
 from .pybao.issomething import *
 from .pybao.objectutilities import Object, PrefilledFunction, PackedFunctions
