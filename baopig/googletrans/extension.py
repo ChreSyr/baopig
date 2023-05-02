@@ -17,10 +17,13 @@ class Dictionnary(dict):
         assert lang_id not in dicts
         dicts[lang_id] = self
 
-        if os.path.exists(f"{os.path.abspath(os.path.dirname(sys.argv[0]))}{os.sep}lang{os.sep}dict_{lang_id}.py"):
+        if lang_manager.dicts_path is None:
+            raise PermissionError("You have to define the path to the dictionnaries before creating one")
+
+        if os.path.exists(f"{lang_manager.dicts_path}{os.sep}dict_{lang_id}.py"):
 
             import pathlib
-            file_path = f"{pathlib.Path.cwd()}{os.sep}lang{os.sep}dict_{lang_id}.py"
+            file_path = f"{lang_manager.dicts_path}{os.sep}dict_{lang_id}.py"
             file_name = f"dict_{lang_id}"
             spec = importlib.util.spec_from_file_location(file_name, file_path)
             module = importlib.util.module_from_spec(spec)
@@ -77,6 +80,8 @@ class LangManager(bp.Communicative):
 
         bp.Communicative.__init__(self)
 
+        self._dicts_path = None  # path to the dictionnary files
+
         self._ref_texts = {}
         self._textid_by_widget = {}
         self._ref_language = self._language = None
@@ -86,6 +91,7 @@ class LangManager(bp.Communicative):
         self.create_signal("UPDATE_LANGUAGE")
         self.create_signal("NEW_CONNECTION_STATE")
 
+    dicts_path = property(lambda self: self._dicts_path)
     is_connected_to_network = property(lambda self: self._is_connected_to_network)
     language = property(lambda self: self._language)
     ref_language = property(lambda self: self._ref_language)
@@ -139,6 +145,10 @@ class LangManager(bp.Communicative):
                 widget.fit()
 
         self.signal.UPDATE_LANGUAGE.emit()
+
+    def set_dicts_path(self, dicts_path):
+
+        self._dicts_path = dicts_path
 
     def set_ref_language(self, ref_lang_id):
 
